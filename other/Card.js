@@ -3,25 +3,57 @@ import {
   View,
   StyleSheet,
   Text,
+  TouchableOpacity
 } from "react-native";
-import Touchable from "react-native-platform-touchable";
+import * as firebase from "firebase";
+import "firebase/firestore";
+
+function renderName(name) {
+  if (!name) {
+    return null;
+  }
+  return <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">"{name}"</Text>
+}
 
 export default class Card extends React.Component {
+  constructor(props) {
+    super(props);
+    this.openOrder = this.openOrder.bind(this);
+  }
+
+  openOrder() {
+    this.props.load(true);
+    firebase.firestore()
+      .collection("orders")
+      .doc(firebase.auth().currentUser.uid)
+      .collection("myOrders")
+      .doc(this.props.id)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          this.props.navigate("Order", {getOrders: this.props.getOrders, data: doc.data(), id: this.props.id});
+          this.props.load(false);
+        }
+      });
+  }
   render() {
     return (
-      <Touchable background={Touchable.Ripple("#bb9834", true)}
-                 onPress={() => console.log("Touchable pressed")}
-                 style={styles.cardContainer}>
+      <TouchableOpacity
+        onPress={this.openOrder}
+        style={styles.cardContainer}
+      >
         <View>
           <View style={{flexDirection: "row"}}>
             <View style={{flexDirection: "column"}}>
               <Text style={styles.date} numberOfLines={1} ellipsizeMode="tail">{this.props.date}</Text>
-              <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">"{this.props.name}"</Text>
+              {renderName(this.props.name)}
             </View>
           </View>
-          <Text style={styles.ingredients} numberOfLines={1} ellipsizeMode="tail">{this.props.ingredients.join(", ")}</Text>
+          <Text style={styles.ingredients} numberOfLines={this.props.name ? 1 : 2} ellipsizeMode="tail">
+            {this.props.ingredients.join(", ")}
+          </Text>
         </View>
-      </Touchable>
+      </TouchableOpacity>
     );
   }
 }
@@ -40,7 +72,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     borderRadius: 4,
     shadowRadius: 4,
-    marginBottom: 20
+    marginBottom: 20,
+    elevation: 4
   },
   date: {
     fontFamily: "open-sans-bold",

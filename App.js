@@ -1,7 +1,28 @@
 import React from "react";
-import { Platform, StatusBar, StyleSheet, View } from "react-native";
+import {
+  Platform,
+  StatusBar,
+  StyleSheet,
+  View,
+  YellowBox
+} from "react-native";
 import { AppLoading, Asset, Font, Icon } from "expo";
 import AppNavigator from "./navigation/AppNavigator";
+import * as firebase from 'firebase';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBIV-fwIGwS9sNbGxHH_kCTbx_BbpAJC2s",
+  authDomain: "sandwich-orders.firebaseapp.com",
+  databaseURL: "https://sandwich-orders.firebaseio.com",
+  storageBucket: "sandwich-orders.appspot.com",
+  projectId: "sandwich-orders"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+YellowBox.ignoreWarnings(["Setting a timer for a long period of time, i.e. multiple minutes, is a performance and " +
+  "correctness issue on Android as it keeps the timer module awake, and timers can only be called when the app is in " +
+  "the foreground. See https://github.com/facebook/react-native/issues/12981 for more info."]);
 
 export default class App extends React.Component {
   state = {

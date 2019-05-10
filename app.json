@@ -23,7 +23,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "associatedDomains": ["webcredentials:lwhs.myschoolapp.com"]
     }
   }
 }

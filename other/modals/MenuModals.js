@@ -4,28 +4,23 @@ import {
   Text,
   View,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  Platform
 } from "react-native";
 import { ModalProvider, ModalConsumer } from "./ModalContext";
 import ModalRoot from "./ModalRoot";
-import IngredientPicker from "./IngredientPicker";
+import IngredientPickeriOS from "./IngredientPickeriOS";
+import IngredientPickerAndroid from "./IngredientPickerAndroid";
 import CheckboxList from "../checkboxes/CheckboxList";
 import AnimatedDropdown from "../checkboxes/AnimatedDropdown";
 
-const BREAD = ["Dutch crunch", "Sourdough roll", "Ciabatta roll", "Sliced wheat", "Sliced Sourdough", "Gluten free"];
-const MEAT = ["None", "Turkey", "Roast beef", "Pastrami", "Salami", "Ham", "Tuna salad", "Egg salad"];
+export const BREAD = ["Dutch crunch", "Sourdough roll", "Ciabatta roll", "Sliced wheat", "Sliced Sourdough", "Gluten free"];
+const MEAT = ["Turkey", "Roast beef", "Pastrami", "Salami", "Ham", "Tuna salad", "Egg salad"];
 const CHEESE = ["Provolone", "Swiss", "Cheddar", "Fresh Mozzarella"];
 const CONDIMENTS = ["Mayo", "Mustard", "Pesto", "Red Vin/Olive Oil", "Balsamic Vin/Olive Oil", "Roasted Red Peppers",
   "Pepperoni", "Pickles", "Basil", "Lettuce", "Tomatoes", "Hummus", "Red Onions", "Jalapenos", "Artichoke Hearts"];
-const EXTRAS = ["Avocado", "Bacon"];
+const EXTRAS = ["Avocado", "Bacon", "Extra meat"];
 
-/**
- * Modal that contains picker for specified category
- * @param onRequestClose - action to close modal
- * @param picker - picker to be contained in modal
- * @returns {*}
- * @constructor
- */
 const ItemModal = ({ onRequestClose, picker }) => (
   <Modal
     isOpen
@@ -39,151 +34,56 @@ const ItemModal = ({ onRequestClose, picker }) => (
   </Modal>
 );
 
-/**
- * Touchable that opens picker for specified category
- * @param showModal - action to show the picker
- * @param modal - picker modal
- * @param category - category of picker (e.g. "Bread", "Meat", etc.)
- * @param item - currently selected item in picker
- * @returns {*}
- * @constructor
- */
-const IngredientTouchable = ({ showModal, modal, category, item }) => (
+const IngredientTouchableiOS = ({ showModal, modal, category, item }) => (
   <TouchableOpacity style={styles.touchable} onPress={() => showModal(modal)}>
-    <View style={{flexDirection: "row"}}>
-      <Text style={[styles.touchableTitleText, {textAlign: "left"}]}>{category}</Text>
+    <View style={{ flexDirection: "row" }}>
+      <Text style={[styles.touchableTitleText, { textAlign: "left" }]}>{category}</Text>
       <Text style={styles.touchableText}>{item}</Text>
     </View>
   </TouchableOpacity>
 );
 
-/**
- * Touchable that opens picker for extra meat
- * @param showModal - action to show the picker
- * @param modal - picker modal
- * @param item - currently selected item in picker
- * @returns {*}
- * @constructor
- */
-const ExtraMeat = ({ showModal, modal, item }) => (
-  <IngredientTouchable
-    showModal={showModal}
-    category="Extra Meat"
-    modal={modal}
+const IngredientTouchableAndroid = ({ category, item, itemsArr, changeItem }) => (
+  <IngredientPickerAndroid
+    changeItem={changeItem}
+    itemsArr={itemsArr}
     item={item}
+    category={category}
   />
 );
 
-/**
- * Class containing the content for order screen
- */
+const IngredientTouchable = ({ showModal, modal, category, item, itemsArr, changeItem }) => (
+  Platform.OS === "ios" ?
+    <IngredientTouchableiOS showModal={showModal} modal={modal} category={category} item={item} /> :
+    <IngredientTouchableAndroid category={category} item={item} itemsArr={itemsArr} changeItem={changeItem} />
+);
+
 export default class EventModals extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      bread: "Please select",
-      meat: "None",
-      extraMeat: "None",
-      cheese: [],
-      condiments: [],
-      extras: []
-    };
-    this.changeItem = this.changeItem.bind(this);
-    this.handleCheckboxes = this.handleCheckboxes.bind(this);
-  }
+  dateModal = ({ onRequestClose }) => (
+    <ItemModal
+      onRequestClose={onRequestClose}
+      picker={
+        <IngredientPickeriOS
+          changeItem={this.props.changeItem}
+          itemsArr={this.props.dateStrings}
+          handler={onRequestClose}
+          item={this.props.state.date}
+          category="date"
+        />
+      }
+    />
+  );
 
-  /**
-   * Changes selected items for pickers
-   * @param category - the category of picker (e.g. "meat", "cheese", etc)
-   * @param item - the item that the user has just selected
-   */
-  changeItem(category, item) {
-    if (category === "extraMeat" && this.state.meat === "None" && item !== "None")
-      category = "meat";
-    else if (category === "meat" && item === "None" && this.state.extraMeat !== "None") {
-      this.setState({meat: this.state.extraMeat});
-      category = "extraMeat"
-    }
-    let state = {};
-    state[category] = item;
-    this.setState(state);
-  }
-
-  /**
-   * Changes selected values in a CheckboxList
-   * @param title - name of item being selected/deselected
-   * @param checked - if it is already checked
-   * @param category - category of CheckboxList (e.g. "meat", "cheese", etc)
-   */
-  handleCheckboxes(title, checked, category) {
-    let checkedArr = this.state[category];
-    let setStateVal = {};
-    if (checked) {
-      setStateVal[category] = checkedArr.filter(function(value) {
-        return value !== title;
-      });
-    } else {
-      checkedArr.push(title);
-      setStateVal[category] = checkedArr;
-    }
-    this.setState(setStateVal);
-  }
-
-  /**
-   * Modal containing the picker for bread items (see const BREAD)
-   * @param onRequestClose - action to close the modal
-   * @returns {*}
-   */
   breadModal = ({ onRequestClose }) => (
     <ItemModal
       onRequestClose={onRequestClose}
       picker={
-        <IngredientPicker
-          changeItem={this.changeItem}
+        <IngredientPickeriOS
+          changeItem={this.props.changeItem}
           itemsArr={BREAD}
           handler={onRequestClose}
-          item={this.state.bread}
+          item={this.props.state.bread}
           category="bread"
-        />
-      }
-    />
-  );
-
-  /**
-   * Modal containing the picker for meat items (see const MEAT)
-   * @param onRequestClose - action to close the modal
-   * @returns {*}
-   */
-  meatModal = ({ onRequestClose }) => (
-    <ItemModal
-      onRequestClose={onRequestClose}
-      picker={
-        <IngredientPicker
-          itemsArr={MEAT}
-          handler={onRequestClose}
-          category="meat"
-          changeItem={this.changeItem}
-          item={this.state.meat}
-        />
-      }
-    />
-  );
-
-  /**
-   * Modal containing the picker for extra meat items (see const MEAT)
-   * @param onRequestClose - action to close the modal
-   * @returns {*}
-   */
-  extraMeatModal = ({ onRequestClose }) => (
-    <ItemModal
-      onRequestClose={onRequestClose}
-      picker={
-        <IngredientPicker
-          itemsArr={MEAT}
-          handler={onRequestClose}
-          category="extraMeat"
-          changeItem={this.changeItem}
-          item={this.state.extraMeat}
         />
       }
     />
@@ -198,15 +98,31 @@ export default class EventModals extends React.Component {
             <Fragment>
               <IngredientTouchable
                 showModal={showModal}
-                category="Bread"
-                modal={this.breadModal}
-                item={this.state.bread}
+                category={"Date"}
+                modal={this.dateModal}
+                item={this.props.state.date}
+                changeItem={this.props.changeItem}
+                itemsArr={this.props.dateStrings}
               />
               <IngredientTouchable
                 showModal={showModal}
-                category="Meat"
-                modal={this.meatModal}
-                item={this.state.meat}
+                category={"Bread"}
+                modal={this.breadModal}
+                item={this.props.state.bread}
+                changeItem={this.props.changeItem}
+                itemsArr={BREAD}
+              />
+              <AnimatedDropdown
+                title="Meat"
+                content={
+                  <CheckboxList
+                    category="meat"
+                    columns={2}
+                    content={MEAT}
+                    selected={this.props.state.meat}
+                    handler={this.props.handleCheckboxes}
+                  />
+                }
               />
               <AnimatedDropdown
                 title="Cheese"
@@ -215,8 +131,8 @@ export default class EventModals extends React.Component {
                     category="cheese"
                     columns={2}
                     content={CHEESE}
-                    selected={this.state.cheese}
-                    handler={this.handleCheckboxes}
+                    selected={this.props.state.cheese}
+                    handler={this.props.handleCheckboxes}
                   />
                 }
               />
@@ -227,28 +143,21 @@ export default class EventModals extends React.Component {
                     category="condiments"
                     columns={2}
                     content={CONDIMENTS}
-                    selected={this.state.condiments}
-                    handler={this.handleCheckboxes}
+                    selected={this.props.state.condiments}
+                    handler={this.props.handleCheckboxes}
                   />
                 }
               />
               <AnimatedDropdown
                 title="Extras"
                 content={
-                  <View>
-                    <CheckboxList
-                      category="extras"
-                      columns={2}
-                      content={EXTRAS}
-                      selected={this.state.extras}
-                      handler={this.handleCheckboxes}
-                    />
-                    <ExtraMeat
-                      showModal={showModal}
-                      modal={this.extraMeatModal}
-                      item={this.state.extraMeat}
-                    />
-                  </View>
+                  <CheckboxList
+                    category="extras"
+                    columns={2}
+                    content={EXTRAS}
+                    selected={this.props.state.extras}
+                    handler={this.props.handleCheckboxes}
+                  />
                 }
               />
             </Fragment>
@@ -259,15 +168,12 @@ export default class EventModals extends React.Component {
   }
 }
 
-/**
- * StyleSheet for page
- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
   },
   touchable: {
     backgroundColor: "white",

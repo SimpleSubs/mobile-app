@@ -4,44 +4,185 @@ import {
   Dimensions,
   StyleSheet,
   Text,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
-  SafeAreaView
+  SafeAreaView,
+  ScrollView,
+  Platform,
+  RefreshControl,
+  ActivityIndicator
 } from "react-native";
 import Card from "../other/Card.js";
+import Header from "../other/Header.js";
+import { Ionicons } from "@expo/vector-icons";
+import * as firebase from "firebase";
 
 const ACCENT_COLOR = "#ffd541";
 const ACCENT_COLOR_DARK = "#bb9834";
+const OFFSET = -7;
+const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+  "November", "December"];
+
+function getDayString(date) {
+  let timezoneDate = new Date(date);
+  timezoneDate.setHours(timezoneDate.getHours() + OFFSET);
+  return `${DAYS_OF_WEEK[timezoneDate.getDay()]}, ${MONTHS[timezoneDate.getMonth()]} ${timezoneDate.getDate()}`;
+}
+
+function sortByDates(arr) {
+  arr.sort((a, b) => {
+    if (a.date < b.date) {
+      return -1;
+    } else if (a.date > b.date) {
+      return 1;
+    }
+    return 0;
+  })
+}
 
 export default class HomeScreen extends React.Component {
-  static navigationOptions = {
-    header: null
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      orders: [],
+      refreshing: false,
+      loading: false
+    };
+    this.getOrders = this.getOrders.bind(this);
+    this.load = this.load.bind(this);
+    this.signOut = this.signOut.bind(this);
+  }
+
+  load(isLoading) {
+    this.setState({loading: isLoading});
+  }
+
+  getOrders() {
+    this.setState({refreshing: true});
+    let orders = [];
+    firebase.firestore()
+      .collection("orders")
+      .doc(firebase.auth().currentUser.uid)
+      .collection("myOrders")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          let order = this.formatOrder(doc.data(), doc.id);
+          if (order.date.getDate() >= (new Date()).getDate()) {
+            orders.push(order);
+          }
+        });
+        sortByDates(orders);
+        this.setState({orders, refreshing: false});
+      });
+  }
+
+  formatOrder(order, id) {
+    let ingredients = this.formatIngredients(order);
+    let date = getDayString(order.date.toDate());
+    return { dateString: date, ingredients, date: order.date.toDate(), key: id };
+  }
+
+  formatIngredients(order) {
+    let ingredients = [];
+
+    ingredients.push(order.bread.charAt(0).toUpperCase() + order.bread.slice(1));
+    order.meat.map((meat) => ingredients.push(meat.toLowerCase()));
+    order.cheese.map((cheese) => ingredients.push(cheese.toLowerCase()));
+    order.condiments.map((condiment) => ingredients.push(condiment.toLowerCase()));
+    order.extras.map((extra) => ingredients.push(extra.toLowerCase()));
+
+    return ingredients;
+  }
+
+  signOut() {
+    firebase.auth().signOut().then(() => {
+      this.props.navigation.goBack("Login");
+    }).catch((error) => {
+      this.setState({ errorMessage: error.message });
+    });
+  }
+
+  componentDidMount() {
+    this.getOrders();
+  }
 
   render() {
-    const screenWidth = Dimensions.get("window").width;
+    const { width } = Dimensions.get("window");
+    let headerMessage = this.state.orders.length === 0 ? "There are no orders to display." : "";
+    let loadingStyle = {
+      backgroundColor: "transparent",
+      paddingBottom: 10
+    };
+    if (!this.state.loading) {
+      loadingStyle.height = 0;
+      loadingStyle.paddingBottom = 0;
+    }
     return (
       <SafeAreaView style={{ alignContent: "center" }}>
-        <View
-          style={[styles.header, { width: screenWidth, paddingBottom: screenWidth * 0.05 }]}>
-          <Text style={styles.title}>My Orders</Text>
-        </View>
-        <View style={{ zIndex: 1000 }}>
-          <View style={[styles.placeOrderButton, {backgroundColor: ACCENT_COLOR_DARK, width: screenWidth - 110}]}>
-            <Text style={[styles.placeOrderButtonText, {opacity: 0.5}]}>Place an order</Text>
-          </View>
-          <TouchableOpacity onPress={() => this.props.navigation.navigate("Order")}>
-            <View style={[styles.placeOrderButton, {width: screenWidth - 110}]}>
-              <Text style={styles.placeOrderButtonText}>
-                Place an order
-              </Text>
-            </View>
+        <Header title={"My Orders"} bigButton={true} buttons={[
+          (
+            <TouchableOpacity
+              key={"logOut"}
+              onPress={this.signOut}
+              style={styles.logOut}
+            >
+              <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-log-out`} size={35} color={"#000"} />
+            </TouchableOpacity>
+          ),
+          (
+            <TouchableOpacity
+              key={"settings"}
+              style={styles.settingsCog}
+              onPress={() => this.props.navigation.navigate("Settings")}
+            >
+              <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-settings`} size={35} color="#000" />
+            </TouchableOpacity>
+          )
+        ]} />
+        <View style={Platform.OS === "ios" ? { zIndex: 1000 } : {}}>
+          <TouchableOpacity onPress={() => {
+            this.props.navigation.navigate(
+              "Order",
+              { getOrders: this.getOrders, data: null, prevOrders: this.state.orders }
+            )
+          }} activeOpacity={0.5} style={[styles.placeOrderButton, { width: width - 110 }]}>
+            <Text style={styles.placeOrderButtonText}>
+              Place an order
+            </Text>
           </TouchableOpacity>
         </View>
-        <ScrollView style={styles.container}>
-          <Card date="Monday, February 9th" name="The Usual" ingredients={["Dutch crunch", "ham", "swiss cheese", "lettuce", "tomato"]} />
-          <Card date="Tuesday, February 10th" name="The Usual" ingredients={["Dutch crunch", "ham", "swiss cheese", "lettuce", "tomato"]} />
-        </ScrollView>
+        <FlatList
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this.getOrders}
+            />
+          }
+          ListHeaderComponent={
+            <View>
+              <ActivityIndicator size={"large"} style={loadingStyle} animating={this.state.loading} />
+              <Text style={headerMessage.length > 0 ? styles.text : { height: 0 }}>{headerMessage}</Text>
+            </View>
+          }
+          style={styles.container}
+          contentContainerStyle={styles.contentContainer}
+          data={this.state.orders}
+          showsVerticalScrollIndicator={false}
+          renderItem={({item}) => (
+            <Card
+              date={item.dateString}
+              id={item.key}
+              navigate={this.props.navigation.navigate}
+              prevOrders={this.state.orders}
+              name={item.name}
+              ingredients={item.ingredients}
+              getOrders={this.getOrders}
+              load={this.load}
+            />
+          )}
+        />
       </SafeAreaView>
     );
   }
@@ -50,10 +191,13 @@ export default class HomeScreen extends React.Component {
 // TODO: Add box shadow for android (shadow props only support iOS)
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 65 / 2 + 20,
-    paddingHorizontal: 20,
     backgroundColor: "#f0f0f0",
-    height: "100%",
+    height: "100%"
+  },
+  contentContainer: {
+    paddingTop: 65.0 / 2 + 20,
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === "ios" ? 80 : 115
   },
   header: {
     zIndex: 999,
@@ -83,7 +227,7 @@ const styles = StyleSheet.create({
     alignContent: "center",
     justifyContent: "center",
     position: "absolute",
-    top: -65 / 2,
+    top: -65.0 / 2,
     left: 55,
     shadowColor: "#000",
     shadowOffset: {
@@ -92,6 +236,8 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    elevation: 8,
+    zIndex: 1000
   },
   placeOrderButtonText: {
     textAlign: "center",
@@ -99,8 +245,22 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "open-sans-extra-bold",
   },
-  date: {
-    fontFamily: "open-sans-bold",
-    fontSize: 18
+  text: {
+    fontFamily: "open-sans",
+    fontSize: 18,
+    textAlign: "center"
+  },
+  settingsCog: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 5 : 30,
+    right: 20
+  },
+  logOut: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 5 : 30,
+    left: 20,
+    transform: [
+      { scaleX: -1 }
+    ]
   }
 });

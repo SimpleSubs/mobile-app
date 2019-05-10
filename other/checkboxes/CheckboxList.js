@@ -56,7 +56,6 @@ export default class CheckboxList extends React.Component {
   }
 }
 
-// TODO: Add box shadow for android (shadow props only support iOS)
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
@@ -68,6 +67,7 @@ const styles = StyleSheet.create({
     color: "#000",
     fontSize: 14,
     fontFamily: "open-sans",
+    fontWeight: "normal"
   },
   checkboxContainer: {
     backgroundColor: "transparent",
