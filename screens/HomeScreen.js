@@ -18,7 +18,6 @@ import { Ionicons } from "@expo/vector-icons";
 import * as firebase from "firebase";
 
 const ACCENT_COLOR = "#ffd541";
-const ACCENT_COLOR_DARK = "#bb9834";
 const OFFSET = -7;
 const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",

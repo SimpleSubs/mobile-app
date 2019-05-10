@@ -9,8 +9,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
-  KeyboardAvoidingView
+  ActivityIndicator
 } from "react-native";
 import * as firebase from "firebase";
 import "firebase/firestore";
@@ -58,7 +57,8 @@ export default class RegisterScreen extends React.Component {
       return false;
     }
     let grade = parseInt(this.state.grade);
-    if ((!(grade >= 9) && !(grade <= 12)) || grade !== 0) {
+    console.log(this.state.grade, grade);
+    if (grade < 9 || grade > 12 || grade === 0) {
       this.setState({ errorMessage: "Please enter a valid grade" });
       return false;
     }
@@ -91,7 +91,7 @@ export default class RegisterScreen extends React.Component {
             currentUser.delete();
           })
       })
-      .catch(error => this.setState({ errorMessage: error.message }))
+      .catch(error => this.setState({ errorMessage: error.message, loading: false }))
   };
 
   render() {
@@ -111,9 +111,10 @@ export default class RegisterScreen extends React.Component {
             <KeyboardAwareFlatList
               enableOnAndroid
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ marginTop: "auto", marginBottom: "auto" }}
+              contentContainerStyle={{ marginTop: "auto", marginBottom: "auto", padding: 40 }}
               scrollingEnabled={false}
               alwaysBounceVertical={false}
+              keyboardOpeningTime={0}
               ListHeaderComponent={
                 <View>
                   <Text style={styles.title}>Create an Account</Text>
@@ -160,7 +161,7 @@ export default class RegisterScreen extends React.Component {
                     newState[item.key] = input;
                     this.setState(newState);
                   }}
-                  style={styles.textInput}
+                  style={[styles.textInput, { width: screenWidth - styles.contentContainer.padding * 2 }]}
                   value={this.state[item.key]}
                 />
               )}
@@ -177,6 +178,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center"
+  },
+  contentContainer: {
+    marginTop: "auto",
+    marginBottom: "auto",
+    padding: 40
   },
   textInput: {
     backgroundColor: "#f0f0f0",
