@@ -22,7 +22,7 @@ export default class Header extends React.Component {
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: Platform.OS !== "ios" ? 25 : 0,
+    paddingTop: 0,
     zIndex: 999,
     backgroundColor: "#fff",
     flexDirection: "row",

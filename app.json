@@ -1,30 +1,60 @@
 {
   "expo": {
-    "name": "Sandwich App",
-    "slug": "sandwich-app",
+    "name": "LHWSimpleSubs",
+    "description": "This app facilitates sandwich ordering at Lick-Wilmerding High School",
+    "slug": "simple-subs",
     "privacy": "public",
     "sdkVersion": "32.0.0",
     "platforms": [
       "ios",
       "android"
     ],
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
+    "primaryColor": "#ffd541",
     "icon": "./assets/images/icon.png",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#ffffff"
+    },
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 30000
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
+      "bundleIdentifier": "org.lwhs.simplesubs",
+      "buildNumber": "2",
+      "icon": "./assets/images/icon.png",
       "supportsTablet": false,
-      "associatedDomains": ["webcredentials:lwhs.myschoolapp.com"]
+      "associatedDomains": [
+        "webcredentials:lwhs.myschoolapp.com"
+      ],
+      "usesIcloudStorage": false,
+      "splash": {
+        "backgroundColor": "#ffffff",
+        "resizeMode": "cover",
+        "image": "./assets/images/splash.png"
+      }
+    },
+    "android": {
+      "package": "org.lwhs.simplesubs",
+      "versionCode": 2,
+      "icon": "./assets/images/icon.png",
+      "splash": {
+        "backgroundColor": "#ffffff",
+        "resizeMode": "cover",
+        "mdpi": "./assets/images/splash.png"
+      },
+      "permissions": []
     }
   }
 }

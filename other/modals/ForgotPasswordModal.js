@@ -9,8 +9,7 @@ import {
   Modal, ActivityIndicator
 } from "react-native";
 import * as firebase from "firebase";
-
-const ACCENT_COLOR = "#ffd541";
+import Colors from "../../constants/Colors";
 
 export default class ForgotPasswordModal extends React.Component {
   constructor(props) {
@@ -33,6 +32,7 @@ export default class ForgotPasswordModal extends React.Component {
       .sendPasswordResetEmail(this.state.email)
       .then(() => {
         this.setState({ loading: false });
+        this.props.setInfoMessage("A link to reset your password has been sent to your email address.");
         this.props.changeModalState(false);
       })
       .catch((error) => {
@@ -119,12 +119,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 10
   },
-  text: {
-    fontFamily: "open-sans",
-    fontSize: 16,
-    padding: 10,
-    flex: 3
-  },
   textInput: {
     backgroundColor: "#f0f0f0",
     padding: 10,
@@ -134,19 +128,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
     minWidth: 250
   },
-  passwordView: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 3,
-    paddingRight: 10
-  },
   buttonsContainer: {
     flexDirection: "row",
     marginLeft: "auto",
     padding: 10
   },
   doneButton: {
-    backgroundColor: ACCENT_COLOR,
+    backgroundColor: Colors.accentColor,
     width: 85,
     height: 50,
     borderRadius: 10,

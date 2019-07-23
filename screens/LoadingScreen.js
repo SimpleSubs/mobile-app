@@ -10,16 +10,8 @@ import * as firebase from "firebase";
 export default class LoadingScreen extends React.Component {
   componentDidMount() {
     firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        this.props.navigation.navigate("Login", {
-          execute: (lambda) => {
-            this.props.navigation.navigate("Home");
-            setTimeout(lambda, 1000);
-          }
-        });
-      } else {
-        this.props.navigation.navigate("Login");
-      }
+      let loading = user !== null;
+      this.props.navigation.navigate("Login", { loading: loading });
     })
   }
 

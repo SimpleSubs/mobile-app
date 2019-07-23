@@ -7,7 +7,6 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
   Platform,
   RefreshControl,
   ActivityIndicator
@@ -16,26 +15,19 @@ import Card from "../other/Card.js";
 import Header from "../other/Header.js";
 import { Ionicons } from "@expo/vector-icons";
 import * as firebase from "firebase";
-
-const ACCENT_COLOR = "#ffd541";
-const OFFSET = -7;
-const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
-  "November", "December"];
+import Colors from "../constants/Colors";
+import Time from "../constants/Time";
 
 function getDayString(date) {
   let timezoneDate = new Date(date);
-  timezoneDate.setHours(timezoneDate.getHours() + OFFSET);
-  return `${DAYS_OF_WEEK[timezoneDate.getDay()]}, ${MONTHS[timezoneDate.getMonth()]} ${timezoneDate.getDate()}`;
+  timezoneDate.setHours(timezoneDate.getHours() + Time.offset);
+  return `${Time.daysOfWeek[timezoneDate.getDay()]}, ${Time.months[timezoneDate.getMonth()]} ${timezoneDate.getDate()}`;
 }
 
 function sortByDates(arr) {
   arr.sort((a, b) => {
-    if (a.date < b.date) {
-      return -1;
-    } else if (a.date > b.date) {
-      return 1;
-    }
+    if (a.date < b.date) return -1;
+    if (a.date > b.date) return 1;
     return 0;
   })
 }
@@ -54,11 +46,11 @@ export default class HomeScreen extends React.Component {
   }
 
   load(isLoading) {
-    this.setState({loading: isLoading});
+    this.setState({ loading: isLoading });
   }
 
   getOrders() {
-    this.setState({refreshing: true});
+    this.setState({ refreshing: true });
     let orders = [];
     firebase.firestore()
       .collection("orders")
@@ -73,7 +65,7 @@ export default class HomeScreen extends React.Component {
           }
         });
         sortByDates(orders);
-        this.setState({orders, refreshing: false});
+        this.setState({ orders, refreshing: false });
       });
   }
 
@@ -97,10 +89,10 @@ export default class HomeScreen extends React.Component {
 
   signOut() {
     firebase.auth().signOut().then(() => {
-      this.props.navigation.goBack("Login");
-    }).catch((error) => {
-      this.setState({ errorMessage: error.message });
-    });
+      let resetAll = this.props.navigation.getParam("resetAll", null);
+      if (resetAll) resetAll();
+      this.props.navigation.navigate("Login");
+    }).catch(error => this.setState({ errorMessage: error.message }));
   }
 
   componentDidMount() {
@@ -127,7 +119,7 @@ export default class HomeScreen extends React.Component {
               onPress={this.signOut}
               style={styles.logOut}
             >
-              <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-log-out`} size={35} color={"#000"} />
+              <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md" }-log-out`} size={35} color={"#000"} />
             </TouchableOpacity>
           ),
           (
@@ -136,7 +128,7 @@ export default class HomeScreen extends React.Component {
               style={styles.settingsCog}
               onPress={() => this.props.navigation.navigate("Settings")}
             >
-              <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-settings`} size={35} color="#000" />
+              <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-settings`} size={35} color={"#000"} />
             </TouchableOpacity>
           )
         ]} />
@@ -169,7 +161,7 @@ export default class HomeScreen extends React.Component {
           contentContainerStyle={styles.contentContainer}
           data={this.state.orders}
           showsVerticalScrollIndicator={false}
-          renderItem={({item}) => (
+          renderItem={({ item }) => (
             <Card
               date={item.dateString}
               id={item.key}
@@ -187,7 +179,6 @@ export default class HomeScreen extends React.Component {
   }
 }
 
-// TODO: Add box shadow for android (shadow props only support iOS)
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#f0f0f0",
@@ -198,28 +189,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: Platform.OS === "ios" ? 80 : 115
   },
-  header: {
-    zIndex: 999,
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 5
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  title: {
-    fontFamily: "open-sans-bold",
-    fontSize: 20,
-    marginTop: 10,
-    marginBottom: 30,
-    marginLeft: "auto",
-    marginRight: "auto",
-  },
   placeOrderButton: {
-    backgroundColor: ACCENT_COLOR,
+    backgroundColor: Colors.accentColor,
     width: 100,
     height: 65,
     borderRadius: 75 / 2,
@@ -251,12 +222,12 @@ const styles = StyleSheet.create({
   },
   settingsCog: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 5 : 30,
+    top: 5,
     right: 20
   },
   logOut: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 5 : 30,
+    top: 5,
     left: 20,
     transform: [
       { scaleX: -1 }

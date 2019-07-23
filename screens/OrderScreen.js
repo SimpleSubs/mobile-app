@@ -15,8 +15,8 @@ import * as firebase from "firebase";
 import "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 import { BREAD } from "../other/modals/MenuModals";
+import Colors from "../constants/Colors";
 
-const ACCENT_COLOR = "#ffd541";
 const CUTOFF_HOURS = 9;
 const CUTOFF_MINUTES = 30;
 const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -75,7 +75,7 @@ function getDayString(date) {
 const DeleteButton = ({ id, deleteFunc }) => (
   id ?
     <TouchableOpacity onPress={deleteFunc} style={styles.deleteButton}>
-      <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-trash`} size={30} color={"#fff"} style={styles.trashButton} />
+      <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-trash`} size={30} color={"#fff"} style={styles.trashIcon} />
       <Text style={styles.deleteButtonText}>Delete order</Text>
     </TouchableOpacity> :
     <View />
@@ -96,7 +96,7 @@ const CancelSubmitButtons = ({ cancelHandler, doneHandler, screenWidth }) => (
         <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-close`} color={styles.cancelButtonText.color} size={50} />
       </TouchableOpacity>
       <TouchableOpacity onPress={doneHandler} style={styles.iconButtons}>
-        <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-checkmark-circle`} color={ACCENT_COLOR} size={50} />
+        <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-checkmark-circle`} color={Colors.accentColor} size={50} />
       </TouchableOpacity>
     </View>
 );
@@ -229,7 +229,7 @@ export default class OrderScreen extends React.Component {
     }
     const screenWidth = Dimensions.get("window").width;
     return (
-      <SafeAreaView style={{alignContent: "center"}}>
+      <SafeAreaView style={{ alignContent: "center" }}>
         <View style={[styles.header, { width: screenWidth, padding: screenWidth * 0.05 }]}>
           <Text style={styles.title}>Place an order</Text>
           <CancelSubmitButtons
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === "ios" ? 65 : 100
   },
   header: {
-    paddingTop: Platform.OS !== "ios" ? 25 : 0,
+    paddingTop: 0,
     zIndex: 999,
     backgroundColor: "#fff",
     flexDirection: "row",
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
   },
   doneButton: {
-    backgroundColor: ACCENT_COLOR,
+    backgroundColor: Colors.accentColor,
     width: 85,
     height: 50,
     borderRadius: 10,
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: "center"
   },
-  trashButton: {
+  trashIcon: {
     paddingRight: 10
   },
   errorMessage: {

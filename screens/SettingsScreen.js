@@ -105,7 +105,7 @@ export default class SettingsScreen extends React.Component {
       loadingStyle.paddingTop = 0;
     }
     return (
-      <SafeAreaView style={{alignContent: "center"}}>
+      <SafeAreaView style={{ alignContent: "center" }}>
         <Header title={"Settings"} buttons={
           <TouchableOpacity style={styles.backButton} onPress={() => this.props.navigation.navigate("Home")}>
             <Ionicons name={`${Platform.OS === "ios" ? "ios" : "md"}-arrow-back`} size={35} color={"#000"} />
@@ -120,11 +120,13 @@ export default class SettingsScreen extends React.Component {
         <FlatList
           style={styles.container}
           showsVerticalScrollIndicator={false}
+          enableScrolling={false}
+          alwaysBounceVertical={false}
           ListHeaderComponent={(
             <View>
               <ActivityIndicator size={"large"} style={loadingStyle} animating={this.state.loading} />
               {this.state.infoMessage &&
-              <Text style={[styles.errorMessage, {color: "#4ca84a"}]}>
+              <Text style={[styles.errorMessage, { color: "#4ca84a" }]}>
                 {this.state.infoMessage}
               </Text>}
               {this.state.errorMessage &&
@@ -134,11 +136,11 @@ export default class SettingsScreen extends React.Component {
             </View>
           )}
           data={[
-            {key: "Email", category: "email", value: this.state.email, mutable: false, protected: false},
-            {key: "Password", category: "password", value: this.state.placeholderPass, mutable: true, protected: true},
-            {key: "Name", category: "name", value: this.state.name, mutable: true, keyboardType: "default", protected: false},
-            {key: "Grade", category: "grade", value: this.state.grade, mutable: true, keyboardType: "number-pad", protected: false},
-            {key: "Caf PIN", category: "pin", value: this.state.pin, mutable: true, keyboardType: "number-pad", protected: false}
+            { key: "Email", category: "email", value: this.state.email, mutable: false, protected: false },
+            { key: "Password", category: "password", value: this.state.placeholderPass, mutable: true, protected: true },
+            { key: "Name", category: "name", value: this.state.name, mutable: true, keyboardType: "default", protected: false },
+            { key: "Grade", category: "grade", value: this.state.grade, mutable: true, keyboardType: "number-pad", protected: false },
+            { key: "Caf PIN", category: "pin", value: this.state.pin, mutable: true, keyboardType: "number-pad", protected: false }
           ]}
           renderItem={({item}) =>
             <SettingsItem
@@ -195,7 +197,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 5 : 30,
+    top: 5,
     left: 20
   },
   errorMessage: {

@@ -14,8 +14,7 @@ import {
 import * as firebase from "firebase";
 import "firebase/firestore";
 import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
-
-const ACCENT_COLOR = "#ffd541";
+import Colors from "../constants/Colors";
 
 export default class RegisterScreen extends React.Component {
   constructor(props) {
@@ -47,7 +46,6 @@ export default class RegisterScreen extends React.Component {
   validate() {
     for (let input in this.state) {
       if (this.state.hasOwnProperty(input) && input !== "errorMessage" && this.state[input].length === 0) {
-        console.log(input);
         this.setState({ errorMessage: "Please fill in all of the text fields" });
         return false;
       }
@@ -57,7 +55,6 @@ export default class RegisterScreen extends React.Component {
       return false;
     }
     let grade = parseInt(this.state.grade);
-    console.log(this.state.grade, grade);
     if (grade < 9 || grade > 12 || grade === 0) {
       this.setState({ errorMessage: "Please enter a valid grade" });
       return false;
@@ -94,6 +91,10 @@ export default class RegisterScreen extends React.Component {
       .catch(error => this.setState({ errorMessage: error.message, loading: false }))
   };
 
+  componentWillUnmount() {
+    this.resetAll();
+  }
+
   render() {
     const screenWidth = Dimensions.get("window").width;
     let loadingStyle = {
@@ -129,16 +130,16 @@ export default class RegisterScreen extends React.Component {
                   </Text>}
                   <TouchableOpacity
                     onPress={this.handleSignUp}
-                    style={[styles.loginButton, { width: screenWidth - 2 * styles.container.padding }]}>
+                    style={[styles.signUpButton, { width: screenWidth - 2 * styles.container.padding }]}>
                     <Text style={styles.signUpButtonText}>Sign Up</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{width: screenWidth - 2 * styles.container.padding}}
+                    style={{ width: screenWidth - 2 * styles.container.padding }}
                     onPress={() => {
                       this.props.navigation.push("Login");
-                      this.resetAll();
+                      if (Platform.OS === "ios") this.resetAll();
                     }}>
-                    <Text style={styles.loginButtonText}>Already have an account? Log in here.</Text>
+                    <Text style={styles.loginText}>Already have an account? Log in here.</Text>
                   </TouchableOpacity>
                 </View>
               }
@@ -198,15 +199,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
   },
-  subtitle: {
-    fontFamily: "open-sans",
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 30,
-    color: "#a0a0a0"
-  },
-  loginButton: {
-    backgroundColor: ACCENT_COLOR,
+  signUpButton: {
+    backgroundColor: Colors.accentColor,
     height: 65,
     borderRadius: 75 / 2,
     alignContent: "center",
@@ -219,7 +213,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "open-sans-bold",
   },
-  loginButtonText: {
+  loginText: {
     fontFamily: "open-sans",
     color: "#0076ff",
     fontSize: 16,

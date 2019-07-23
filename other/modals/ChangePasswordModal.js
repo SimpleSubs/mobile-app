@@ -7,9 +7,13 @@ import {
   View,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Modal, ActivityIndicator
+  Modal,
+  ActivityIndicator,
+  FlatList,
+  TouchableWithoutFeedback
 } from "react-native";
 import * as firebase from "firebase";
+import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 
 const ACCENT_COLOR = "#ffd541";
 
@@ -89,50 +93,54 @@ export default class ChangePasswordModal extends React.Component {
       >
         <View style={styles.background}>
           <KeyboardAvoidingView behavior={"padding"}>
-            <View style={styles.container}>
-              <Text style={styles.title}>Change Password</Text>
-              <ActivityIndicator size={"large"} style={loadingStyle} animating={this.state.loading} />
-              {this.state.infoMessage &&
-              <Text style={[styles.errorMessage, {color: "#66ff64"}]}>
-                {this.state.infoMessage}
-              </Text>}
-              {this.state.errorMessage &&
-              <Text style={styles.errorMessage}>
-                {this.state.errorMessage}
-              </Text>}
-              <TextInput
-                secureTextEntry
-                placeholder="Current password"
-                autoCapitalize="none"
-                style={styles.textInput}
-                onChangeText={password => this.setState({originalPassword: password})}
-                value={this.state.originalPassword}
-              />
-              <TextInput
-                secureTextEntry
-                placeholder="New password"
-                autoCapitalize="none"
-                style={styles.textInput}
-                onChangeText={password => this.setState({newPassword: password})}
-                value={this.state.newPassword}
-              />
-              <TextInput
-                secureTextEntry
-                placeholder="Verify new password"
-                autoCapitalize="none"
-                style={styles.textInput}
-                onChangeText={password => this.setState({verifyPassword: password})}
-                value={this.state.verifyPassword}
-              />
-              <View style={styles.buttonsContainer}>
-                <TouchableOpacity onPress={() => this.props.changeModalState(false)} style={styles.cancelButton}>
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={this.submit} style={styles.doneButton}>
-                  <Text style={styles.doneButtonText}>Done</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            <FlatList
+              contentContainerStyle={styles.container}
+              scrollingEnabled={false}
+              alwaysBounceVertical={false}
+              ListHeaderComponent={
+                <View>
+                  <Text style={styles.title}>Change Password</Text>
+                  <ActivityIndicator size={"large"} style={loadingStyle} animating={this.state.loading} />
+                  {this.state.infoMessage &&
+                  <Text style={[styles.errorMessage, {color: "#66ff64"}]}>
+                    {this.state.infoMessage}
+                  </Text>}
+                  {this.state.errorMessage &&
+                  <Text style={styles.errorMessage}>
+                    {this.state.errorMessage}
+                  </Text>}
+                </View>
+              }
+              ListFooterComponent={
+                <View style={styles.buttonsContainer}>
+                  <TouchableOpacity onPress={() => this.props.changeModalState(false)} style={styles.cancelButton}>
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={this.submit} style={styles.doneButton}>
+                    <Text style={styles.doneButtonText}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+              }
+              data={[
+                { key: "originalPassword", placeholder: "Current password" },
+                { key: "newPassword", placeholder: "New password" },
+                { key: "verifyPassword", placeholder: "Verify new password" }
+              ]}
+              renderItem={({item}) => (
+                <TextInput
+                  secureTextEntry
+                  placeholder={item.placeholder}
+                  autoCapitalize={"none"}
+                  style={styles.textInput}
+                  onChangeText={(input) => {
+                    let newState = {};
+                    newState[item.key] = input;
+                    this.setState(newState);
+                  }}
+                  value={this.state[item.key]}
+                />
+              )}
+            />
           </KeyboardAvoidingView>
         </View>
       </Modal>
@@ -153,7 +161,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingTop: 20,
     paddingHorizontal: 30,
-    marginHorizontal: 40
+    marginHorizontal: 40,
+    marginTop: "auto",
+    marginBottom: "auto"
   },
   title: {
     fontFamily: "open-sans-bold",

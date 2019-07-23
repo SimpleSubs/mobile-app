@@ -10,12 +10,12 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import * as firebase from "firebase";
 import ForgotPasswordModal from "../other/modals/ForgotPasswordModal";
-
-const ACCENT_COLOR = "#ffd541";
+import Colors from "../constants/Colors";
 
 export default class LoginScreen extends React.Component {
   constructor(props) {
@@ -25,10 +25,13 @@ export default class LoginScreen extends React.Component {
       password: "",
       loading: false,
       errorMessage: null,
-      showModal: false
+      showModal: false,
+      navigate: false
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.changeModalStatus = this.changeModalStatus.bind(this);
+    this.resetAll = this.resetAll.bind(this);
+    this.navigateHome = this.navigateHome.bind(this);
   }
 
   resetAll() {
@@ -37,7 +40,9 @@ export default class LoginScreen extends React.Component {
       password: "",
       loading: false,
       errorMessage: null,
-      showModal: false
+      infoMessage: null,
+      showModal: false,
+      navigate: false
     });
   }
 
@@ -51,33 +56,28 @@ export default class LoginScreen extends React.Component {
     firebase
       .auth()
       .signInWithEmailAndPassword(email, password)
-      .then(() => {
-        this.props.navigation.push("Home");
-        if (this.state.loading) {
-          this.resetAll();
-        }
-      })
-      .catch((error) => {
-        this.setState({ errorMessage: error.message, loading: false })
-      })
+      .then(() => setTimeout(this.navigateHome, 100))
+      .catch(error => this.setState({ errorMessage: error.message, loading: false }))
   };
+
+  navigateHome() {
+    this.props.navigation.navigate("Home", { resetAll: this.resetAll });
+  }
 
   changeModalStatus(status) {
     this.setState({ showModal: status });
   }
 
   componentDidMount() {
-    let execute = this.props.navigation.getParam("execute", null);
-    if (execute) {
-      this.setState({ loading: true });
-      execute(() => {
-        if (this.state.loading) this.setState({ loading: false });
-      });
+    let loading = this.props.navigation.getParam("loading", false);
+    if (loading) {
+      this.setState({ loading });
+      this.navigateHome();
     }
   }
 
-  componentWillUnmount() {
-    this.resetAll();
+  componentDidUpdate() {
+    if (this.state.navigate) setTimeout(this.navigateHome, 100);
   }
 
   render() {
@@ -92,7 +92,13 @@ export default class LoginScreen extends React.Component {
     }
     return (
       <SafeAreaView style={styles.container}>
-        <ForgotPasswordModal visible={this.state.showModal} changeModalState={this.changeModalStatus} />
+        <ForgotPasswordModal
+          visible={this.state.showModal}
+          changeModalState={this.changeModalStatus}
+          setInfoMessage={(message) => {
+            this.setState({ infoMessage: message })
+          }}
+        />
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={styles.container}>
             <KeyboardAvoidingView behavior={"position"} enabled>
@@ -103,7 +109,7 @@ export default class LoginScreen extends React.Component {
                 placeholder={"Email"}
                 autoCapitalize={"none"}
                 style={styles.textInput}
-                onChangeText={email => this.setState({email})}
+                onChangeText={email => this.setState({ email })}
                 value={this.state.email}
               />
               <TextInput
@@ -114,13 +120,17 @@ export default class LoginScreen extends React.Component {
                 onChangeText={password => this.setState({password})}
                 value={this.state.password}
               />
+              {this.state.infoMessage &&
+              <Text style={[styles.errorMessage, { color: "#4ca84a" }]}>
+                {this.state.infoMessage}
+              </Text>}
               {this.state.errorMessage &&
               <Text style={styles.errorMessage}>
                 {this.state.errorMessage}
               </Text>}
               <TouchableOpacity
                 onPress={this.handleLogin}
-                style={[styles.loginButton, {width: screenWidth - 2 * styles.container.padding}]}>
+                style={[styles.loginButton, { width: screenWidth - 2 * styles.container.padding }]}>
                 <Text style={styles.signUpButtonText}>Log In</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -173,7 +183,7 @@ const styles = StyleSheet.create({
     color: "#a0a0a0"
   },
   loginButton: {
-    backgroundColor: ACCENT_COLOR,
+    backgroundColor: Colors.accentColor,
     width: 100,
     height: 65,
     borderRadius: 75 / 2,

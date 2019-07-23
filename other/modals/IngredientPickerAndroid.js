@@ -20,14 +20,12 @@ export default class IngredientPickerAndroid extends Component {
 
   componentWillMount() {
     this.setState({ width: Math.max(...this.props.itemsArr.map((item) => item.length)) * 12.5});
-    console.log("state is set!");
   }
 
   componentDidMount() {
     if (!this.itemsArr.includes(this.props.item)) {
       this.props.changeItem(this.props.category, this.itemsArr[0]);
     }
-    console.log(this.state.width);
   }
 
   render() {
