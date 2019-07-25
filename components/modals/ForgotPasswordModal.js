@@ -11,19 +11,17 @@ import {
 import * as firebase from "firebase";
 import Colors from "../../constants/Colors";
 
+// Creates and renders modal that allows user to change their password
 export default class ForgotPasswordModal extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: null,
-      loading: false,
-      errorMessage: null
-    };
-    this.submit = this.submit.bind(this);
-  }
+  // Page re-renders when state changes
+  state = {
+    email: null,
+    loading: false,
+    errorMessage: null
+  };
 
-
-  submit() {
+  // Submits forgot password request to Firebase
+  submit = () => {
     if (!this.verify()) {
       return false;
     }
@@ -38,8 +36,9 @@ export default class ForgotPasswordModal extends React.Component {
       .catch((error) => {
         this.setState({ loading: false, errorMessage: error.message });
       });
-  }
+  };
 
+  // Verifies email input by user
   verify() {
     if (!this.state.email) {
       this.setState({ errorMessage: "Please enter your email address" });
@@ -48,11 +47,13 @@ export default class ForgotPasswordModal extends React.Component {
     return true;
   }
 
+  // Renders modal
   render() {
     let loadingStyle = {
       backgroundColor: "transparent",
       paddingBottom: 10
     };
+    // Collapses loading container if page is not loading
     if (!this.state.loading) {
       loadingStyle.height = 0;
       loadingStyle.paddingBottom = 0;
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   textInput: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: Colors.containerBackground,
     padding: 10,
     borderRadius: 5,
     fontFamily: "open-sans",
@@ -166,6 +167,6 @@ const styles = StyleSheet.create({
     fontFamily: "open-sans",
     textAlign: "center",
     fontSize: 16,
-    color: "#ff414c"
+    color: Colors.errorColor
   }
 });

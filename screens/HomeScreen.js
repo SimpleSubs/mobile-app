@@ -11,19 +11,21 @@ import {
   RefreshControl,
   ActivityIndicator
 } from "react-native";
-import Card from "../other/Card.js";
-import Header from "../other/Header.js";
+import Card from "../components/Card.js";
+import Header from "../components/Header.js";
 import { Ionicons } from "@expo/vector-icons";
 import * as firebase from "firebase";
 import Colors from "../constants/Colors";
 import Time from "../constants/Time";
 
+// Converts timestamp date into "[day of week], [month] [date]" (e.g. "Monday, February 1")
 function getDayString(date) {
   let timezoneDate = new Date(date);
   timezoneDate.setHours(timezoneDate.getHours() + Time.offset);
   return `${Time.daysOfWeek[timezoneDate.getDay()]}, ${Time.months[timezoneDate.getMonth()]} ${timezoneDate.getDate()}`;
 }
 
+// Sorts array of objects with date parameter by date
 function sortByDates(arr) {
   arr.sort((a, b) => {
     if (a.date < b.date) return -1;
@@ -32,26 +34,24 @@ function sortByDates(arr) {
   })
 }
 
+// Creates and renders the home screen, which contains all current and future orders and buttons to navigate to the
+// order and settings screens
 export default class HomeScreen extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      orders: [],
-      refreshing: false,
-      loading: false
-    };
-    this.getOrders = this.getOrders.bind(this);
-    this.load = this.load.bind(this);
-    this.signOut = this.signOut.bind(this);
-  }
+  // Page is re-rendered when state is changed
+  state = {
+    orders: [], // Will contain objects representing sandwich orders, sorted by date (ascending) -- to be populated by Firebase data
+    refreshing: false, // Whether or not page is refreshing (reloading orders)
+    loading: false // Whether or not page is loading (navigating to different page or completing an action)
+  };
 
-  load(isLoading) {
-    this.setState({ loading: isLoading });
-  }
+  // Sets this.state.loading to isLoading
+  load = (isLoading) => this.setState({ loading: isLoading });
 
-  getOrders() {
+  // Queries orders from Firebase and stores them in this.state.orders
+  getOrders = () => {
     this.setState({ refreshing: true });
-    let orders = [];
+    let orders = []; // Initializes empty array to add valid orders to
+    // Queries orders from Firebase
     firebase.firestore()
       .collection("orders")
       .doc(firebase.auth().currentUser.uid)
@@ -60,25 +60,28 @@ export default class HomeScreen extends React.Component {
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
           let order = this.formatOrder(doc.data(), doc.id);
+          // If order is today or later, adds order to orders array
           if (order.date.getDate() >= (new Date()).getDate()) {
             orders.push(order);
           }
         });
         sortByDates(orders);
-        this.setState({ orders, refreshing: false });
+        this.setState({ orders, refreshing: false }); // Stores orders in this.state.order
       });
-  }
+  };
 
+  // Formats order (Firebase doc) into object containing strings to display in Cards
   formatOrder(order, id) {
     let ingredients = this.formatIngredients(order);
     let date = getDayString(order.date.toDate());
     return { dateString: date, ingredients, date: order.date.toDate(), key: id };
   }
 
+  // Combines separate ingredient fields into array containing print-ready ingredients
   formatIngredients(order) {
     let ingredients = [];
 
-    ingredients.push(order.bread.charAt(0).toUpperCase() + order.bread.slice(1));
+    ingredients.push(order.bread.charAt(0).toUpperCase() + order.bread.slice(1)); // Capitalize first character of first element
     order.meat.map((meat) => ingredients.push(meat.toLowerCase()));
     order.cheese.map((cheese) => ingredients.push(cheese.toLowerCase()));
     order.condiments.map((condiment) => ingredients.push(condiment.toLowerCase()));
@@ -87,25 +90,27 @@ export default class HomeScreen extends React.Component {
     return ingredients;
   }
 
-  signOut() {
-    firebase.auth().signOut().then(() => {
-      let resetAll = this.props.navigation.getParam("resetAll", null);
-      if (resetAll) resetAll();
-      this.props.navigation.navigate("Login");
-    }).catch(error => this.setState({ errorMessage: error.message }));
-  }
+  // Signs user out and returns to Login screen
+  signOut = () => firebase.auth().signOut().then(() => {
+    let resetAll = this.props.navigation.getParam("resetAll", null);
+    if (resetAll) resetAll();
+    this.props.navigation.navigate("Login");
+  }).catch(error => this.setState({ errorMessage: error.message }));
 
+  // Loads orders when page is first rendered
   componentDidMount() {
     this.getOrders();
   }
 
+  // Renders home screen
   render() {
     const { width } = Dimensions.get("window");
-    let headerMessage = this.state.orders.length === 0 ? "There are no orders to display." : "";
+    let headerMessage = this.state.orders.length === 0 ? "There are no orders to display." : ""; // Displays message if there are no orders
     let loadingStyle = {
       backgroundColor: "transparent",
       paddingBottom: 10
     };
+    // Collapses loading container if page is not loading
     if (!this.state.loading) {
       loadingStyle.height = 0;
       loadingStyle.paddingBottom = 0;
@@ -179,9 +184,10 @@ export default class HomeScreen extends React.Component {
   }
 }
 
+// Styles for home screen
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: Colors.containerBackground,
     height: "100%"
   },
   contentContainer: {

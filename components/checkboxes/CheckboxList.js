@@ -3,11 +3,10 @@ import {
   View,
   StyleSheet
 } from "react-native";
-
+import Colors from "../../constants/Colors";
 import { CheckBox } from "react-native-elements/src/index";
 
-const ACCENT_COLOR = "#ffd541";
-
+// Divides content (checkboxes) evenly between number of columns
 function splitColumns(columns, content) {
   if (columns > content.length)
     columns = content.length;
@@ -22,7 +21,9 @@ function splitColumns(columns, content) {
   return columnArrs;
 }
 
+// Creates and renders a view containing columns of checkboxes
 export default class CheckboxList extends React.Component {
+  // Renders checkbox list
   render() {
     let columnArrays = splitColumns(this.props.columns, this.props.content);
     let columnMaps = columnArrays.map((colData, i) => {
@@ -33,8 +34,8 @@ export default class CheckboxList extends React.Component {
             key={j}
             title={title}
             textStyle={styles.text}
-            checkedColor={ACCENT_COLOR}
-            uncheckedColor={ACCENT_COLOR}
+            checkedColor={Colors.accentColor}
+            uncheckedColor={Colors.accentColor}
             checked={checked}
             onPress={() => this.props.handler(title, checked, this.props.category)}
             containerStyle={styles.checkboxContainer}

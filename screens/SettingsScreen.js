@@ -8,13 +8,15 @@ import {
   Text,
   View, ActivityIndicator
 } from "react-native";
-import Header from "../other/Header";
-import SettingsItem from "../other/SettingsItem";
+import Header from "../components/Header";
+import SettingsItem from "../components/SettingsItem";
 import * as firebase from "firebase";
 import "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
-import ChangePasswordModal from "../other/modals/ChangePasswordModal";
+import ChangePasswordModal from "../components/modals/ChangePasswordModal";
+import Colors from "../constants/Colors";
 
+// Creates and renders the settings screen
 export default class SettingsScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -29,14 +31,12 @@ export default class SettingsScreen extends React.Component {
       modalVisible: false,
       placeholderPass: ""
     };
-    this.changeModalVisibility = this.changeModalVisibility.bind(this);
-    this.changeUserData = this.changeUserData.bind(this);
   }
 
-  changeModalVisibility(status) {
-    this.setState({ modalVisible: status })
-  }
+  // Changes the visibility of reset password modal according to status param
+  changeModalVisibility = (status) => this.setState({ modalVisible: status });
 
+  // Determines if newly entered settings data is valid
   validate(newData) {
     if (newData.pin.length !== 4 || isNaN(parseInt(newData.pin))) {
       this.setState({ errorMessage: "Please enter a valid pin number" });
@@ -50,7 +50,9 @@ export default class SettingsScreen extends React.Component {
     return true;
   }
 
-  changeUserData(category, newData) {
+  // Pushes new user data to Firebase
+  changeUserData = (category, newData) => {
+    // Returns if text has not changed
     if (newData.nativeEvent.text === this.state[category]) {
       return;
     }
@@ -62,28 +64,31 @@ export default class SettingsScreen extends React.Component {
       grade: this.state.grade,
       name: this.state.name
     };
+    // Sets edited category to edited content
     data[category] = newData.nativeEvent.text;
     if (!this.validate(data)) {
       this.setState({ loading: false });
       return;
     }
+    // Pushes data to Firebase
     firebase.firestore()
       .collection("userData")
       .doc(firebase.auth().currentUser.uid)
       .set(data)
       .then(() => this.setState({ infoMessage: "Successfully updated user data", loading: false }))
       .catch((error) => this.setState({ errorMessage: error, loading: false }));
-  }
+  };
 
+  // Gets user data from Firebase
   readFirestoreData() {
-    this.setState({loading: true, errorMessage: null, infoMessage: null});
+    this.setState({ loading: true, errorMessage: null, infoMessage: null });
     const email = firebase.auth().currentUser.email;
     firebase.firestore()
       .collection("userData")
       .doc(firebase.auth().currentUser.uid)
       .get()
       .then((doc) => {
-        const {pin, grade, name} = doc.data();
+        const { pin, grade, name } = doc.data();
         this.setState({ pin, grade, name, email, placeholderPass: "********", loading: false });
       })
       .catch((error) => this.setState({ errorMessage: error, loading: false }));
@@ -93,12 +98,14 @@ export default class SettingsScreen extends React.Component {
     this.readFirestoreData();
   }
 
+  // Renders the settings screen
   render() {
     let loadingStyle = {
       backgroundColor: "transparent",
       paddingBottom: 10,
       paddingTop: 20
     };
+    // Collapses loading container if page is not loading
     if (!this.state.loading) {
       loadingStyle.height = 0;
       loadingStyle.paddingBottom = 0;
@@ -126,7 +133,7 @@ export default class SettingsScreen extends React.Component {
             <View>
               <ActivityIndicator size={"large"} style={loadingStyle} animating={this.state.loading} />
               {this.state.infoMessage &&
-              <Text style={[styles.errorMessage, { color: "#4ca84a" }]}>
+              <Text style={[styles.errorMessage, { color: Colors.infoColor }]}>
                 {this.state.infoMessage}
               </Text>}
               {this.state.errorMessage &&
@@ -160,9 +167,10 @@ export default class SettingsScreen extends React.Component {
   }
 }
 
+// Styles for settings screen
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: Colors.containerBackground,
     height: "100%",
   },
   header: {
@@ -204,10 +212,10 @@ const styles = StyleSheet.create({
     fontFamily: "open-sans",
     textAlign: "center",
     fontSize: 16,
-    color: "#ff414c",
+    color: Colors.errorColor,
     padding: 10,
     flex: 1,
-    borderBottomColor: "#cfcfcf",
+    borderBottomColor: Colors.settingsBorder,
     borderBottomWidth: 0.25,
   }
 });

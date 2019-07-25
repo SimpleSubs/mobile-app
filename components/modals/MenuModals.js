@@ -13,14 +13,12 @@ import IngredientPickeriOS from "./IngredientPickeriOS";
 import IngredientPickerAndroid from "./IngredientPickerAndroid";
 import CheckboxList from "../checkboxes/CheckboxList";
 import AnimatedDropdown from "../checkboxes/AnimatedDropdown";
+import Ingredients from "../../constants/Ingredients";
+import Colors from "../../constants/Colors";
 
-export const BREAD = ["Dutch crunch", "Sourdough roll", "Ciabatta roll", "Sliced wheat", "Sliced Sourdough", "Gluten free"];
-const MEAT = ["Turkey", "Roast beef", "Pastrami", "Salami", "Ham", "Tuna salad", "Egg salad"];
-const CHEESE = ["Provolone", "Swiss", "Cheddar", "Fresh Mozzarella"];
-const CONDIMENTS = ["Mayo", "Mustard", "Pesto", "Red Vin/Olive Oil", "Balsamic Vin/Olive Oil", "Roasted Red Peppers",
-  "Pepperoni", "Pickles", "Basil", "Lettuce", "Tomatoes", "Hummus", "Red Onions", "Jalapenos", "Artichoke Hearts"];
-const EXTRAS = ["Avocado", "Bacon", "Extra meat"];
+const { bread, meat, cheese, condiments, extras } = Ingredients;
 
+// Modal containing picker
 const ItemModal = ({ onRequestClose, picker }) => (
   <Modal
     isOpen
@@ -28,12 +26,13 @@ const ItemModal = ({ onRequestClose, picker }) => (
     animationType="slide"
     transparent={true}
     presentationStyle="overFullScreen"
-    style={{height: "100%"}}
+    style={{ height: "100%" }}
   >
     {picker}
   </Modal>
 );
 
+// Touchable that opens modal on iOS
 const IngredientTouchableiOS = ({ showModal, modal, category, item }) => (
   <TouchableOpacity style={styles.touchable} onPress={() => showModal(modal)}>
     <View style={{ flexDirection: "row" }}>
@@ -43,6 +42,7 @@ const IngredientTouchableiOS = ({ showModal, modal, category, item }) => (
   </TouchableOpacity>
 );
 
+// Touchable that opens modal on Android
 const IngredientTouchableAndroid = ({ category, item, itemsArr, changeItem }) => (
   <IngredientPickerAndroid
     changeItem={changeItem}
@@ -52,13 +52,16 @@ const IngredientTouchableAndroid = ({ category, item, itemsArr, changeItem }) =>
   />
 );
 
+// Touchable that opens modal
 const IngredientTouchable = ({ showModal, modal, category, item, itemsArr, changeItem }) => (
   Platform.OS === "ios" ?
     <IngredientTouchableiOS showModal={showModal} modal={modal} category={category} item={item} /> :
     <IngredientTouchableAndroid category={category} item={item} itemsArr={itemsArr} changeItem={changeItem} />
 );
 
-export default class EventModals extends React.Component {
+// Creates and renders all order options, including dropdowns and modals
+export default class MenuModals extends React.Component {
+  // Modal that allows user to select order date
   dateModal = ({ onRequestClose }) => (
     <ItemModal
       onRequestClose={onRequestClose}
@@ -68,27 +71,29 @@ export default class EventModals extends React.Component {
           itemsArr={this.props.dateStrings}
           handler={onRequestClose}
           item={this.props.state.date}
-          category="date"
+          category={"date"}
         />
       }
     />
   );
 
+  // Modal that allows user to select bread
   breadModal = ({ onRequestClose }) => (
     <ItemModal
       onRequestClose={onRequestClose}
       picker={
         <IngredientPickeriOS
           changeItem={this.props.changeItem}
-          itemsArr={BREAD}
+          itemsArr={bread}
           handler={onRequestClose}
           item={this.props.state.bread}
-          category="bread"
+          category={"bread"}
         />
       }
     />
   );
 
+  // Renders order options
   render() {
     return(
       <ModalProvider>
@@ -110,51 +115,51 @@ export default class EventModals extends React.Component {
                 modal={this.breadModal}
                 item={this.props.state.bread}
                 changeItem={this.props.changeItem}
-                itemsArr={BREAD}
+                itemsArr={bread}
               />
               <AnimatedDropdown
-                title="Meat"
+                title={"Meat"}
                 content={
                   <CheckboxList
-                    category="meat"
+                    category={"meat"}
                     columns={2}
-                    content={MEAT}
+                    content={meat}
                     selected={this.props.state.meat}
                     handler={this.props.handleCheckboxes}
                   />
                 }
               />
               <AnimatedDropdown
-                title="Cheese"
+                title={"Cheese"}
                 content={
                   <CheckboxList
-                    category="cheese"
+                    category={"cheese"}
                     columns={2}
-                    content={CHEESE}
+                    content={cheese}
                     selected={this.props.state.cheese}
                     handler={this.props.handleCheckboxes}
                   />
                 }
               />
               <AnimatedDropdown
-                title="Condiments"
+                title={"Condiments"}
                 content={
                   <CheckboxList
-                    category="condiments"
+                    category={"condiments"}
                     columns={2}
-                    content={CONDIMENTS}
+                    content={condiments}
                     selected={this.props.state.condiments}
                     handler={this.props.handleCheckboxes}
                   />
                 }
               />
               <AnimatedDropdown
-                title="Extras"
+                title={"Extras"}
                 content={
                   <CheckboxList
-                    category="extras"
+                    category={"extras"}
                     columns={2}
-                    content={EXTRAS}
+                    content={extras}
                     selected={this.props.state.extras}
                     handler={this.props.handleCheckboxes}
                   />
@@ -168,6 +173,7 @@ export default class EventModals extends React.Component {
   }
 }
 
+// Styles for modals
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -181,7 +187,7 @@ const styles = StyleSheet.create({
   },
   touchableText: {
     textAlign: "center",
-    color: "#7c7c7c",
+    color: Colors.secondaryText,
     fontSize: 20,
     fontFamily: "open-sans",
     marginLeft: "auto",

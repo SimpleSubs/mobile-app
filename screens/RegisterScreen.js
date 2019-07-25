@@ -16,21 +16,20 @@ import "firebase/firestore";
 import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import Colors from "../constants/Colors";
 
+// Creates and renders register screen
 export default class RegisterScreen extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: "",
-      password: "",
-      pin: "",
-      name: "",
-      grade: "",
-      loading: false,
-      errorMessage: null
-    };
-    this.handleSignUp = this.handleSignUp.bind(this);
-  }
+  // Page is re-rendered when state is changed
+  state = {
+    email: "",
+    password: "",
+    pin: "",
+    name: "",
+    grade: "",
+    loading: false,
+    errorMessage: null
+  };
 
+  // Resets state to original value
   resetAll() {
     this.setState({
       email: "",
@@ -43,6 +42,7 @@ export default class RegisterScreen extends React.Component {
     })
   }
 
+  // Validates input data
   validate() {
     for (let input in this.state) {
       if (this.state.hasOwnProperty(input) && input !== "errorMessage" && this.state[input].length === 0) {
@@ -62,15 +62,15 @@ export default class RegisterScreen extends React.Component {
     return true;
   }
 
-  handleSignUp() {
-    if (!this.validate()) {
-      return;
-    }
+  // Creates user with provided information and logs user in
+  handleSignUp = () => {
+    if (!this.validate()) return;
     this.setState({ loading: true, errorMessage: null });
     firebase
       .auth()
       .createUserWithEmailAndPassword(this.state.email, this.state.password)
       .then(() => {
+        // Logs user in and navigates home
         let currentUser = firebase.auth().currentUser;
         firebase
           .firestore()
@@ -95,12 +95,14 @@ export default class RegisterScreen extends React.Component {
     this.resetAll();
   }
 
+  // Renders register screen
   render() {
     const screenWidth = Dimensions.get("window").width;
     let loadingStyle = {
       backgroundColor: "transparent",
       paddingBottom: 10
     };
+    // Collapses loading container if page is not loading
     if (!this.state.loading) {
       loadingStyle.height = 0;
       loadingStyle.paddingBottom = 0;
@@ -174,6 +176,7 @@ export default class RegisterScreen extends React.Component {
   }
 }
 
+// Styles for register screen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -186,7 +189,7 @@ const styles = StyleSheet.create({
     padding: 40
   },
   textInput: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: Colors.containerBackground,
     padding: 10,
     borderRadius: 5,
     fontFamily: "open-sans",
@@ -215,7 +218,7 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontFamily: "open-sans",
-    color: "#0076ff",
+    color: Colors.linkText,
     fontSize: 16,
     textAlign: "center",
   },
@@ -223,7 +226,7 @@ const styles = StyleSheet.create({
     fontFamily: "open-sans",
     textAlign: "center",
     fontSize: 16,
-    color: "#ff414c",
+    color: Colors.errorColor,
     marginTop: 10
   }
 });

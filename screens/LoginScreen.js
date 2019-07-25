@@ -10,43 +10,37 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform
+  KeyboardAvoidingView
 } from "react-native";
 import * as firebase from "firebase";
-import ForgotPasswordModal from "../other/modals/ForgotPasswordModal";
+import ForgotPasswordModal from "../components/modals/ForgotPasswordModal";
 import Colors from "../constants/Colors";
 
+// Creates and renders the login screen
 export default class LoginScreen extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: "",
-      password: "",
-      loading: false,
-      errorMessage: null,
-      showModal: false,
-      navigate: false
-    };
-    this.handleLogin = this.handleLogin.bind(this);
-    this.changeModalStatus = this.changeModalStatus.bind(this);
-    this.resetAll = this.resetAll.bind(this);
-    this.navigateHome = this.navigateHome.bind(this);
-  }
+  // Page is re-rendered when state is changed
+  state = {
+    email: "",
+    password: "",
+    loading: false,
+    errorMessage: null,
+    showModal: false,
+    navigate: false
+  };
 
-  resetAll() {
-    this.setState({
-      email: "",
-      password: "",
-      loading: false,
-      errorMessage: null,
-      infoMessage: null,
-      showModal: false,
-      navigate: false
-    });
-  }
+  // Resets state to original value
+  resetAll = () => this.setState({
+    email: "",
+    password: "",
+    loading: false,
+    errorMessage: null,
+    infoMessage: null,
+    showModal: false,
+    navigate: false
+  });
 
-  handleLogin() {
+  // Logs user in and navigates to home page OR displays error message
+  handleLogin = () => {
     const { email, password } = this.state;
     if (!(this.state.email.length > 0 && this.state.password.length > 0)) {
       this.setState({ errorMessage: "Please fill in all of the text fields" });
@@ -60,14 +54,13 @@ export default class LoginScreen extends React.Component {
       .catch(error => this.setState({ errorMessage: error.message, loading: false }))
   };
 
-  navigateHome() {
-    this.props.navigation.navigate("Home", { resetAll: this.resetAll });
-  }
+  // Navigates to home screen
+  navigateHome = () => this.props.navigation.navigate("Home", { resetAll: this.resetAll });
 
-  changeModalStatus(status) {
-    this.setState({ showModal: status });
-  }
+  // Shows or hides forgot password modal according to status param
+  changeModalStatus = (status) => this.setState({ showModal: status });
 
+  // Loads and navigates to home screen if user is already logged in
   componentDidMount() {
     let loading = this.props.navigation.getParam("loading", false);
     if (loading) {
@@ -76,16 +69,19 @@ export default class LoginScreen extends React.Component {
     }
   }
 
+  // Navigates home after 100 ms if this.state.navigate is true
   componentDidUpdate() {
     if (this.state.navigate) setTimeout(this.navigateHome, 100);
   }
 
+  // Renders login screen
   render() {
-    const screenWidth = Dimensions.get("window").width;
+    const { width } = Dimensions.get("window");
     let loadingStyle = {
       backgroundColor: "transparent",
       paddingBottom: 10
     };
+    // Collapses loading container if page is not loading
     if (!this.state.loading) {
       loadingStyle.height = 0;
       loadingStyle.paddingBottom = 0;
@@ -130,11 +126,11 @@ export default class LoginScreen extends React.Component {
               </Text>}
               <TouchableOpacity
                 onPress={this.handleLogin}
-                style={[styles.loginButton, { width: screenWidth - 2 * styles.container.padding }]}>
+                style={[styles.loginButton, { width: width - 2 * styles.container.padding }]}>
                 <Text style={styles.signUpButtonText}>Log In</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{width: screenWidth - 2 * styles.container.padding}}
+                style={{width: width - 2 * styles.container.padding}}
                 onPress={() => {
                   this.props.navigation.push("Register");
                   this.resetAll();
@@ -142,7 +138,7 @@ export default class LoginScreen extends React.Component {
                 <Text style={styles.loginButtonText}>Don't have an account? Sign up here.</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{width: screenWidth - 2 * styles.container.padding}}
+                style={{width: width - 2 * styles.container.padding}}
                 onPress={() => this.changeModalStatus(true)}>
                 <Text style={styles.loginButtonText}>I forgot my password!</Text>
               </TouchableOpacity>
@@ -154,6 +150,7 @@ export default class LoginScreen extends React.Component {
   }
 }
 
+// Styles for login screen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -199,7 +196,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontFamily: "open-sans",
-    color: "#0076ff",
+    color: Colors.linkText,
     fontSize: 16,
     textAlign: "center",
     marginBottom: 10
@@ -207,7 +204,7 @@ const styles = StyleSheet.create({
   errorMessage: {
     fontFamily: "open-sans",
     fontSize: 16,
-    color: "#ff414c",
+    color: Colors.errorColor,
     marginTop: 10,
     textAlign: "center"
   }

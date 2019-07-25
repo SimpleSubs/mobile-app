@@ -7,21 +7,19 @@ import {
 } from "react-native";
 import * as firebase from "firebase";
 import "firebase/firestore";
+import Colors from "../constants/Colors";
 
+// Renders name of sandwich (functionality yet to be implemented)
+// TODO: implement name functionality for sandwiches
 function renderName(name) {
-  if (!name) {
-    return null;
-  }
-  return <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">"{name}"</Text>
+  if (!name) return null;
+  return <Text style={styles.name} numberOfLines={1} ellipsizeMode={"tail"}>"{name}"</Text>
 }
 
+// Creates and renders card, which displays sandwich orders
 export default class Card extends React.Component {
-  constructor(props) {
-    super(props);
-    this.openOrder = this.openOrder.bind(this);
-  }
-
-  openOrder() {
+  // Opens order when card is selected and allows user to edit order
+  openOrder = () => {
     this.props.load(true);
     firebase.firestore()
       .collection("orders")
@@ -35,7 +33,9 @@ export default class Card extends React.Component {
           this.props.load(false);
         }
       });
-  }
+  };
+
+  // Renders card
   render() {
     return (
       <TouchableOpacity
@@ -58,7 +58,7 @@ export default class Card extends React.Component {
   }
 }
 
-// TODO: Add box shadow for android (shadow props only support iOS)
+// Styles for card
 const styles = StyleSheet.create({
   cardContainer: {
     width: "100%",
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   ingredients: {
     fontFamily: "open-sans",
-    color: "#7c7c7c",
+    color: Colors.secondaryText,
     fontSize: 18,
   }
 });

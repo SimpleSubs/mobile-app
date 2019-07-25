@@ -3,9 +3,7 @@ import { ModalConsumer } from "./ModalContext";
 
 const ModalRoot = () => (
   <ModalConsumer>
-    {({ component: Component, props, hideModal }) =>
-      Component ? <Component {...props} onRequestClose={hideModal} /> : null
-    }
+    {({ component: Component, props, hideModal }) => Component ? <Component {...props} onRequestClose={hideModal} /> : null}
   </ModalConsumer>
 );
 

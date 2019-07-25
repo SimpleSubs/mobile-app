@@ -1,33 +1,32 @@
 import React, { Component } from "react";
 import {
   View,
-  TouchableOpacity,
   Picker,
   StyleSheet, Text
 } from "react-native";
 
-const PICKER_HEIGHT = 25;
-
+// Creates and renders ingredient picker on Android
 export default class IngredientPickerAndroid extends Component {
   state = {
-    width: 0
+    width: 0 // Width of picker
   };
 
   itemsArr = this.props.itemsArr;
-  pickerItems = this.itemsArr.map(item => (
-    <Picker.Item label={item} value={item} key={item} />
-  ));
+  pickerItems = this.itemsArr.map((item) => <Picker.Item label={item} value={item} key={item} />);
 
+  // Sets picker width according to longest picker item
   componentWillMount() {
-    this.setState({ width: Math.max(...this.props.itemsArr.map((item) => item.length)) * 12.5});
+    this.setState({ width: Math.max(...this.props.itemsArr.map((item) => item.length)) * 12.5 });
   }
 
+  // Sets picker item to first option if the current value does not exist (i.e. is "Please select")
   componentDidMount() {
     if (!this.itemsArr.includes(this.props.item)) {
       this.props.changeItem(this.props.category, this.itemsArr[0]);
     }
   }
 
+  // Renders picker
   render() {
     return (
       <View style={styles.touchable}>
@@ -48,17 +47,13 @@ export default class IngredientPickerAndroid extends Component {
   }
 }
 
+// Styles for picker
 const styles = StyleSheet.create({
   pickerItems: {
     fontSize: 20,
     margin: 0,
     fontFamily: "open-sans",
     textAlign: "center"
-  },
-  container: {
-    height: 100 - PICKER_HEIGHT + "%",
-    backgroundColor: "transparent",
-    opacity: 0,
   },
   picker: {
     marginLeft: "auto"

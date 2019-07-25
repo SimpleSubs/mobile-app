@@ -8,8 +8,10 @@ import {
   Platform,
   TouchableOpacity
 } from "react-native";
-import {Ionicons} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import Colors from "../constants/Colors";
 
+// Returns plain text or text input, depending on if value is editable or not
 const TextOrInput = ({ mutable, value, protect, openModal, updateUserData, keyboardType }) => (
   protect ?
     <ProtectedTextInput value={value} openModal={openModal} /> :
@@ -24,6 +26,7 @@ const TextOrInput = ({ mutable, value, protect, openModal, updateUserData, keybo
       <Text style={styles.text}>{value}</Text>
 );
 
+// Text input that contains a password
 const ProtectedTextInput = ({ value, openModal }) => (
   <View style={styles.passwordView}>
     <TextInput
@@ -39,11 +42,12 @@ const ProtectedTextInput = ({ value, openModal }) => (
   </View>
 );
 
+// Creates and renders settings item
 export default class SettingsItem extends React.Component {
   render() {
-    const screenWidth = Dimensions.get("window").width;
+    const { width } = Dimensions.get("window");
     return (
-      <View style={[styles.container, { width: screenWidth }]}>
+      <View style={[styles.container, { width: width }]}>
         <Text style={styles.title}>{this.props.title}</Text>
         <TextOrInput
           mutable={this.props.mutable}
@@ -80,7 +84,7 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   textInput: {
-    backgroundColor: "#e1e1e1",
+    backgroundColor: Colors.containerBackground,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,

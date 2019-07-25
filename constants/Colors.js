@@ -1,15 +1,11 @@
-const tintColor = '#2f95dc';
-
+// Includes app primary colors
 export default {
-  tintColor,
-  tabIconDefault: '#ccc',
-  tabIconSelected: tintColor,
-  tabBar: '#fefefe',
-  errorBackground: 'red',
-  errorText: '#fff',
-  warningBackground: '#EAEB5E',
-  warningText: '#666804',
-  noticeBackground: tintColor,
-  noticeText: '#fff',
-  accentColor: "#ffd541"
+  accentColor: "#ffd541",
+  infoColor: "#4ca84a",
+  errorColor: "#ff414c",
+  containerBackground: "#f0f0f0",
+  settingsBorder: "#cfcfcf",
+  linkText: "#0076ff",
+  pickerBackground: "#bfbfbf",
+  secondaryText: "#7c7c7c"
 };

@@ -3,83 +3,82 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  Dimensions,
   View,
   TouchableOpacity,
   KeyboardAvoidingView,
   Modal,
   ActivityIndicator,
   FlatList,
-  TouchableWithoutFeedback
 } from "react-native";
 import * as firebase from "firebase";
-import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
+import Colors from "../../constants/Colors";
 
-const ACCENT_COLOR = "#ffd541";
-
+// Creates and renders modal that allows user to change their password
 export default class ChangePasswordModal extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      originalPassword: null,
-      newPassword: null,
-      verifyPassword: null,
-      loading: false,
-      errorMessage: null,
-      infoMessage: null
-    };
-    this.submit = this.submit.bind(this);
-  }
+  // Page re-renders when state changes
+  state = {
+    originalPassword: null,
+    newPassword: null,
+    verifyPassword: null,
+    loading: false,
+    errorMessage: null,
+    infoMessage: null
+  };
 
-
-  submit() {
+  // Submits new password to Firebase
+  submit = () => {
     if (!this.verify()) {
       return false;
     }
-    this.setState({errorMessage: null, infoMessage: null, loading: true});
+    this.setState({ errorMessage: null, infoMessage: null, loading: true });
     const user = firebase.auth().currentUser;
     const credential = firebase.auth.EmailAuthProvider.credential(
       user.email,
       this.state.originalPassword
     );
+    // Re-authenticates user so that password can be changed
     user.reauthenticateAndRetrieveDataWithCredential(credential)
       .then(() => {
+        // Updates password after user is authenticated
         user.updatePassword(this.state.newPassword)
           .then(() => {
-            this.setState({loading: false});
+            this.setState({ loading: false });
             this.props.setMessage("Successfully updated password");
             this.props.changeModalState(false);
           })
           .catch((error) => {
-            this.setState({loading: false, errorMessage: error.message});
+            this.setState({ loading: false, errorMessage: error.message });
           });
       })
       .catch((error) => {
-        this.setState({loading: false, errorMessage: error.message});
+        this.setState({ loading: false, errorMessage: error.message });
       });
-  }
+  };
 
+  // Verifies password input by user
   verify() {
     if (!this.state.originalPassword) {
-      this.setState({errorMessage: "Please enter your password"});
+      this.setState({ errorMessage: "Please enter your password" });
       return false;
     }
     if (!this.state.newPassword) {
-      this.setState({errorMessage: "Please specify a password"});
+      this.setState({ errorMessage: "Please specify a password" });
       return false;
     }
     if (this.state.newPassword !== this.state.verifyPassword) {
-      this.setState({errorMessage: "Your new and verified password must match"});
+      this.setState({ errorMessage: "Your new and verified password must match" });
       return false;
     }
     return true;
   }
 
+  // Renders modal
   render() {
     let loadingStyle = {
       backgroundColor: "transparent",
       paddingBottom: 10
     };
+    // Collapses loading container if page is not loading
     if (!this.state.loading) {
       loadingStyle.height = 0;
       loadingStyle.paddingBottom = 0;
@@ -102,7 +101,7 @@ export default class ChangePasswordModal extends React.Component {
                   <Text style={styles.title}>Change Password</Text>
                   <ActivityIndicator size={"large"} style={loadingStyle} animating={this.state.loading} />
                   {this.state.infoMessage &&
-                  <Text style={[styles.errorMessage, {color: "#66ff64"}]}>
+                  <Text style={[styles.errorMessage, { color: Colors.infoColor }]}>
                     {this.state.infoMessage}
                   </Text>}
                   {this.state.errorMessage &&
@@ -148,6 +147,7 @@ export default class ChangePasswordModal extends React.Component {
   }
 }
 
+// Styles for modal
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     flex: 3
   },
   textInput: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: Colors.containerBackground,
     padding: 10,
     borderRadius: 5,
     fontFamily: "open-sans",
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     padding: 10
   },
   doneButton: {
-    backgroundColor: ACCENT_COLOR,
+    backgroundColor: Colors.accentColor,
     width: 85,
     height: 50,
     borderRadius: 10,
@@ -231,6 +231,6 @@ const styles = StyleSheet.create({
     fontFamily: "open-sans",
     textAlign: "center",
     fontSize: 16,
-    color: "#ff414c"
+    color: Colors.errorColor
   }
 });

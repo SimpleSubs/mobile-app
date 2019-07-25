@@ -7,6 +7,7 @@ const ModalContext = createContext({
   hideModal: () => {}
 });
 
+// Creates and renders provider that allows multiple modals to be rendered on one page
 export class ModalProvider extends Component {
   showModal = (component, props = {}) => {
     this.setState({

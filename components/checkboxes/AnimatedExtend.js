@@ -7,17 +7,17 @@ import {
   Easing
 } from "react-native";
 
+// Creates and renders dropdown extension used with checkboxes in order screen
 export default class AnimatedExtend extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      closed: true,
-      minHeight: 67.5,
-      maxHeight: 0,
-      expandValue: new Animated.Value(0)
-    };
-  }
+  // Page re-renders when state changes
+  state = {
+    closed: true,
+    minHeight: 67.5,
+    maxHeight: 0,
+    expandValue: new Animated.Value(0)
+  };
 
+  // Animates expansion of dropdown menu
   expand() {
     let initialValue = this.props.closed ? 0 : 1;
     let finalValue = this.props.closed ? 1 : 0;
@@ -32,14 +32,17 @@ export default class AnimatedExtend extends React.Component {
     ).start();
   }
 
+  // Sets maximum height of dropdown based on view height
   _setMaxHeight(event) {
-    this.setState({maxHeight: event.nativeEvent.layout.height});
+    this.setState({ maxHeight: event.nativeEvent.layout.height });
   }
 
+  // Sets minimum height of dropdown based on touchable height
   _setMinHeight(event) {
     this.setState({minHeight: event.nativeEvent.layout.height});
   }
 
+  // Renders dropdown
   render() {
     const expand = this.state.expandValue.interpolate({
       inputRange: [0, 1],
@@ -65,13 +68,14 @@ export default class AnimatedExtend extends React.Component {
   }
 }
 
+// Styles for dropdown
 const styles = StyleSheet.create({
   container: {
     alignContent: "center",
     overflow: "hidden"
   },
   touchable: {
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     padding: 20,
   },
   touchableTitleText: {

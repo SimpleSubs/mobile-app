@@ -3,17 +3,18 @@ import {
   Dimensions,
   StyleSheet,
   Text,
-  View,
-  Platform
+  View
 } from "react-native";
 
+// Creates and renders header
 export default class Header extends React.Component {
+  // Renders header
   render() {
-    const screenWidth = Dimensions.get("window").width;
-    let height = this.props.bigButton ? 30 : 0;
+    const { width } = Dimensions.get("window");
+    let margin = this.props.bigButton ? 30 : 0; // Adjusts margin if "big button" (place order button) is present
     return (
-      <View style={[styles.header, { width: screenWidth, paddingBottom: screenWidth * 0.05 }]}>
-        <Text style={[styles.title, { marginBottom: height }]}>{this.props.title}</Text>
+      <View style={[styles.header, { width: width, paddingBottom: width * 0.05 }]}>
+        <Text style={[styles.title, { marginBottom: margin }]}>{this.props.title}</Text>
         {this.props.buttons}
       </View>
     );
