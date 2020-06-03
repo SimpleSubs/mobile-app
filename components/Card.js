@@ -6,6 +6,9 @@ import {
 } from "react-native";
 import AnimatedTouchable from "./AnimatedTouchable";
 
+import Layout from "../constants/Layout";
+import Colors from "../constants/Colors";
+
 const Card = ({ title, date, ingredients, onPress }) => (
   <AnimatedTouchable onPress={onPress}>
     <View style={styles.cardContainer}>
@@ -21,28 +24,27 @@ export default Card;
 const styles = StyleSheet.create({
   cardContainer: {
     borderRadius: 5,
-    backgroundColor: "#fff",
+    backgroundColor: Colors.backgroundColor,
     padding: 15,
     margin: 10,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 0
-    },
     shadowOpacity: 0.05,
     shadowRadius: 5
   },
   title: {
     fontFamily: "josefin-sans-bold",
-    fontSize: 16,
-    marginBottom: 5
+    fontSize: Layout.fonts.title,
+    marginBottom: 5,
+    color: Colors.primaryText
   },
   date: {
     fontFamily: "josefin-sans-bold",
-    fontSize: 14
+    fontSize: Layout.fonts.body,
+    color: Colors.primaryText
   },
   ingredients: {
     fontFamily: "josefin-sans",
-    fontSize: 14
+    fontSize: Layout.fonts.body,
+    color: Colors.primaryText
   }
 });

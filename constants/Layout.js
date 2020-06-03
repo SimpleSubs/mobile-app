@@ -12,6 +12,14 @@ const Layout = {
   placeOrderButton: {
     height: 65.0,
     horizontalPadding: 110.0
+  },
+  fonts: {
+    icon: 34,
+    header: 24,
+    title: 20,
+    body: 18,
+    mainTitle: 30,
+    tiny: 12
   }
 };
 

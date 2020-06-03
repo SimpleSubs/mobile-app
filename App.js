@@ -1,15 +1,24 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Platform, StatusBar, StyleSheet, View } from "react-native";
+import {
+  Platform,
+  StatusBar,
+  StyleSheet,
+  View
+} from "react-native";
 import { SplashScreen } from "expo";
 import * as Font from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
+import InfoModal from "./components/modals/InfoModal";
 
 import useLinking from "./navigation/useLinking";
 import StackNavigator from "./navigation/StackNavigator";
 
+import Colors from "./constants/Colors";
+
 export default function App(props) {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
   const [initialNavigationState, setInitialNavigationState] = useState();
+  const [infoMessage, setInfoMessage] = useState("hello");
   const containerRef = useRef();
   const { getInitialState } = useLinking(containerRef);
 
@@ -45,8 +54,9 @@ export default function App(props) {
   } else {
     return (
       <View style={styles.container}>
-        {Platform.OS === "ios" && <StatusBar barStyle="default" />}
+        {Platform.OS === "ios" && <StatusBar barStyle={Colors.statusBar} />}
         <StackNavigator containerRef={containerRef} initialState={initialNavigationState} />
+        <InfoModal setInfoMessage={setInfoMessage} message={infoMessage} />
       </View>
     );
   }

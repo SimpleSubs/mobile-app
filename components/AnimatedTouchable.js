@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 import {
   TouchableOpacity,
   Animated
 } from "react-native";
-
-const DURATION = 90;
 
 const getScaleTransformationStyle = (animated, endSize, transform = []) => {
   const interpolation = animated.interpolate({
@@ -20,24 +18,24 @@ const getScaleTransformationStyle = (animated, endSize, transform = []) => {
 
 const pressInAnimation = (animated) => {
   animated.setValue(0);
-  Animated.timing(animated, {
+  Animated.spring(animated, {
     toValue: 1,
-    duration: DURATION,
+    tension: 100,
     useNativeDriver: true,
   }).start();
 };
 
 const pressOutAnimation = (animated) => {
   animated.setValue(1);
-  Animated.timing(animated, {
+  Animated.spring(animated, {
     toValue: 0,
-    duration: DURATION,
+    tension: 100,
     useNativeDriver: true,
   }).start();
 };
 
 const AnimatedTouchable = ({ children, style = {}, endOpacity = 0.8, endSize = 0.95, onPress }) => {
-  const animated = new Animated.Value(0);
+  const animated = useRef(new Animated.Value(0)).current;
   return (
     <TouchableOpacity
       onPress={onPress}

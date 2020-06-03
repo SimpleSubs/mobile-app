@@ -3,7 +3,8 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList
+  FlatList,
+  Appearance
 } from "react-native";
 import { useSafeArea } from "react-native-safe-area-context";
 import AnimatedTouchable from "../components/AnimatedTouchable";
@@ -32,11 +33,11 @@ const HomeScreen = ({ navigation }) => {
     <View style={[styles.container, { paddingTop: inset.top }]}>
       <View style={styles.header}>
         <AnimatedTouchable style={styles.logOutButton} endSize={0.8} onPress={LOGOUT}>
-          <Ionicons name={"md-log-out"} color={Colors.primaryText} size={34} />
+          <Ionicons name={"md-log-out"} color={Colors.primaryText} size={Layout.fonts.icon} />
         </AnimatedTouchable>
         <Text style={styles.headerText}>Home</Text>
         <AnimatedTouchable style={styles.settingsButton} endSize={0.8} onPress={SETTINGS}>
-          <Ionicons name={"md-settings"} color={Colors.primaryText} size={34} />
+          <Ionicons name={"md-settings"} color={Colors.primaryText} size={Layout.fonts.icon} />
         </AnimatedTouchable>
         <AnimatedTouchable style={styles.placeOrderButton} endOpacity={1} onPress={NEW_ORDER}>
           <Text style={styles.placeOrderButtonText}>Place an order</Text>
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 1,
-    zIndex: 1000000,
+    zIndex: 100,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -79,8 +80,9 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontFamily: "josefin-sans-bold",
-    fontSize: 24,
-    textAlign: "center"
+    fontSize: Layout.fonts.header,
+    textAlign: "center",
+    color: Colors.primaryText
   },
   placeOrderButton: {
     backgroundColor: Colors.accentColor,
@@ -103,7 +105,7 @@ const styles = StyleSheet.create({
   placeOrderButtonText: {
     color: Colors.textOnBackground,
     fontFamily: "josefin-sans-bold",
-    fontSize: 20,
+    fontSize: Layout.fonts.title,
     textAlign: "center"
   },
   logOutButton: {

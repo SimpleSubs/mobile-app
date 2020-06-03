@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import IngredientPicker from "./IngredientPicker";
 import AnimatedDropdown from "./AnimatedDropdown";
+import Checkboxes from "./Checkboxes";
 
 import OrderInputTypes from "../../constants/OrderInputTypes";
 
@@ -20,7 +21,7 @@ const OrderField = ({ title, type, options, defaultValue }) => {
     case OrderInputTypes.CHECKBOX.title:
       return (
         <AnimatedDropdown title={title} type={type} selectedValue={selectedValue}>
-          <Text>There will be some cool checkbox stuff happening here</Text>
+          <Checkboxes selectedItems={selectedValue} itemsArr={options} setItems={setValue} />
         </AnimatedDropdown>
       );
     default:

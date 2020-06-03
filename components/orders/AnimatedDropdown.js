@@ -6,12 +6,14 @@ import {
   StyleSheet,
   Animated,
   NativeModules,
-  LayoutAnimation
+  LayoutAnimation,
+  Appearance
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import Colors from "../../constants/Colors";
 import OrderInputTypes from "../../constants/OrderInputTypes";
+import Layout from "../../constants/Layout";
 
 const { UIManager } = NativeModules;
 
@@ -47,7 +49,14 @@ const SecondaryTouchableText = ({ type, selectedValue, style }) => {
     case OrderInputTypes.PICKER.title:
       return <Text style={styles.selectedItem} numberOfLines={1}>{selectedValue}</Text>;
     case OrderInputTypes.CHECKBOX.title:
-      return <AnimatedIonicons name={"ios-arrow-down"} size={24} color={Colors.primaryText} style={[styles.dropdownArrow, style]} />;
+      return (
+        <AnimatedIonicons
+          name={"ios-arrow-down"}
+          size={Layout.fonts.title}
+          color={Colors.primaryText}
+          style={[styles.dropdownArrow, style]}
+        />
+    );
     default:
       return null
   }
@@ -94,20 +103,17 @@ const styles = StyleSheet.create({
     padding: 20
   },
   touchableText: {
-    fontSize: 20,
+    fontSize: Layout.fonts.title,
     fontFamily: "josefin-sans",
     color: Colors.primaryText,
     flex: 1
   },
   selectedItem: {
-    fontSize: 20,
+    fontSize: Layout.fonts.title,
     fontFamily: "josefin-sans",
     color: Colors.secondaryText,
     flex: 1,
     textAlign: "right"
-  },
-  body: {
-    paddingVertical: 10
   },
   dropdownArrow: {
     alignItems: "center",

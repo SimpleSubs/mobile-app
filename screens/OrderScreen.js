@@ -4,7 +4,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  FlatList
+  FlatList,
+  Appearance
 } from "react-native";
 import { useSafeArea } from "react-native-safe-area-context";
 import AnimatedTouchable from "../components/AnimatedTouchable";
@@ -46,30 +47,34 @@ const DATA = [
   }
 ];
 
+const CANCEL = ({ navigate }) => navigate("Home");
+const DONE = ({ navigate }) => navigate("Home");
+
 const CancelDoneButtons = ({ cancelOnPress, doneOnPress }) => (
   <View style={styles.cancelDoneButtonsContainer}>
     <TouchableOpacity style={styles.cancelButton} onPress={cancelOnPress}>
       {Layout.isSmallDevice ?
-        <Ionicons name={"md-close"} color={Colors.secondaryText} size={40} /> :
+        <Ionicons name={"md-close"} color={Colors.secondaryText} size={Layout.fonts.icon} /> :
         <Text style={styles.cancelButtonText}>Cancel</Text>}
     </TouchableOpacity>
     <AnimatedTouchable style={styles.doneButton} endSize={0.9} onPress={doneOnPress}>
       {Layout.isSmallDevice ?
-        <Ionicons name={"md-checkmark"} color={Colors.secondaryText} size={40} /> :
+        <Ionicons name={"md-checkmark"} color={Colors.secondaryText} size={Layout.fonts.icon} /> :
         <Text style={styles.doneButtonText}>Done</Text>}
     </AnimatedTouchable>
   </View>
 );
 
-const OrderScreen = () => {
+const OrderScreen = ({ navigation }) => {
   const inset = useSafeArea();
   return (
     <View style={[styles.container, { paddingTop: inset.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Order</Text>
-        <CancelDoneButtons />
+        <CancelDoneButtons cancelOnPress={() => CANCEL(navigation)} doneOnPress={() => DONE(navigation)} />
       </View>
       <FlatList
+        contentContainerStyle={{ paddingBottom: inset.bottom }}
         data={DATA}
         renderItem={({ item }) => <OrderField {...item} />}
       />
@@ -94,15 +99,16 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 1,
-    zIndex: 1000000,
+    zIndex: 100,
     justifyContent: "space-between",
     flexDirection: "row",
     alignItems: "center"
   },
   headerText: {
     fontFamily: "josefin-sans-bold",
-    fontSize: 24,
-    textAlign: "left"
+    fontSize: Layout.fonts.header,
+    textAlign: "left",
+    color: Colors.primaryText
   },
   cancelButton: {
     paddingHorizontal: 20,
@@ -112,7 +118,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontFamily: "josefin-sans",
-    fontSize: 20,
+    fontSize: Layout.fonts.title,
     textAlign: "center",
     color: Colors.secondaryText
   },
@@ -126,7 +132,7 @@ const styles = StyleSheet.create({
   },
   doneButtonText: {
     fontFamily: "josefin-sans-bold",
-    fontSize: 20,
+    fontSize: Layout.fonts.title,
     textAlign: "center",
     color: Colors.textOnBackground
   },
