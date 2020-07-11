@@ -11,17 +11,15 @@ import AnimatedTouchable from "../components/AnimatedTouchable";
 import SettingsItem from "../components/SettingsItem";
 import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import InputModal from "../components/modals/InputModal";
+import SettingsList from "../components/SettingsList";
 
 import Colors from "../constants/Colors";
 import Layout from "../constants/Layout";
-import UserFields from "../constants/UserFields";
 
-const DATA = {
-  email: "emily@sturman.org",
-  name: "Emily Sturman",
-  pin: "1234",
-  password: "asdfghjkl"
-}
+import { editUserData, openModal, setModalProps, closeModal } from "../redux/Actions";
+import { connect } from "react-redux";
+import inputModalProps from "../components/modals/InputModal";
+import InputTypes from "../constants/InputTypes";
 
 const ChangePasswordModal = ({ open, toggleModal }) => {
   const [email, setEmail] = useState("");
@@ -40,19 +38,12 @@ const ChangePasswordModal = ({ open, toggleModal }) => {
   )
 };
 
-const SettingsScreen = () => {
-  const [inputs, setInputs] = useState(DATA);
-  const [open, toggleModal] = useState(false);
+const SettingsScreen = ({ navigation }) => {
   const inset = useSafeArea();
-
-  const setState = (newState) => {
-    setInputs((prevState) => ({ ...prevState, ...newState }));
-  }
-
   return (
     <View style={[styles.container, { paddingTop: inset.top }]}>
       <View style={styles.header}>
-        <AnimatedTouchable style={styles.button} endSize={0.8}>
+        <AnimatedTouchable style={styles.button} endSize={0.8} onPress={() => navigation.navigate("Home")}>
           <Ionicons name={"ios-arrow-back"} color={Colors.primaryText} size={Layout.fonts.icon} />
         </AnimatedTouchable>
         <Text style={styles.headerText}>Settings</Text>
@@ -63,21 +54,7 @@ const SettingsScreen = () => {
           size={Layout.fonts.icon}
         />
       </View>
-      <KeyboardAwareFlatList
-        data={UserFields}
-        style={styles.flatList}
-        contentContainerStyle={styles.contentContainer}
-        alwaysBounceVertical={false}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <SettingsItem
-            {...item}
-            value={inputs[item.key] || ""}
-            onChangeText={(value) => setState({ [item.key]: value })}
-            toggleModal={toggleModal}
-          />
-        )}
-      />
+      <SettingsList />
     </View>
   )
 };

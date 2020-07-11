@@ -5,59 +5,109 @@ import {
   StyleSheet,
   TouchableOpacity
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeArea } from "react-native-safe-area-context";
 
 import AnimatedTouchable from "../components/AnimatedTouchable";
 import InputsList from "../components/InputsList";
 
 import Layout from "../constants/Layout";
 import Colors from "../constants/Colors";
-import { RegisterUserFields } from "../constants/UserFields";
+import InputTypes from "../constants/InputTypes";
 
-const RegisterScreen = ({ navigation }) => {
+import { createUser } from "../redux/Actions";
+import { connect } from "react-redux";
+
+const RegisterScreen = ({ registerUserFields, inputPresets, createUser, navigation }) => {
   const [inputs, setInputs] = useState({});
-  const submit = () => {
-    navigation.navigate("Home");
-  }
+  const inset = useSafeArea();
+
+  const createUserState = () => {
+    let data = { ...inputs };
+    if (data.confirmPassword) { delete data.confirmPassword; }
+    createUser(data);
+  };
+
+  const RegisterButton = ({ onPress }) => (
+    <AnimatedTouchable style={styles.registerButton} onPress={onPress}>
+      <Text style={styles.registerButtonText}>Register</Text>
+    </AnimatedTouchable>
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.spacer} />
-      <InputsList
-        ListHeaderComponent={(
-          <View style={styles.header}>
-            <Text style={styles.title}>Create an account</Text>
-          </View>
-        )}
-        ListFooterComponent={(
-          <TouchableOpacity style={styles.linkTouchable} onPress={() => navigation.navigate("Login")} activeOpacity={0.5}>
-            <Text style={styles.linkTouchableText}>Already have an account? Click here to log in.</Text>
-          </TouchableOpacity>
-        )}
-        data={RegisterUserFields}
-        state={inputs}
-        setInputs={setInputs}
-        onSubmit={submit}
-      />
-      <AnimatedTouchable style={styles.registerButton} onPress={submit}>
-        <Text style={styles.registerButtonText}>Register</Text>
-      </AnimatedTouchable>
-    </SafeAreaView>
-  )
+    <InputsList
+      style={styles.container}
+      contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
+      ListHeaderComponent={() => (
+        <View style={styles.header}>
+          <Text style={styles.title}>Create an account</Text>
+        </View>
+      )}
+      ListFooterComponent={() => (
+        <TouchableOpacity
+          style={styles.linkTouchable}
+          onPress={() => navigation.navigate("Login")}
+          activeOpacity={0.5}
+        >
+          <Text style={styles.linkTouchableText}>Already have an account? Click here to log in.</Text>
+        </TouchableOpacity>
+      )}
+      SubmitButton={RegisterButton}
+      inputPresets={inputPresets}
+      data={registerUserFields}
+      state={inputs}
+      setInputs={setInputs}
+      onSubmit={createUserState}
+    />
+  );
 };
 
-export default RegisterScreen;
+const getRegisterUserFields = (userFields) => {
+  const passwordIndex = userFields.findIndex(({ textType }) => textType === "password");
+  let registerUserFields = [...userFields];
+  if (passwordIndex !== -1) {
+    registerUserFields.splice(
+      passwordIndex,
+      1,
+      {
+        key: "password",
+        title: "Password",
+        placeholder: "Password",
+        mutable: false,
+        inputType: InputTypes.textInput,
+        textType: "newPassword"
+      },
+      {
+        key: "confirmPassword",
+        title: "Confirm password",
+        placeholder: "Confirm password",
+        mutable: false,
+        inputType: InputTypes.textInput,
+        textType: "confirmPassword"
+      }
+    )
+  }
+  return registerUserFields;
+};
+
+const mapStateToProps = ({ stateConstants }) => ({
+  registerUserFields: getRegisterUserFields(stateConstants.userFields),
+  inputPresets: stateConstants.inputPresets
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  createUser: (data) => dispatch(createUser(data))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(RegisterScreen);
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.backgroundColor,
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "space-between"
+    flex: 1
   },
   header: {
     alignItems: "center",
-    marginBottom: 30
+    marginVertical: 30
   },
   title: {
     fontFamily: "josefin-sans-bold",
@@ -70,9 +120,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     backgroundColor: Colors.accentColor,
     padding: 20,
-    width: Layout.window.width - 100,
-    marginBottom: 20,
-    marginTop: 50
+    marginVertical: 20
   },
   registerButtonText: {
     color: Colors.textOnBackground,
@@ -81,19 +129,12 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   linkTouchable: {
-    marginVertical: 20,
-    width: "100%"
+    marginVertical: 20
   },
   linkTouchableText: {
     color: Colors.linkText,
     fontSize: Layout.fonts.body,
     fontFamily: "josefin-sans",
     textAlign: "center"
-  },
-  inputContainer: {
-    margin: 5
-  },
-  spacer: {
-    flex: 1
   }
 });

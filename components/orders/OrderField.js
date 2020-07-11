@@ -1,27 +1,22 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text
-} from "react-native";
 import IngredientPicker from "./IngredientPicker";
 import AnimatedDropdown from "./AnimatedDropdown";
 import Checkboxes from "./Checkboxes";
 
-import OrderInputTypes from "../../constants/OrderInputTypes";
+import InputTypes from "../../constants/InputTypes";
 
-const OrderField = ({ title, type, options, defaultValue }) => {
-  const [selectedValue, setValue] = useState(defaultValue || OrderInputTypes[type].defaultValue);
+const OrderField = ({ title, type, options, value, setValue }) => {
   switch (type) {
-    case OrderInputTypes.PICKER.title:
+    case InputTypes.picker:
       return (
-        <AnimatedDropdown title={title} type={type} selectedValue={selectedValue}>
-          <IngredientPicker options={options} selectedValue={selectedValue} changeValue={setValue} />
+        <AnimatedDropdown title={title} type={type} selectedValue={value}>
+          <IngredientPicker options={options} selectedValue={value} changeValue={setValue} />
         </AnimatedDropdown>
       );
-    case OrderInputTypes.CHECKBOX.title:
+    case InputTypes.checkbox:
       return (
-        <AnimatedDropdown title={title} type={type} selectedValue={selectedValue}>
-          <Checkboxes selectedItems={selectedValue} itemsArr={options} setItems={setValue} />
+        <AnimatedDropdown title={title} type={type} selectedValue={value}>
+          <Checkboxes selectedItems={value} itemsArr={options} setItems={setValue} />
         </AnimatedDropdown>
       );
     default:

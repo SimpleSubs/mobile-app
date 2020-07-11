@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,79 +6,100 @@ import {
   Image,
   TouchableOpacity
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeArea } from "react-native-safe-area-context";
 
 import AnimatedTouchable from "../components/AnimatedTouchable";
-import InputModal from "../components/modals/InputModal";
+import inputModalProps from "../components/modals/InputModal";
 import InputsList from "../components/InputsList";
 
-import { LoginUserFields } from "../constants/UserFields";
 import Layout from "../constants/Layout";
 import Colors from "../constants/Colors";
+import InputTypes from "../constants/InputTypes";
 
-const ForgotPasswordModal = ({ open, toggleModal }) => {
-  const [email, setEmail] = useState("");
+import { logIn, openModal, closeModal, setModalProps } from "../redux/Actions";
+import { connect } from "react-redux";
+
+const LoginScreen = ({ logIn, user, loginUserFields, inputPresets, openModal, closeModal, setModalProps, navigation }) => {
+  const inset = useSafeArea();
+  const [inputs, setInputs] = useState({ email: "", password: "" });
+
+  const logInState = () => {
+    logIn(inputs.email, inputs.password);
+  };
+
+  const resetPassword = ({ email }) => {
+    closeModal();
+  };
+
+  const openForgotPasswordModal = () => openModal(inputModalProps(
+    "Reset password",
+    [{ key: "email", inputType: InputTypes.textInput, textType: "email", placeholder: "Your email address" }],
+    { title: "Send email" },
+    resetPassword,
+    setModalProps
+  ));
+
+  const LoginButton = ({ onPress }) => (
+    <AnimatedTouchable style={styles.loginButton} onPress={onPress}>
+      <Text style={styles.loginButtonText}>Login</Text>
+    </AnimatedTouchable>
+  );
+
   return (
-    <InputModal
-      open={open}
-      toggleModal={toggleModal}
-      title={"Reset password"}
-      inputData={[{ value: email, placeholder: "Your email address", onChangeText: (text) => setEmail(text) }]}
-      buttonData={{ onPress: () => toggleModal(!open), title: "Send email" }}
+    <InputsList
+      ListHeaderComponent={() => (
+        <View style={styles.header}>
+          <Image source={require("../assets/images/robot-dev.png")}/>
+          <Text style={styles.title}>SimpleSubs</Text>
+          <Text style={styles.text}>An app for sandwich ordering at Lick-Wilmerding High School</Text>
+          <Text style={styles.text}>Built by Emily Sturman</Text>
+        </View>
+      )}
+      ListFooterComponent={() => (
+        <View style={styles.otherTouchables}>
+          <TouchableOpacity style={styles.linkTouchable} onPress={openForgotPasswordModal} activeOpacity={0.5}>
+            <Text style={styles.linkTouchableText}>I forgot my password!</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.linkTouchable}
+            onPress={() => navigation.navigate("Register")}
+            activeOpacity={0.5}
+          >
+            <Text style={styles.linkTouchableText}>Don't have an account? Click here to create one.</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      data={loginUserFields}
+      inputPresets={inputPresets}
+      state={inputs}
+      setInputs={setInputs}
+      SubmitButton={LoginButton}
+      onSubmit={logInState}
+      contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
+      style={styles.container}
     />
   )
 };
 
-const LoginScreen = ({ navigation }) => {
-  const [open, toggleModal] = useState(false);
-  const [inputs, setInputs] = useState({});
+const mapStateToProps = ({ user, stateConstants }) => ({
+  user,
+  loginUserFields: stateConstants.userFields.filter(({ key }) => key === "email" || key === "password"),
+  inputPresets: stateConstants.inputPresets
+});
 
-  const login = () => {
-    navigation.navigate("Home");
-  }
+const mapDispatchToProps = (dispatch) => ({
+  logIn: (email, password) => dispatch(logIn(email, password)),
+  openModal: (props) => dispatch(openModal(props)),
+  closeModal: () => dispatch(closeModal()),
+  setModalProps: (props) => dispatch(setModalProps(props))
+})
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <InputsList
-        ListHeaderComponent={(
-          <View style={styles.header}>
-            <Image source={require("../assets/images/robot-dev.png")}/>
-            <Text style={styles.title}>SimpleSubs</Text>
-            <Text style={styles.text}>An app for sandwich ordering at Lick-Wilmerding High School</Text>
-            <Text style={styles.text}>Built by Emily Sturman</Text>
-          </View>
-        )}
-        ListFooterComponent={(
-          <View style={styles.otherTouchables}>
-            <TouchableOpacity style={styles.linkTouchable} onPress={() => toggleModal(!open)} activeOpacity={0.5}>
-              <Text style={styles.linkTouchableText}>I forgot my password!</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.linkTouchable} onPress={() => navigation.navigate("Register")} activeOpacity={0.5}>
-              <Text style={styles.linkTouchableText}>Don't have an account? Click here to create one.</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        data={LoginUserFields}
-        state={inputs}
-        setInputs={setInputs}
-        onSubmit={login}
-      />
-      <AnimatedTouchable style={styles.loginButton} onPress={login}>
-        <Text style={styles.loginButtonText}>Login</Text>
-      </AnimatedTouchable>
-      <ForgotPasswordModal open={open} toggleModal={toggleModal} />
-    </SafeAreaView>
-  )
-};
-
-export default LoginScreen;
+export default connect(mapStateToProps, mapDispatchToProps)(LoginScreen);
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.backgroundColor,
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "space-between"
+    flex: 1
   },
   header: {
     alignItems: "center",
@@ -96,7 +117,6 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     backgroundColor: Colors.accentColor,
     padding: 20,
-    width: Layout.window.width - 100,
     marginBottom: 20,
     marginTop: 50
   },
@@ -125,6 +145,7 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   otherTouchables: {
-    marginTop: 20
+    marginTop: 20,
+    alignItems: "center"
   }
 });

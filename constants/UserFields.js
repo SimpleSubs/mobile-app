@@ -48,8 +48,6 @@ export const TYPE_MAPS = {
   },
   pin: {
     inputType: INPUT_TYPES.TEXT_INPUT,
-    autoCompleteType: "password",
-    textContentType: "password",
     autoCorrect: false,
     keyboardType: "numeric",
     maxLength: 4,

@@ -6,13 +6,12 @@ import {
   StyleSheet,
   Animated,
   NativeModules,
-  LayoutAnimation,
-  Appearance
+  LayoutAnimation
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import Colors from "../../constants/Colors";
-import OrderInputTypes from "../../constants/OrderInputTypes";
+import InputTypes from "../../constants/InputTypes";
 import Layout from "../../constants/Layout";
 
 const { UIManager } = NativeModules;
@@ -46,9 +45,9 @@ const toggleAnimation = (expanded, changeExpanded, minHeight, maxHeight, setHeig
 
 const SecondaryTouchableText = ({ type, selectedValue, style }) => {
   switch (type) {
-    case OrderInputTypes.PICKER.title:
+    case InputTypes.picker:
       return <Text style={styles.selectedItem} numberOfLines={1}>{selectedValue}</Text>;
-    case OrderInputTypes.CHECKBOX.title:
+    case InputTypes.checkbox:
       return (
         <AnimatedIonicons
           name={"ios-arrow-down"}

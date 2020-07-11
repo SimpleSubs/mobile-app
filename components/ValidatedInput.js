@@ -9,6 +9,8 @@ import {
 import Layout from "../constants/Layout";
 import Colors from "../constants/Colors";
 
+export const NO_ERROR = "   ";
+
 const isValid = (validateFunc, value, required, setError, fixValue, otherInputs = []) => {
   let fixedValue = fixValue(value);
   if (fixedValue.length === 0) {
@@ -17,10 +19,10 @@ const isValid = (validateFunc, value, required, setError, fixValue, otherInputs 
   }
   let valid = validateFunc(fixedValue, ...otherInputs)
   setError(valid)
-  return valid.length === 0;
+  return valid === NO_ERROR;
 }
 
-const getTransformationStyle = (animated) => ({ transform: [{ scaleY: animated }]});
+const getTransformationStyle = (animated) => ({ opacity: animated });
 
 const textAnimation = (errorMessage, animated) => {
   animated.setValue(errorMessage.length === 0 ? 1 : 0);
@@ -31,18 +33,19 @@ const textAnimation = (errorMessage, animated) => {
   }).start();
 }
 
-const ValidatedInput = ({ setRef, validate, value, required, otherInputs, style = {}, errorTextStyle = {}, contentContainerStyle, fixValue, ...props }) => {
-  const [errorMessage, setError] = useState("");
+const ValidatedInput = ({ setRef, validate, value, required, otherInputs = [], style = {}, errorTextStyle = {}, contentContainerStyle = {}, fixValue, ...props }) => {
+  const [errorMessage, setError] = useState(NO_ERROR);
   const animated = useRef(new Animated.Value(0)).current;
   useEffect(() => textAnimation(errorMessage, animated), [errorMessage]);
 
   return (
     <View style={contentContainerStyle}>
       <TextInput
+        {...props}
+        value={value}
         ref={setRef}
         onEndEditing={() => isValid(validate, value, required, setError, fixValue, otherInputs)}
         style={[styles.textInput, style]}
-        {...props}
       />
       <Animated.Text
         style={[styles.errorText, errorTextStyle, getTransformationStyle(animated)]}
@@ -73,4 +76,4 @@ const styles = StyleSheet.create({
     fontFamily: "josefin-sans",
     fontSize: Layout.fonts.tiny
   },
-})
+});

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
+  TouchableOpacity,
   Appearance
 } from "react-native";
 import { useSafeArea } from "react-native-safe-area-context";
@@ -14,39 +15,41 @@ import Card from "../components/Card";
 import Layout from "../constants/Layout";
 import Colors from "../constants/Colors";
 
-const DATA = [
-  { title: "Reuben", date: "Saturday", ingredients: "something, something, something, something, something, something" },
-  { date: "Saturday", ingredients: "something, something, something, something, something, something, something, something" },
-  { title: "Reuben", date: "Saturday", ingredients: "something, something, something, something" },
-  { title: "Reuben", date: "Saturday", ingredients: "something, something, something, something" },
-  { title: "Reuben", date: "Saturday", ingredients: "something, something, something, something" },
-  { title: "Reuben", date: "Saturday", ingredients: "something, something, something, something" }
-];
+import { deleteOrder, focusOrder, logOut } from "../redux/Actions";
+import { connect } from "react-redux";
 
-const HomeScreen = ({ navigation }) => {
-  const LOGOUT = () => navigation.navigate("Login");
-  const SETTINGS = () => navigation.navigate("Settings");
-  const NEW_ORDER = () => navigation.navigate("Order");
-  const EDIT_ORDER = () => navigation.navigate("Order");
+export const NEW_ORDER = "NEW_ORDER";
+
+const HomeScreen = ({ orders, user, focusedOrder, logOut, focusOrder, deleteOrder, navigation }) => {
   const inset = useSafeArea();
+
+  const editUser = () => navigation.navigate("Settings");
+
+  const newOrder = () => navigation.navigate("Order");
+
+  const focusOrderNavigate = (id) => {
+    focusOrder(id);
+    navigation.navigate("Order");
+  }
+
   return (
     <View style={[styles.container, { paddingTop: inset.top }]}>
       <View style={styles.header}>
-        <AnimatedTouchable style={styles.logOutButton} endSize={0.8} onPress={LOGOUT}>
+        <TouchableOpacity style={styles.logOutButton} onPress={logOut}>
           <Ionicons name={"md-log-out"} color={Colors.primaryText} size={Layout.fonts.icon} />
-        </AnimatedTouchable>
+        </TouchableOpacity>
         <Text style={styles.headerText}>Home</Text>
-        <AnimatedTouchable style={styles.settingsButton} endSize={0.8} onPress={SETTINGS}>
+        <TouchableOpacity style={styles.settingsButton} onPress={editUser}>
           <Ionicons name={"md-settings"} color={Colors.primaryText} size={Layout.fonts.icon} />
-        </AnimatedTouchable>
-        <AnimatedTouchable style={styles.placeOrderButton} endOpacity={1} onPress={NEW_ORDER}>
+        </TouchableOpacity>
+        <AnimatedTouchable style={styles.placeOrderButton} endOpacity={1} onPress={newOrder}>
           <Text style={styles.placeOrderButtonText}>Place an order</Text>
         </AnimatedTouchable>
       </View>
       <FlatList
-        data={DATA}
+        data={orders}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <Card {...item} onPress={EDIT_ORDER} />}
+        renderItem={({ item }) => <Card {...item} onPress={() => focusOrderNavigate(item.id)} />}
         contentContainerStyle={[styles.contentContainer, { paddingBottom: inset.bottom }]}
         style={styles.flatList}
       />
@@ -54,7 +57,23 @@ const HomeScreen = ({ navigation }) => {
   )
 };
 
-export default HomeScreen;
+const getOrdersArr = (orders) => (
+  Object.values(orders).sort((orderA, orderB) => orderB.date.diff(orderA.date))
+);
+
+const mapStateToProps = ({ user, focusedOrder, orders }) => ({
+  user,
+  focusedOrder,
+  orders: getOrdersArr(orders)
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  logOut: () => dispatch(logOut()),
+  focusOrder: (id) => dispatch(focusOrder(id)),
+  deleteOrder: (id) => dispatch(deleteOrder(id)),
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
 
 const styles = StyleSheet.create({
   container: {

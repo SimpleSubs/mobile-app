@@ -9,6 +9,9 @@ import {
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
 
+import { setInfoMessage } from "../../redux/Actions";
+import { connect } from "react-redux";
+
 const PADDING_HORIZONTAL = 10;
 const PADDING_VERTICAL = 40;
 const TouchableAnimated = Animated.createAnimatedComponent(TouchableOpacity);
@@ -30,25 +33,32 @@ const toggleAnimation = (open, animated) => {
   }).start();
 };
 
-const InfoModal = ({ message, setInfoMessage }) => {
+const InfoModal = ({ infoMessage, closeModal }) => {
   const animated = useRef(new Animated.Value(0)).current;
   const [modalHeight, setHeight] = useState(0);
-
-  useEffect(() => toggleAnimation(message.length > 0, animated), [message]);
+  useEffect(() => toggleAnimation(infoMessage.length > 0, animated), [infoMessage]);
 
   return (
     <TouchableAnimated
       onLayout={({ nativeEvent }) => setHeight(nativeEvent.layout.height)}
-      onPress={() => setInfoMessage("")}
+      onPress={closeModal}
       style={[styles.container, getModalStyle(animated, modalHeight + PADDING_VERTICAL)]}
       activeOpacity={1}
     >
-      <Text style={styles.text}>{message}</Text>
+      <Text style={styles.text}>{infoMessage}</Text>
     </TouchableAnimated>
   )
 };
 
-export default InfoModal;
+const mapStateToProps = ({ infoMessage }) => ({
+  infoMessage
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  closeModal: () => dispatch(setInfoMessage(""))
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(InfoModal);
 
 const styles = StyleSheet.create({
   container: {

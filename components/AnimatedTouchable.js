@@ -11,26 +11,15 @@ const getScaleTransformationStyle = (animated, endSize, transform = []) => {
   });
   let transformNew = transform;
   transformNew.push({ scale: interpolation });
-  return {
-    transform: transformNew
-  }
+  return { transform: transformNew }
 };
 
-const pressInAnimation = (animated) => {
-  animated.setValue(0);
+const pressAnimation = (animated, toValue) => {
+  animated.setValue(toValue === 1 ? 0 : 1);
   Animated.spring(animated, {
-    toValue: 1,
+    toValue,
     tension: 100,
-    useNativeDriver: true,
-  }).start();
-};
-
-const pressOutAnimation = (animated) => {
-  animated.setValue(1);
-  Animated.spring(animated, {
-    toValue: 0,
-    tension: 100,
-    useNativeDriver: true,
+    useNativeDriver: true
   }).start();
 };
 
@@ -39,9 +28,9 @@ const AnimatedTouchable = ({ children, style = {}, endOpacity = 0.8, endSize = 0
   return (
     <TouchableOpacity
       onPress={onPress}
-      onPressIn={() => pressInAnimation(animated)}
-      onPressOut={() => pressOutAnimation(animated)}
-      style={[style, getScaleTransformationStyle(animated, endSize, style.transform || [])]}
+      onPressIn={() => pressAnimation(animated, 1)}
+      onPressOut={() => pressAnimation(animated, 0)}
+      style={[style, getScaleTransformationStyle(animated, endSize, style.transform)]}
       activeOpacity={endOpacity}
     >
       {children}

@@ -30,7 +30,7 @@ const SettingsValue = ({ password, editable, toggleModal, ...props }) => (
   </View>
 );
 
-const SettingsItem = ({ title, placeholder, type, value, onChangeText, toggleModal }) => {
+const SettingsItem = ({ title, placeholder, type, value, onChangeText, openModal, closeModal }) => {
   const password = type === "password";
   const editable = TYPE_MAPS[type].settingsEditable;
 

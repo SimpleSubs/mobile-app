@@ -37,20 +37,22 @@ const toggleAnimation = (open, opacityAnimated, scaleAnimated) => {
   }).start();
 };
 
-const CenterSpringModal = ({ children, open, toggleModal, style }) => {
+// props: { children, closeModal, style }
+const CenterSpringModal = (props) => {
   const opacityAnimated = useRef(new Animated.Value(0)).current;
   const scaleAnimated = useRef(new Animated.Value(0)).current;
+  const open = !!props;
 
   useEffect(() => toggleAnimation(open, opacityAnimated, scaleAnimated), [open]);
 
   return (
-    <TouchableWithoutFeedback onPress={() => toggleModal(false)}>
+    <TouchableWithoutFeedback onPress={props.closeModal}>
       <Animated.View
         pointerEvents={open ? "auto": "none"}
         style={[styles.background, getBackgroundStyle(opacityAnimated)]}
       >
-        <Animated.View style={[styles.container, getModalStyle(scaleAnimated, opacityAnimated), style]}>
-          {children}
+        <Animated.View style={[styles.container, getModalStyle(scaleAnimated, opacityAnimated), props.style]}>
+          {props.children}
         </Animated.View>
       </Animated.View>
     </TouchableWithoutFeedback>

@@ -1,54 +1,43 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
   Text,
   TouchableOpacity,
-  FlatList,
-  Appearance
+  FlatList
 } from "react-native";
 import { useSafeArea } from "react-native-safe-area-context";
 import AnimatedTouchable from "../components/AnimatedTouchable";
-import AnimatedDropdown from "../components/orders/AnimatedDropdown";
 import { Ionicons } from "@expo/vector-icons";
 import OrderField from "../components/orders/OrderField";
 
 import Colors from "../constants/Colors";
 import Layout from "../constants/Layout";
-import OrderInputTypes from "../constants/OrderInputTypes";
+import { NEW_ORDER } from "./HomeScreen";
 
-const DATA = [
-  {
-    title: "Bread",
-    type: OrderInputTypes.PICKER.title,
-    key: "bread",
-    options: ["Dutch crunch", "Sourdough roll", "Ciabatta roll", "Sliced wheat", "Sliced sourdough", "Gluten free"],
-    required: true
-  },
-  {
-    title: "Meat",
-    type: OrderInputTypes.CHECKBOX.title,
-    key: "meat",
-    options: ["Turkey", "Roast beef", "Pastrami", "Salami", "Ham", "Tuna salad", "Egg salad"]
-  },
-  {
-    title: "Cheese",
-    type: OrderInputTypes.CHECKBOX.title,
-    key: "cheese",
-    options: ["Provolone", "Swiss", "Cheddar", "Fresh mozzarella"]
-  },
-  {
-    title: "Condiments",
-    type: OrderInputTypes.CHECKBOX.title,
-    key: "condiments",
-    options: ["Mayo", "Mustard", "Pesto", "Red vin/olive oil", "Balsamic vin/olive oil", "Roasted red peppers",
-      "Pepperoncini", "Pickles", "Basil", "Lettuce", "Tomatoes", "Hummus", "Red onions", "Jalapenos",
-      "Artichoke hearts"],
+import { createOrder, deleteOrder, editOrder, unfocusOrder } from "../redux/Actions";
+import { connect } from "react-redux";
+import InputTypes from "../constants/InputTypes";
+
+const getDefault = (focusedOrder, orderOptions) => {
+  if (focusedOrder) {
+    return focusedOrder;
   }
-];
-
-const CANCEL = ({ navigate }) => navigate("Home");
-const DONE = ({ navigate }) => navigate("Home");
+  let newState = {};
+  for (let option of orderOptions) {
+    switch (option.type) {
+      case InputTypes.picker:
+        newState[option.key] = "Please select";
+        break;
+      case InputTypes.checkbox:
+        newState[option.key] = [];
+        break;
+      default:
+        newState[option.key] = null;
+    }
+  }
+  return newState;
+}
 
 const CancelDoneButtons = ({ cancelOnPress, doneOnPress }) => (
   <View style={styles.cancelDoneButtonsContainer}>
@@ -65,24 +54,64 @@ const CancelDoneButtons = ({ cancelOnPress, doneOnPress }) => (
   </View>
 );
 
-const OrderScreen = ({ navigation }) => {
+const OrderScreen = ({ focusedOrder, orderOptions, unfocusOrder, createOrder, editOrder, deleteOrder, navigation }) => {
+  const [state, setFullState] = useState(getDefault(focusedOrder, orderOptions));
   const inset = useSafeArea();
+
+  const submit = () => {
+    if (focusedOrder) {
+      editOrder(state, focusedOrder.id);
+    } else {
+      createOrder(state);
+    }
+  };
+
+  const cancelOrder = () => {
+    unfocusOrder();
+    navigation.navigate("Home");
+  };
+
+  const setState = (newState) => {
+    setFullState((prevState) => ({ ...prevState, ...newState }));
+  };
+
   return (
     <View style={[styles.container, { paddingTop: inset.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Order</Text>
-        <CancelDoneButtons cancelOnPress={() => CANCEL(navigation)} doneOnPress={() => DONE(navigation)} />
+        <CancelDoneButtons cancelOnPress={cancelOrder} doneOnPress={submit} />
       </View>
       <FlatList
         contentContainerStyle={{ paddingBottom: inset.bottom }}
-        data={DATA}
-        renderItem={({ item }) => <OrderField {...item} />}
+        data={orderOptions}
+        renderItem={({ item }) => (
+          <OrderField
+            title={item.title}
+            type={item.type}
+            options={item.options}
+            required={item.required}
+            value={state[item.key]}
+            setValue={(value) => setState({ [item.key]: value })}
+          />
+        )}
       />
     </View>
   )
 };
 
-export default OrderScreen;
+const mapStateToProps = ({ focusedOrder, orders, stateConstants }) => ({
+  focusedOrder: focusedOrder ? orders[focusedOrder] : null,
+  orderOptions: stateConstants.orderOptions
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  unfocusOrder: () => dispatch(unfocusOrder()),
+  createOrder: (data) => dispatch(createOrder(data)),
+  editOrder: (data, id) => dispatch(editOrder(data, id)),
+  deleteOrder: (id) => dispatch(deleteOrder(id)),
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(OrderScreen);
 
 const styles = StyleSheet.create({
   container: {

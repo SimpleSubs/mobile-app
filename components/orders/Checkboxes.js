@@ -51,7 +51,8 @@ export default Checkboxes;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
+    paddingBottom: 15
   },
   checkbox: {
     flex: 1,

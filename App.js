@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Platform,
   StatusBar,
   StyleSheet,
   View
@@ -8,17 +7,25 @@ import {
 import { SplashScreen } from "expo";
 import * as Font from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
+
+import Modal from "./components/modals/Modal";
 import InfoModal from "./components/modals/InfoModal";
+
+import { createStore, applyMiddleware } from "redux";
+import { Provider } from "react-redux";
+import sandwichApp from "./redux/Reducers";
 
 import useLinking from "./navigation/useLinking";
 import StackNavigator from "./navigation/StackNavigator";
 
 import Colors from "./constants/Colors";
+import Layout from "./constants/Layout";
 
-export default function App(props) {
+const store = createStore(sandwichApp);
+
+const App = ({ skipLoadingScreen }) => {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
   const [initialNavigationState, setInitialNavigationState] = useState();
-  const [infoMessage, setInfoMessage] = useState("hello");
   const containerRef = useRef();
   const { getInitialState } = useLinking(containerRef);
 
@@ -27,10 +34,7 @@ export default function App(props) {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHide();
-
-        // Load our initial navigation state
-        setInitialNavigationState(await getInitialState());
-
+        setInitialNavigationState(await getInitialState()); // Load our initial navigation state
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
@@ -45,22 +49,26 @@ export default function App(props) {
         SplashScreen.hide();
       }
     }
-
     loadResourcesAndDataAsync();
   }, []);
 
-  if (!isLoadingComplete && !props.skipLoadingScreen) {
+  if (!isLoadingComplete && !skipLoadingScreen) {
     return null;
   } else {
     return (
-      <View style={styles.container}>
-        {Platform.OS === "ios" && <StatusBar barStyle={Colors.statusBar} />}
-        <StackNavigator containerRef={containerRef} initialState={initialNavigationState} />
-        <InfoModal setInfoMessage={setInfoMessage} message={infoMessage} />
-      </View>
+      <Provider store={store}>
+        <View style={styles.container}>
+          {Layout.ios && <StatusBar barStyle={Colors.statusBar} />}
+          <StackNavigator containerRef={containerRef} initialState={initialNavigationState} />
+          <InfoModal />
+          <Modal />
+        </View>
+      </Provider>
     );
   }
 }
+
+export default App;
 
 const styles = StyleSheet.create({
   container: {

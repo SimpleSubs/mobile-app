@@ -30,18 +30,21 @@ const toggleAnimation = (open, animated) => {
   }).start();
 };
 
-const SlideUpModal = ({ children, open, toggleModal, style }) => {
+// props: { children, closeModal, style }
+const SlideUpModal = (props) => {
   const animated = useRef(new Animated.Value(0)).current;
+  const open = !!props;
+
   useEffect(() => toggleAnimation(open, animated) [open]);
 
   return (
-    <TouchableWithoutFeedback onPress={() => toggleModal(false)}>
+    <TouchableWithoutFeedback onPress={props.closeModal}>
       <Animated.View
         pointerEvents={open ? "auto": "none"}
         style={[styles.background, getBackgroundStyle(animated)]}
       >
-        <Animated.View style={[styles.container, getModalStyle(animated), style]}>
-          {children}
+        <Animated.View style={[styles.container, getModalStyle(animated), props.style]}>
+          {props.children}
         </Animated.View>
       </Animated.View>
     </TouchableWithoutFeedback>
