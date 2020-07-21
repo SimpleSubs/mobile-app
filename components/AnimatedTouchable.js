@@ -4,6 +4,8 @@ import {
   Animated
 } from "react-native";
 
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
+
 const getScaleTransformationStyle = (animated, endSize, transform = []) => {
   const interpolation = animated.interpolate({
     inputRange: [0, 1],
@@ -26,7 +28,7 @@ const pressAnimation = (animated, toValue) => {
 const AnimatedTouchable = ({ children, style = {}, endOpacity = 0.8, endSize = 0.95, onPress }) => {
   const animated = useRef(new Animated.Value(0)).current;
   return (
-    <TouchableOpacity
+    <AnimatedTouchableOpacity
       onPress={onPress}
       onPressIn={() => pressAnimation(animated, 1)}
       onPressOut={() => pressAnimation(animated, 0)}
@@ -34,7 +36,7 @@ const AnimatedTouchable = ({ children, style = {}, endOpacity = 0.8, endSize = 0
       activeOpacity={endOpacity}
     >
       {children}
-    </TouchableOpacity>
+    </AnimatedTouchableOpacity>
   )
 };
 

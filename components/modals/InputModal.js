@@ -4,7 +4,7 @@ import {
   Text
 } from "react-native";
 import AnimatedTouchable from "../AnimatedTouchable";
-import InputsList from "../InputsList";
+import InputsList from "../userFields/UserInputsList";
 
 import Colors from "../../constants/Colors";
 import Layout from "../../constants/Layout";

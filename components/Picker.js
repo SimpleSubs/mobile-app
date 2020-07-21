@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Picker,
   StyleSheet,
   FlatList,
   Text,
-  View
+  View,
+  TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AnimatedTouchable from "./AnimatedTouchable";
@@ -13,27 +14,24 @@ import ModalTypes from "../constants/ModalTypes";
 import Layout from "../constants/Layout";
 import Colors from "../constants/Colors";
 
-const PickerIOS = ({ selectedValue, onValueChange, options }) => {
-  const [value, setValue] = useState(selectedValue);
+const PickerIOS = ({ closeModal, selectedValue, onValueChange, options }) => {
   const changeValue = (newValue) => {
-    setValue(newValue);
     onValueChange(newValue);
+    if (newValue !== selectedValue) { closeModal(); }
   }
   return (
     <Picker
-      selectedValue={value}
+      selectedValue={selectedValue}
       onValueChange={changeValue}
       itemStyle={styles.itemTextStyle}
     >
-      {options.map((value) => <Picker.Item key={value} label={value} value={value} />)}
+      {options.map((value) => <Picker.Item key={value} label={value} value={value}/>)}
     </Picker>
-  );
+  )
 }
 
 const PickerAndroid = ({ closeModal, selectedValue, onValueChange, options }) => {
-  const [value, setValue] = useState(selectedValue);
   const changeValue = (newValue) => {
-    setValue(newValue);
     onValueChange(newValue);
     if (newValue !== selectedValue) { closeModal(); }
   }
@@ -45,33 +43,24 @@ const PickerAndroid = ({ closeModal, selectedValue, onValueChange, options }) =>
       showsVerticalScrollIndicator={true}
       keyExtractor={(item, index) => item}
       renderItem={({item}) => (
-        <AnimatedTouchable
-          style={[styles.androidItemStyle, item === value ? styles.selectedAndroidItemStyle : {}]}
+        <TouchableOpacity
+          style={[styles.androidItemStyle, item === selectedValue ? styles.selectedAndroidItemStyle : {}]}
           onPress={() => changeValue(item)}
         >
-          <Text style={[styles.itemTextStyle, item === value ? styles.selectedItemTextStyle : {}]}>{item}</Text>
-        </AnimatedTouchable>
+          <Text style={[styles.itemTextStyle, item === selectedValue ? styles.selectedItemTextStyle : {}]}>{item}</Text>
+        </TouchableOpacity>
       )}
     />
   )
 };
 
-const pickerProps = (closeModal, selectedValue, onValueChange, options) => ({
+export default Layout.ios ? PickerIOS : PickerAndroid;
+
+export const getPickerProps = (picker) => ({
   type: ModalTypes.CENTER_SPRING_MODAL,
   style: styles.pickerContainer,
-  children: (
-    <View style={styles.picker}>
-      <AnimatedTouchable onPress={closeModal} endSize={0.8} style={styles.exitButton}>
-        <Ionicons name={"md-close"} size={Layout.fonts.icon} color={Colors.primaryText} />
-      </AnimatedTouchable>
-      {Layout.ios
-        ? <PickerIOS selectedValue={selectedValue} onValueChange={onValueChange} options={options} />
-        : <PickerAndroid closeModal={closeModal} selectedValue={selectedValue} onValueChange={onValueChange} options={options} />}
-    </View>
-  )
-})
-
-export default pickerProps;
+  children: <View style={styles.picker}>{picker}</View>
+});
 
 const styles = StyleSheet.create({
   itemTextStyle: {
@@ -81,14 +70,14 @@ const styles = StyleSheet.create({
   },
   androidItemStyle: {
     padding: 20,
-    alignItems: "center",
-    borderRadius: 100
+    alignItems: "center"
   },
   selectedAndroidItemStyle: {
     backgroundColor: Colors.accentColor
   },
   androidPicker: {
-    alignItems: "center"
+    alignItems: "stretch",
+    paddingVertical: 30
   },
   pickerContainer: {
     left: 125.0 / 2,
@@ -99,8 +88,7 @@ const styles = StyleSheet.create({
   picker: {
     flexGrow: 1,
     backgroundColor: Colors.backgroundColor,
-    borderRadius: 10,
-    padding: 30
+    borderRadius: 10
   },
   selectedItemTextStyle: {
     fontFamily: "josefin-sans-bold"

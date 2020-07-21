@@ -14,6 +14,9 @@ import { connect } from "react-redux";
 
 const PADDING_HORIZONTAL = 10;
 const PADDING_VERTICAL = 40;
+const CLOSE_MODAL_TIMEOUT = 10;
+export const CLOSED_INFO_MODAL = "    ";
+
 const TouchableAnimated = Animated.createAnimatedComponent(TouchableOpacity);
 
 const getModalStyle = (animated, distToTravel) => {
@@ -35,8 +38,16 @@ const toggleAnimation = (open, animated) => {
 
 const InfoModal = ({ infoMessage, closeModal }) => {
   const animated = useRef(new Animated.Value(0)).current;
+  const timeoutRef = useRef();
   const [modalHeight, setHeight] = useState(0);
-  useEffect(() => toggleAnimation(infoMessage.length > 0, animated), [infoMessage]);
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    toggleAnimation(infoMessage !== CLOSED_INFO_MODAL, animated);
+    timeoutRef.current = setTimeout(closeModal, CLOSE_MODAL_TIMEOUT * 1000);
+  }, [infoMessage]);
 
   return (
     <TouchableAnimated
@@ -55,7 +66,7 @@ const mapStateToProps = ({ infoMessage }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  closeModal: () => dispatch(setInfoMessage(""))
+  closeModal: () => dispatch(setInfoMessage(CLOSED_INFO_MODAL))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(InfoModal);

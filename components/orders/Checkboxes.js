@@ -19,7 +19,7 @@ const onCheck = (item, setItems, selectedItems, checked) => {
   }
 };
 
-const Checkboxes = ({ selectedItems, itemsArr, setItems }) => (
+const Checkboxes = ({ selectedItems, itemsArr = [], setItems }) => (
   <FlatList
     style={styles.container}
     data={itemsArr}

@@ -7,31 +7,30 @@ import {
 } from "react-native";
 import { useSafeArea } from "react-native-safe-area-context";
 
-import AnimatedTouchable from "../components/AnimatedTouchable";
-import InputsList from "../components/InputsList";
+import AnimatedTouchable from "../../components/AnimatedTouchable";
+import InputsList from "../../components/userFields/UserInputsList";
+import SubmitButton from "../../components/userFields/SubmitButton";
 
-import Layout from "../constants/Layout";
-import Colors from "../constants/Colors";
-import InputTypes from "../constants/InputTypes";
+import Layout from "../../constants/Layout";
+import Colors from "../../constants/Colors";
+import { InputTypes, TextTypes } from "../../constants/Inputs";
 
-import { createUser } from "../redux/Actions";
+import { createUser } from "../../redux/Actions";
 import { connect } from "react-redux";
 
-const RegisterScreen = ({ registerUserFields, inputPresets, createUser, navigation }) => {
+const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
   const [inputs, setInputs] = useState({});
   const inset = useSafeArea();
 
   const createUserState = () => {
     let data = { ...inputs };
-    if (data.confirmPassword) { delete data.confirmPassword; }
-    createUser(data);
+    delete data.confirmPassword;
+    delete data.email;
+    delete data.password;
+    createUser(inputs.email, inputs.password, data);
   };
 
-  const RegisterButton = ({ onPress }) => (
-    <AnimatedTouchable style={styles.registerButton} onPress={onPress}>
-      <Text style={styles.registerButtonText}>Register</Text>
-    </AnimatedTouchable>
-  );
+  const RegisterButton = (props) => <SubmitButton {...props} title={"Register"} />;
 
   return (
     <InputsList
@@ -52,7 +51,6 @@ const RegisterScreen = ({ registerUserFields, inputPresets, createUser, navigati
         </TouchableOpacity>
       )}
       SubmitButton={RegisterButton}
-      inputPresets={inputPresets}
       data={registerUserFields}
       state={inputs}
       setInputs={setInputs}
@@ -62,7 +60,7 @@ const RegisterScreen = ({ registerUserFields, inputPresets, createUser, navigati
 };
 
 const getRegisterUserFields = (userFields) => {
-  const passwordIndex = userFields.findIndex(({ textType }) => textType === "password");
+  const passwordIndex = userFields.findIndex(({ textType }) => textType === "PASSWORD");
   let registerUserFields = [...userFields];
   if (passwordIndex !== -1) {
     registerUserFields.splice(
@@ -73,29 +71,28 @@ const getRegisterUserFields = (userFields) => {
         title: "Password",
         placeholder: "Password",
         mutable: false,
-        inputType: InputTypes.textInput,
-        textType: "newPassword"
+        inputType: InputTypes.TEXT_INPUT,
+        textType: TextTypes.NEW_PASSWORD
       },
       {
         key: "confirmPassword",
         title: "Confirm password",
         placeholder: "Confirm password",
         mutable: false,
-        inputType: InputTypes.textInput,
-        textType: "confirmPassword"
+        inputType: InputTypes.TEXT_INPUT,
+        textType: TextTypes.CONFIRM_PASSWORD
       }
-    )
+    );
   }
   return registerUserFields;
 };
 
 const mapStateToProps = ({ stateConstants }) => ({
-  registerUserFields: getRegisterUserFields(stateConstants.userFields),
-  inputPresets: stateConstants.inputPresets
+  registerUserFields: getRegisterUserFields(stateConstants.userFields)
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  createUser: (data) => dispatch(createUser(data))
+  createUser: (email, password, data) => createUser(dispatch, email, password, data)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RegisterScreen);

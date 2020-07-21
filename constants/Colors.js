@@ -16,6 +16,10 @@ const LightColors = {
   infoModal: "#333",
   errorText: "#d72e2e",
   pickerIOS: "#ddd",
+  okAction: "#33ac33",
+  loadingIndicator: "#999999",
+  borderColor: "#0000000f",
+  cardColor: "#fafafa",
   mode: "LIGHT"
 };
 
@@ -35,6 +39,10 @@ const DarkColors = {
   infoModal: "#2a2a2a",
   errorText: "#d72e2e",
   pickerIOS: "#ddd",
+  okAction: "#33ac33",
+  loadingIndicator: "#fff",
+  borderColor: "#ffffff0f",
+  cardColor: "#151515",
   mode: "DARK"
 };
 

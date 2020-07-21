@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   StatusBar,
   StyleSheet,
-  View
+  View,
+  YellowBox,
+  UIManager
 } from "react-native";
 import { SplashScreen } from "expo";
 import * as Font from "expo-font";
@@ -13,6 +15,7 @@ import InfoModal from "./components/modals/InfoModal";
 
 import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
+import thunk from "redux-thunk";
 import sandwichApp from "./redux/Reducers";
 
 import useLinking from "./navigation/useLinking";
@@ -21,7 +24,15 @@ import StackNavigator from "./navigation/StackNavigator";
 import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
 
-const store = createStore(sandwichApp);
+YellowBox.ignoreWarnings(
+  ["Require cycle: components/modals/InputModal.js -> components/userFields/UserInputsList.js -> constants/DataActions.js -> components/modals/InputModal.js"]
+);
+
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const store = createStore(sandwichApp, applyMiddleware(thunk));
 
 const App = ({ skipLoadingScreen }) => {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
@@ -73,6 +84,6 @@ export default App;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#fff"
   },
 });

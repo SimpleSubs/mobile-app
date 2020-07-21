@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import Colors from "../../constants/Colors";
-import InputTypes from "../../constants/InputTypes";
+import { InputTypes } from "../../constants/Inputs";
 import Layout from "../../constants/Layout";
 
 const { UIManager } = NativeModules;
@@ -45,9 +45,10 @@ const toggleAnimation = (expanded, changeExpanded, minHeight, maxHeight, setHeig
 
 const SecondaryTouchableText = ({ type, selectedValue, style }) => {
   switch (type) {
-    case InputTypes.picker:
+    case InputTypes.PICKER:
       return <Text style={styles.selectedItem} numberOfLines={1}>{selectedValue}</Text>;
-    case InputTypes.checkbox:
+    case InputTypes.TEXT_INPUT:
+    case InputTypes.CHECKBOX:
       return (
         <AnimatedIonicons
           name={"ios-arrow-down"}
@@ -61,19 +62,26 @@ const SecondaryTouchableText = ({ type, selectedValue, style }) => {
   }
 };
 
-const AnimatedDropdown = ({ title, type, selectedValue, children }) => {
+const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () => {}, options = [], children }) => {
   const [expanded, changeExpanded] = useState(false);
   const [minHeight, setMinHeight] = useState(57.5);
   const [maxHeight, setMaxHeight] = useState(minHeight);
   const [height, setHeight] = useState(minHeight);
   const angleAnimated = useRef(new Animated.Value(0)).current;
 
+  const onPressTouchable = () => {
+    if (type === InputTypes.PICKER && options.length > 0 && !options.includes(selectedValue)) {
+      changeValue(options[0]);
+    }
+    toggleAnimation(expanded, changeExpanded, minHeight, maxHeight, setHeight, angleAnimated);
+  };
+
   return (
     <View style={[styles.container, { height: height }]}>
       <TouchableOpacity
         style={styles.touchable}
         onLayout={({ nativeEvent }) => setMinHeight(nativeEvent.layout.height)}
-        onPress={() => toggleAnimation(expanded, changeExpanded, minHeight, maxHeight, setHeight, angleAnimated)}
+        onPress={onPressTouchable}
       >
         <Text style={styles.touchableText}>{title}</Text>
         <SecondaryTouchableText type={type} selectedValue={selectedValue} style={getTransformationStyle(angleAnimated)} />
@@ -98,7 +106,6 @@ const styles = StyleSheet.create({
   touchable: {
     flexDirection: "row",
     justifyContent: "space-between",
-    color: Colors.primaryText,
     padding: 20
   },
   touchableText: {

@@ -8,18 +8,36 @@ import {
 } from "react-native";
 import { useSafeArea } from "react-native-safe-area-context";
 
-import AnimatedTouchable from "../components/AnimatedTouchable";
-import inputModalProps from "../components/modals/InputModal";
-import InputsList from "../components/InputsList";
+import AnimatedTouchable from "../../components/AnimatedTouchable";
+import inputModalProps from "../../components/modals/InputModal";
+import InputsList from "../../components/userFields/UserInputsList";
+import SubmitButton from "../../components/userFields/SubmitButton";
 
-import Layout from "../constants/Layout";
-import Colors from "../constants/Colors";
-import InputTypes from "../constants/InputTypes";
+import Layout from "../../constants/Layout";
+import Colors from "../../constants/Colors";
+import { InputTypes, TextTypes } from "../../constants/Inputs";
 
-import { logIn, openModal, closeModal, setModalProps } from "../redux/Actions";
+import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../redux/Actions";
 import { connect } from "react-redux";
 
-const LoginScreen = ({ logIn, user, loginUserFields, inputPresets, openModal, closeModal, setModalProps, navigation }) => {
+const LOGIN_USER_FIELDS = [
+  {
+    key: "email",
+    title: "Email",
+    placeholder: "Email",
+    inputType: InputTypes.TEXT_INPUT,
+    textType: TextTypes.EMAIL
+  },
+  {
+    key: "password",
+    title: "Password",
+    placeholder: "Password",
+    inputType: InputTypes.TEXT_INPUT,
+    textType: TextTypes.PASSWORD
+  }
+]
+
+const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswordAction, navigation }) => {
   const inset = useSafeArea();
   const [inputs, setInputs] = useState({ email: "", password: "" });
 
@@ -28,28 +46,38 @@ const LoginScreen = ({ logIn, user, loginUserFields, inputPresets, openModal, cl
   };
 
   const resetPassword = ({ email }) => {
+    resetPasswordAction(email);
     closeModal();
   };
 
+  useEffect(() => (
+    navigation.addListener("beforeRemove", (e) => {
+      if (e.data.action.type === "POP") {
+        e.preventDefault();
+      }
+    })
+  ), [navigation])
+
   const openForgotPasswordModal = () => openModal(inputModalProps(
-    "Reset password",
-    [{ key: "email", inputType: InputTypes.textInput, textType: "email", placeholder: "Your email address" }],
+    "Reset Password",
+    [{
+      key: "email",
+      inputType: InputTypes.TEXT_INPUT,
+      textType: TextTypes.EMAIL,
+      placeholder: "Your email address"
+    }],
     { title: "Send email" },
     resetPassword,
     setModalProps
   ));
 
-  const LoginButton = ({ onPress }) => (
-    <AnimatedTouchable style={styles.loginButton} onPress={onPress}>
-      <Text style={styles.loginButtonText}>Login</Text>
-    </AnimatedTouchable>
-  );
+  const LoginButton = (props) => <SubmitButton {...props} title={"Login"} />
 
   return (
     <InputsList
       ListHeaderComponent={() => (
         <View style={styles.header}>
-          <Image source={require("../assets/images/robot-dev.png")}/>
+          <Image source={require("../../assets/images/robot-dev.png")}/>
           <Text style={styles.title}>SimpleSubs</Text>
           <Text style={styles.text}>An app for sandwich ordering at Lick-Wilmerding High School</Text>
           <Text style={styles.text}>Built by Emily Sturman</Text>
@@ -69,8 +97,7 @@ const LoginScreen = ({ logIn, user, loginUserFields, inputPresets, openModal, cl
           </TouchableOpacity>
         </View>
       )}
-      data={loginUserFields}
-      inputPresets={inputPresets}
+      data={LOGIN_USER_FIELDS}
       state={inputs}
       setInputs={setInputs}
       SubmitButton={LoginButton}
@@ -81,20 +108,15 @@ const LoginScreen = ({ logIn, user, loginUserFields, inputPresets, openModal, cl
   )
 };
 
-const mapStateToProps = ({ user, stateConstants }) => ({
-  user,
-  loginUserFields: stateConstants.userFields.filter(({ key }) => key === "email" || key === "password"),
-  inputPresets: stateConstants.inputPresets
-});
-
 const mapDispatchToProps = (dispatch) => ({
-  logIn: (email, password) => dispatch(logIn(email, password)),
+  logIn: (email, password) => logIn(dispatch, email, password),
   openModal: (props) => dispatch(openModal(props)),
   closeModal: () => dispatch(closeModal()),
-  setModalProps: (props) => dispatch(setModalProps(props))
+  setModalProps: (props) => dispatch(setModalProps(props)),
+  resetPasswordAction: (email) => resetPassword(dispatch, email)
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(LoginScreen);
+export default connect(null, mapDispatchToProps)(LoginScreen);
 
 const styles = StyleSheet.create({
   container: {

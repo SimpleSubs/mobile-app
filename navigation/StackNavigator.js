@@ -1,48 +1,76 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { connect } from "react-redux";
 
-import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";
-import HomeScreen from "../screens/HomeScreen";
-import SettingsScreen from "../screens/SettingsScreen";
-import OrderScreen from "../screens/OrderScreen";
+import { connect } from "react-redux";
+import { watchAuthState } from "../redux/Actions";
+
+import LoadingScreen from "../screens/main/LoadingScreen";
+import LoginScreen from "../screens/main/LoginScreen";
+import RegisterScreen from "../screens/main/RegisterScreen";
+import HomeScreen from "../screens/main/HomeScreen";
+
+import SettingsScreen from "../screens/main/SettingsScreen";
+import UserSettingsScreen from "../screens/main/UserSettingsScreen";
+import OrderSettingsScreen from "../screens/main/OrderSettingsScreen";
+
+import PreOrderScreen from "../screens/order/PreOrderScreen";
+import OrderScreen from "../screens/order/OrderScreen";
+import PresetOrderScreen from "../screens/order/PresetOrderScreen";
+import PresetScreen from "../screens/PresetScreen";
 
 const MainStack = createStackNavigator();
+const OrderStack = createStackNavigator();
 const RootStack = createStackNavigator();
 
 const MainStackScreen = ({ isSignedIn }) => (
-  <MainStack.Navigator headerMode={"none"} sceneAnimationEnabled={false}>
-    {!isSignedIn ?
-      (
-        <>
-          <MainStack.Screen name={"Login"} component={LoginScreen} options={{ animationTypeForReplace: "pop" }} />
-          <MainStack.Screen name={"Register"} component={RegisterScreen} />
-        </>
-      ) : (
-        <>
-          <MainStack.Screen name={"Home"} component={HomeScreen} />
-          <MainStack.Screen name={"Settings"} component={SettingsScreen} />
-        </>
-      )
-    }
+  <MainStack.Navigator headerMode={"none"}>
+    <MainStack.Screen name={"Loading"} component={LoadingScreen} options={{ gestureEnabled: false }} />
+    {!isSignedIn ? (
+      <>
+        <MainStack.Screen name={"Login"} component={LoginScreen} options={{ gestureEnabled: false }} />
+        <MainStack.Screen name={"Register"} component={RegisterScreen} />
+      </>
+    ) : (
+      <>
+        <MainStack.Screen name={"Home"} component={HomeScreen} />
+        <MainStack.Screen name={"Settings"} component={SettingsScreen} />
+        <MainStack.Screen name={"User Settings"} component={UserSettingsScreen} />
+        <MainStack.Screen name={"Order Settings"} component={OrderSettingsScreen} />
+      </>
+    )}
   </MainStack.Navigator>
 );
 
-const StackNavigator = ({ containerRef, initialState, isSignedIn }) => (
-  <NavigationContainer ref={containerRef} initialState={initialState}>
-    <RootStack.Navigator headerMode={"none"} mode={"modal"}>
-      <RootStack.Screen name={"Main"}>
-        {() => <MainStackScreen isSignedIn={isSignedIn}/>}
-      </RootStack.Screen>
-      <RootStack.Screen name={"Order"} component={OrderScreen} />
-    </RootStack.Navigator>
-  </NavigationContainer>
-);
+const OrderStackScreen = () => (
+  <OrderStack.Navigator headerMode={"none"}>
+    <MainStack.Screen name={"Preorder"} component={PreOrderScreen} />
+    <MainStack.Screen name={"Custom Order"} component={OrderScreen} />
+    <MainStack.Screen name={"Preset Order"} component={PresetOrderScreen} />
+  </OrderStack.Navigator>
+)
+
+const StackNavigator = ({ containerRef, initialState, isSignedIn, watchAuthState }) => {
+  useEffect(watchAuthState, []);
+  return (
+    <NavigationContainer ref={containerRef} initialState={initialState}>
+      <RootStack.Navigator headerMode={"none"} mode={"modal"}>
+        <RootStack.Screen name={"Main"}>
+          {() => <MainStackScreen isSignedIn={isSignedIn} />}
+        </RootStack.Screen>
+        <RootStack.Screen name={"Order"} component={OrderStackScreen} />
+        <RootStack.Screen name={"Preset"} component={PresetScreen} />
+      </RootStack.Navigator>
+    </NavigationContainer>
+  );
+}
 
 const mapStateToProps = ({ user }) => ({
   isSignedIn: !!user
 });
 
-export default connect(mapStateToProps, null)(StackNavigator);
+const mapDispatchToProps = (dispatch) => ({
+  watchAuthState: () => watchAuthState(dispatch)
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(StackNavigator);
