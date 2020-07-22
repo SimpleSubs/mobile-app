@@ -4,12 +4,11 @@
     "slug": "simple-subs",
     "platforms": [
       "ios",
-      "android",
-      "web"
+      "android"
     ],
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon-not-transparent.png",
     "scheme": "myapp",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -23,7 +22,14 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "org.lwhs.simplesubs",
+      "supportsTablet": false,
+      "buildNumber": "2.0.0"
+    },
+    "android": {
+      "package": "org.lwhs.simplesubs",
+      "permissions": [],
+      "versionCode": 4
     }
   }
 }

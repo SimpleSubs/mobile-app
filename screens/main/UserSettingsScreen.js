@@ -50,7 +50,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(UserSettingsScreen);
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.scrollViewBackground,
+    backgroundColor: Colors.mode === "DARK" ? Colors.scrollViewBackground : Colors.backgroundColor,
     flex: 1
   },
   contentContainer: {

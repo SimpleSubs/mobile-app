@@ -192,7 +192,7 @@ export const createUser = (dispatch, email, password, data) => {
   dispatch(startLoading());
   return (
     auth().createUserWithEmailAndPassword(email, password)
-      .then(() => editUserData(dispatch, data))
+      .then(() => editUserData(dispatch, { email, ...data }, auth().currentUser.uid))
       .catch((error) => alertAuthError(dispatch, error))
   );
 }
