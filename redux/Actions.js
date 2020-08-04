@@ -109,12 +109,18 @@ export const editPreset = (dispatch, data, id, uid) => {
   dispatch(startLoading());
   let dataToPush = { ...data };
   delete dataToPush.key;
-  return (
-    myPresets(uid).doc(id)
+  if (data.title !== id) {
+    return Promise.all([
+      myOrders(uid).doc(id).delete(),
+      myPresets(uid).doc(data.title).set(dataToPush)
+    ]).then(() => successAction("Preset updated successfully", dispatch))
+      .catch((error) => alertFirestoreError(dispatch, error))
+  } else {
+    return myPresets(uid).doc(id)
       .set(dataToPush)
       .then(() => successAction("Preset updated successfully", dispatch))
       .catch((error) => alertFirestoreError(dispatch, error))
-  );
+  }
 };
 
 export const deletePreset = (dispatch, id, uid) => {
