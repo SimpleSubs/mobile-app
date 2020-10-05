@@ -14,6 +14,7 @@ import SubmitButton from "../../components/userFields/SubmitButton";
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
 import { InputTypes, TextTypes } from "../../constants/Inputs";
+import { RegisterFields } from "../../constants/RequiredUserFields";
 
 import { createUser } from "../../redux/Actions";
 import { connect } from "react-redux";
@@ -24,9 +25,9 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
 
   const createUserState = () => {
     let data = { ...inputs };
-    delete data.confirmPassword;
-    delete data.email;
-    delete data.password;
+    for (let field of RegisterFields) {
+      delete data[field.key];
+    }
     createUser(inputs.email, inputs.password, data);
   };
 
@@ -59,36 +60,8 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
   );
 };
 
-const getRegisterUserFields = (userFields) => {
-  const passwordIndex = userFields.findIndex(({ textType }) => textType === "PASSWORD");
-  let registerUserFields = [...userFields];
-  if (passwordIndex !== -1) {
-    registerUserFields.splice(
-      passwordIndex,
-      1,
-      {
-        key: "password",
-        title: "Password",
-        placeholder: "Password",
-        mutable: false,
-        inputType: InputTypes.TEXT_INPUT,
-        textType: TextTypes.NEW_PASSWORD
-      },
-      {
-        key: "confirmPassword",
-        title: "Confirm password",
-        placeholder: "Confirm password",
-        mutable: false,
-        inputType: InputTypes.TEXT_INPUT,
-        textType: TextTypes.CONFIRM_PASSWORD
-      }
-    );
-  }
-  return registerUserFields;
-};
-
 const mapStateToProps = ({ stateConstants }) => ({
-  registerUserFields: getRegisterUserFields(stateConstants.userFields)
+  registerUserFields: [...RegisterFields, ...stateConstants.userFields]
 });
 
 const mapDispatchToProps = (dispatch) => ({

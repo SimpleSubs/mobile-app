@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import { useSafeArea } from "react-native-safe-area-context";
 
-import AnimatedTouchable from "../../components/AnimatedTouchable";
 import inputModalProps from "../../components/modals/InputModal";
 import InputsList from "../../components/userFields/UserInputsList";
 import SubmitButton from "../../components/userFields/SubmitButton";
@@ -16,26 +15,10 @@ import SubmitButton from "../../components/userFields/SubmitButton";
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
 import { InputTypes, TextTypes } from "../../constants/Inputs";
+import { LoginFields } from "../../constants/RequiredUserFields";
 
 import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../redux/Actions";
 import { connect } from "react-redux";
-
-const LOGIN_USER_FIELDS = [
-  {
-    key: "email",
-    title: "Email",
-    placeholder: "Email",
-    inputType: InputTypes.TEXT_INPUT,
-    textType: TextTypes.EMAIL
-  },
-  {
-    key: "password",
-    title: "Password",
-    placeholder: "Password",
-    inputType: InputTypes.TEXT_INPUT,
-    textType: TextTypes.PASSWORD
-  }
-]
 
 const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswordAction, navigation }) => {
   const inset = useSafeArea();
@@ -97,7 +80,7 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
           </TouchableOpacity>
         </View>
       )}
-      data={LOGIN_USER_FIELDS}
+      data={LoginFields}
       state={inputs}
       setInputs={setInputs}
       SubmitButton={LoginButton}

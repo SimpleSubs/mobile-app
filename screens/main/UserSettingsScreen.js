@@ -9,6 +9,7 @@ import Header from "../../components/Header";
 
 import { connect } from "react-redux";
 import { watchUserData, editUserData } from "../../redux/Actions";
+import { SettingsFields } from "../../constants/RequiredUserFields";
 
 import Colors from "../../constants/Colors";
 
@@ -38,7 +39,7 @@ const UserSettingsScreen = ({ user, userFields, watchUserData, editUserData, nav
 
 const mapStateToProps = ({ user, stateConstants }) => ({
   user,
-  userFields: stateConstants.userFields
+  userFields: [...SettingsFields, ...stateConstants.userFields]
 });
 
 const mapDispatchToProps = (dispatch) => ({

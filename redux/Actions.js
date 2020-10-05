@@ -198,7 +198,7 @@ export const createUser = (dispatch, email, password, data) => {
   dispatch(startLoading());
   return (
     auth().createUserWithEmailAndPassword(email, password)
-      .then(() => editUserData(dispatch, { email, ...data }, auth().currentUser.uid))
+      .then(() => editUserData(dispatch, { ...data }, auth().currentUser.uid))
       .catch((error) => alertAuthError(dispatch, error))
   );
 }
@@ -257,9 +257,9 @@ export const logInAction = () => ({
   data: {}
 })
 
-export const updateUserData = (uid, doc) => ({
+export const updateUserData = (uid, email, doc) => ({
   type: Actions.UPDATE_USER_DATA,
-  data: { uid, ...doc.data() }
+  data: { uid, email: auth().currentUser.email, ...doc.data() }
 });
 
 export const logOutAction = () => ({
