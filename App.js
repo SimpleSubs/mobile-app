@@ -1,39 +1,42 @@
+/**
+ * @file Manages entire RN Expo app.
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import React, { useState, useRef, useEffect } from "react";
 import {
   StatusBar,
   StyleSheet,
   View,
-  YellowBox,
-  UIManager
+  YellowBox
 } from "react-native";
 import { SplashScreen } from "expo";
 import * as Font from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
-
 import Modal from "./components/modals/Modal";
 import InfoModal from "./components/modals/InfoModal";
-
 import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import thunk from "redux-thunk";
 import sandwichApp from "./redux/Reducers";
-
 import useLinking from "./navigation/useLinking";
 import StackNavigator from "./navigation/StackNavigator";
-
 import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
 
+// Ignore recurring "cycle" warning
 YellowBox.ignoreWarnings(
   ["Require cycle: components/modals/InputModal.js -> components/userFields/UserInputsList.js -> constants/DataActions.js -> components/modals/InputModal.js"]
 );
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
+// Creates store for Redux state management
 const store = createStore(sandwichApp, applyMiddleware(thunk));
 
+/**
+ * Renders entire RN app.
+ * @param {boolean} skipLoadingScreen Whether app should ignore loading screen.
+ * @return {React.ReactElement|null} Element to render.
+ * @constructor
+ */
 const App = ({ skipLoadingScreen }) => {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
   const [initialNavigationState, setInitialNavigationState] = useState();
@@ -63,6 +66,7 @@ const App = ({ skipLoadingScreen }) => {
     loadResourcesAndDataAsync();
   }, []);
 
+  // Renders nothing if app is still loading (and loading screen isn't skipped)
   if (!isLoadingComplete && !skipLoadingScreen) {
     return null;
   } else {

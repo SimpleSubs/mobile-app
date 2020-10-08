@@ -1,3 +1,7 @@
+/**
+ * @file Creates header component for screens in main stack.
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import React from "react";
 import {
   Text,
@@ -7,10 +11,18 @@ import {
 import AnimatedTouchable from "./AnimatedTouchable";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeArea } from "react-native-safe-area-context";
-
 import Colors from "../constants/Colors";
 import Layout from "../constants/Layout";
 
+/**
+ * "Blank" icon to render in place of a visible button/icon.
+ *
+ * Renders a button that is the same color as the header background
+ * (for spacing purposes).
+ *
+ * @return {React.ReactElement} Blank icon to render.
+ * @constructor
+ */
 const Spacer = () => (
   <Ionicons
     style={styles.navigateButtons}
@@ -20,6 +32,18 @@ const Spacer = () => (
   />
 )
 
+/**
+ * Renders standard header for pages in main stack.
+ *
+ * @param {string}                                             title         Title of page (to render in header).
+ * @param {Object}                                             [style={}]    Style object to apply to header.
+ * @param {{name: string, style: Object, onPress: function()}} [rightButton] Data for icon button to be rendered to the right of the title.
+ * @param {{name: string, style: Object, onPress: function()}} [leftButton]  Data for icon button to be rendered to the left of the title.
+ * @param {React.ReactElement}                                      [children]    Other elements to render within header (such as place order button on home screen).
+ *
+ * @return {React.ReactElement} Header element.
+ * @constructor
+ */
 const Header = ({ title, style = {}, rightButton, leftButton, children }) => (
   <View style={[styles.header, { paddingTop: styles.header.paddingVertical + useSafeArea().top }, style]}>
     {leftButton ? (

@@ -1,7 +1,7 @@
 import { InputTypes, TextTypes } from "./Inputs";
 import { EditActions } from "./DataActions";
 
-const RequiredFields = {
+export const RequiredFields = {
   email: {
     key: "email",
     title: "Email",

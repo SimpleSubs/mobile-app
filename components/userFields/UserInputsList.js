@@ -1,27 +1,42 @@
-import React, { useState, useEffect } from "react";
+/**
+ * @file Creates form for user data (register, settings screens, etc.).
+ * @author Emily Sturman <emily@sturman.org>
+ */
+import React, { useState } from "react";
 import {
   StyleSheet,
-  TouchableOpacity,
   Text,
   View,
   Keyboard
 } from "react-native";
 import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import { Ionicons } from "@expo/vector-icons";
-
 import { ValidatedPicker, ValidatedTextInput } from "./ValidatedInputs";
 import AnimatedTouchable from "../AnimatedTouchable";
-
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
 import { TextTypes, InputPresets, InputTypes } from "../../constants/Inputs";
 import { EditActions, openChangePasswordModal } from "../../constants/DataActions";
-
 import { closeModal, openModal, setModalProps, changePassword } from "../../redux/Actions";
 import { connect } from "react-redux";
 
+// Placeholder for a non-editable password value
 const PASSWORD_PLACEHOLDER = "********";
 
+/**
+ * Conditionally renders an edit button
+ *
+ * Renders create icon within a touchable based on a given edit action.
+ *
+ * @param {string|null} editAction     Key for an edit action to execute when the button is pressed.
+ * @param {Function}    openModal      Opens the top-level modal.
+ * @param {Function}    closeModal     Closes the top-level modal.
+ * @param {Function}    setModalProps  Sets top-level modal props.
+ * @param {Function}    changePassword Changes password in Firebase Auth.
+ *
+ * @return {React.ReactElement|null} Icon touchable to render.
+ * @constructor
+ */
 const EditButton = ({ editAction, openModal, closeModal, setModalProps, changePassword }) => {
   let action;
   switch (editAction) {
@@ -31,19 +46,45 @@ const EditButton = ({ editAction, openModal, closeModal, setModalProps, changePa
         changePassword(oldPassword, newPassword);
       }
       action = () => openChangePasswordModal(openModal, setModalProps, changePasswordAndClose);
-      break;
+      return (
+        <AnimatedTouchable endSize={0.8} onPress={action}>
+          <Ionicons name={"md-create"} color={Colors.primaryText} size={Layout.fonts.icon} style={styles.editIcon}/>
+        </AnimatedTouchable>
+      );
     default:
       return null;
   }
-  return (
-    <AnimatedTouchable endSize={0.8} onPress={action}>
-      <Ionicons name={"md-create"} color={Colors.primaryText} size={Layout.fonts.icon} style={styles.editIcon}/>
-    </AnimatedTouchable>
-  )
 }
 
-const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit, index, state, setState, openModal,
-                           closeModal, setModalProps, changePassword }) => {
+/**
+ * Returns validated text input to render within inputs list.
+ *
+ * Input may contain title field and edit button.
+ *
+ * @param {boolean}     editing          Whether user is editing data or creating new data.
+ * @param {string}      [value=]         Current value for text input.
+ * @param {Object}      item             Object containing data for input.
+ * @param {string}      item.placeholder Text input placeholder.
+ * @param {string}      item.textType    Type of text (such as "EMAIL"); see TextTypes for a full list.
+ * @param {string}      item.key         Key for input (used to access value in state)
+ * @param {boolean}     item.mutable     Whether input is mutable after creation.
+ * @param {string|null} item.editAction  Key for an edit action to execute when edit button is pressed; null renders no button.
+ * @param {string}      item.title       Title of field to display when editing.
+ * @param {Object[]}    inputRefs        Array of refs to inputs in inputs list.
+ * @param {Function}    addRef           Adds a ref to inputRefs.
+ * @param {Function}    submit           Submits data.
+ * @param {number}      index            Index of input (starts at 0)
+ * @param {Object}      state            Current values of inputs.
+ * @param {Function}    setState         Sets values of inputs (only sets specified values; others remain the same).
+ * @param {Function}    openModal        Opens top-level modal.
+ * @param {Function}    closeModal       Closes top-level modal.
+ * @param {Function}    setModalProps    Sets props for top-level modal.
+ * @param {Function}    changePassword   Changes password using Firebase Auth.
+ *
+ * @return {React.ReactElement} Validated text input to render in inputs list.
+ * @constructor
+ */
+const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit, index, state, setState, openModal, closeModal, setModalProps, changePassword }) => {
   const thisInput = (
     <ValidatedTextInput
       placeholder={item.placeholder}
@@ -90,6 +131,25 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
   );
 }
 
+/**
+ * Returns validated picker touchable to render within inputs list.
+ *
+ * Picker may contain title field.
+ *
+ * @param {boolean}     editing      Whether user is editing data or creating new data.
+ * @param {string}      value        Current value for picker.
+ * @param {Object}      item         Object containing data for input.
+ * @param {string[]}    item.options Options to display within picker.
+ * @param {string}      item.key     Key for input (used to access value in state)
+ * @param {boolean}     item.mutable Whether input is mutable after creation.
+ * @param {string}      item.title   Title of field to display when editing.
+ * @param {Function}    addRef       Adds a ref to inputRefs.
+ * @param {number}      index        Index of input (starts at 0)
+ * @param {Function}    setState     Sets values of inputs (only sets specified values; others remain the same).
+ *
+ * @return {React.ReactElement} Validated picker touchable to render in inputs list.
+ * @constructor
+ */
 const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }) => {
   const thisPicker = (
     <ValidatedPicker
@@ -105,7 +165,6 @@ const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }
       disabled={editing && !item.mutable}
     />
   );
-
   return (
     editing ? (
       <View style={styles.fieldContainer}>
@@ -116,8 +175,36 @@ const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }
   );
 }
 
-const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setState, openModal, closeModal, setModalProps,
-                 changePassword }) => {
+/**
+ * Returns validated input to render within inputs list.
+ *
+ * Input may contain title field and edit button.
+ *
+ * @param {boolean}     editing            Whether user is editing data or creating new data.
+ * @param {Object}      item               Object containing data for input.
+ * @param {string}      item.inputType     Type of input to render (e.g. "PICKER").
+ * @param {string}      item.key           Key for input (used to access value in state)
+ * @param {boolean}     item.mutable       Whether input is mutable after creation.
+ * @param {string}      [item.placeholder] Text input placeholder; only necessary if input is a text input.
+ * @param {string}      [item.textType]    Type of text (such as "EMAIL"); see TextTypes for a full list.=; only necessary if input is a text input.
+ * @param {string|null} [item.editAction]  Key for an edit action to execute when edit button is pressed; null renders no button; only necessary if input is a text input.
+ * @param {string[]}    [item.options]     Options to display within picker; only necessary if input is a picker.
+ * @param {string}      item.title         Title of field to display when editing.
+ * @param {Object[]}    inputRefs          Array of refs to inputs in inputs list.
+ * @param {Function}    addRef             Adds a ref to inputRefs.
+ * @param {Function}    submit             Submits data.
+ * @param {number}      index              Index of input (starts at 0)
+ * @param {Object}      state              Current values of inputs.
+ * @param {Function}    setState           Sets values of inputs (only sets specified values; others remain the same).
+ * @param {Function}    openModal          Opens top-level modal.
+ * @param {Function}    closeModal         Closes top-level modal.
+ * @param {Function}    setModalProps      Sets props for top-level modal.
+ * @param {Function}    changePassword     Changes password using Firebase Auth.
+ *
+ * @return {React.ReactElement|null} Validated input to render in inputs list; null if input type is invalid.
+ * @constructor
+ */
+const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setState, openModal, closeModal, setModalProps, changePassword }) => {
   switch (item.inputType) {
     case InputTypes.TEXT_INPUT:
       return (
@@ -153,9 +240,34 @@ const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setStat
   }
 };
 
-const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModal, setModalProps, editing, changePassword,
-                      loading, SubmitButton = () => null, ListFooterComponent = () => null,
-                      ListFooterComponentStyle = {}, ...props }) => {
+/**
+ * Returns a list that renders various validated inputs
+ * to create and edit user data.
+ *
+ * Renders a touchable that opens a picker modal for
+ * picker inputs and a text input with validation for
+ * text inputs; can also display titles of fields if
+ * editing data.
+ *
+ * @param {Object[]}                      data                                Array containing data to render each input.
+ * @param {Object}                        state                               Current values of inputs.
+ * @param {Function}                      setInputs                           Function to set the full state of inputs.
+ * @param {Function}                      onSubmit                            Function to submit data once validated.
+ * @param {Function}                      openModal                           Function to open top-level modal.
+ * @param {Function}                      closeModal                          Function to close top-level modal.
+ * @param {Function}                      setModalProps                       Function to set top-level modal props.
+ * @param {boolean}                       editing                             Whether user is editing data or creating new data.
+ * @param {Function}                      changePassword                      Changes password using Firebase Auth.
+ * @param {boolean}                       loading                             Whether app is currently loading.
+ * @param {React.Component|function:null} [SubmitButton=function:null]        Button to submit data (will be passed onPress and loading props)
+ * @param {React.Component|function:null} [ListFooterComponent=function:null] Component to render beneath inputs list but above submit button
+ * @param {Object}                        [ListFooterComponentStyle={}]       Style object to be applied to view containing submit button and ListFooterComponent
+ * @param {Object}                        props                               Any other props to pass to FlatList.
+ *
+ * @return {React.ReactElement} Flat list containing validated inputs and submit button.
+ * @constructor
+ */
+const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModal, setModalProps, editing, changePassword, loading, SubmitButton = () => null, ListFooterComponent = () => null, ListFooterComponentStyle = {}, ...props }) => {
   const [inputRefs, setInputRefs] = useState([]);
 
   const setState = (newState) => setInputs((prevState) => ({ ...prevState, ...newState }));
@@ -238,23 +350,8 @@ export default connect(mapStateToProps, mapDispatchToProps)(UserInputsList);
 
 const styles = StyleSheet.create({
   contentContainer: {
-    flex: 1,
     alignItems: "stretch",
     paddingHorizontal: 50
-  },
-  pickerTouchable: {
-    padding: 15,
-    backgroundColor: Colors.textInputColor,
-    borderRadius: 10,
-    marginBottom: 18,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  pickerTouchableText: {
-    fontFamily: "josefin-sans",
-    fontSize: Layout.fonts.body,
-    color: Colors.primaryText
   },
   footerContainer: {
     flexGrow: 1

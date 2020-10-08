@@ -1,11 +1,29 @@
+/**
+ * @file Manages screen for ordering from existing user presets.
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import React from "react";
 import OrderInputsList from "../../components/orders/OrderInputsList";
-
 import { createOrder, deleteOrder, editOrder } from "../../redux/Actions";
 import { connect } from "react-redux";
-import { DateField, PresetField } from "../../constants/RequiredOrderFields";
-import {READABLE_FORMAT} from "../../constants/Date";
+import { DateField, PresetField } from "../../constants/RequiredFields";
+import { READABLE_FORMAT } from "../../constants/Date";
 
+/**
+ * Renders screen for placing orders from existing user presets.
+ *
+ * Renders order-formatted screen with only date and preset fields; other
+ * fields are auto-completed once order is placed.
+ *
+ * @param {Object|null}                    focusedOrder Order currently being edited (null if creating new order).
+ * @param {function(Object,string)}        createOrder  Pushes new order to Firebase.
+ * @param {function(Object,string,string)} editOrder    Pushes edits for existing order to Firebase.
+ * @param {function(string)}               deleteOrder  Deletes existing order from Firebase.
+ * @param {Object}                         navigation   Navigation prop passed by React Navigation.
+ *
+ * @return {React.ReactElement} Element to render.
+ * @constructor
+ */
 const PresetOrderScreen = ({ focusedOrder, createOrder, editOrder, deleteOrder, navigation }) => {
   const cancelOrder = () => navigation.navigate("Home");
   return (
@@ -22,13 +40,12 @@ const PresetOrderScreen = ({ focusedOrder, createOrder, editOrder, deleteOrder, 
   )
 };
 
-const mapStateToProps = ({ focusedOrder, orders, orderPresets, user }) => ({
+const mapStateToProps = ({ focusedOrder, orders, user }) => ({
   focusedOrder: focusedOrder ? {
     key: focusedOrder,
     preset: orders[focusedOrder].title,
     date: orders[focusedOrder].date.format(READABLE_FORMAT)
   } : null,
-  orderPresets,
   uid: user.uid
 });
 

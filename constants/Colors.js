@@ -1,5 +1,10 @@
+/**
+ * @file Manages colors for app.
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import { Appearance } from "react-native-appearance";
 
+// Colors to display when phone is in light mode
 const LightColors = {
   accentColor: "#ffd541",
   backgroundColor: "#fff",
@@ -23,6 +28,7 @@ const LightColors = {
   mode: "LIGHT"
 };
 
+// Colors to display when phone is in dark mode
 const DarkColors = {
   accentColor: "#ffd541",
   backgroundColor: "#1f1f1f",
@@ -46,4 +52,5 @@ const DarkColors = {
   mode: "DARK"
 };
 
+// Exports either light or dark color scheme depending on phone settings
 export default Appearance.getColorScheme() === "dark" ? DarkColors : LightColors;

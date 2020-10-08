@@ -147,4 +147,4 @@ focused)
 editable within the app**
 * `orderOptions` (`Array` of `OrderOption`s): array containing order options for the Order screen
 * `userFields` (`Array` of `UserField`s): array containing user fields for the Settings and Register screens
-* `cutoffTime` (`moment`): `moment` object representing cutoff time for orders
+* `cutoffTime` (`Moment`): `moment` object representing cutoff time for orders

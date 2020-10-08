@@ -1,13 +1,27 @@
+/**
+ * @file Creates list of checkboxes from a given array of data.
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import React from "react";
 import {
   FlatList,
   StyleSheet
 } from "react-native";
 import { CheckBox } from "react-native-elements";
-
 import Colors from "../../constants/Colors";
 import Layout from "../../constants/Layout";
 
+/**
+ * Responds to check action by user.
+ *
+ * Toggles checkbox; removes item from selected items if ingredient is already
+ * checked, otherwise adds item to selected items.
+ *
+ * @param {string}   item          Item that user has tapped.
+ * @param {Function} setItems      Function to set selectedItems.
+ * @param {string[]} selectedItems Array containing all currently selected items.
+ * @param {boolean}  checked       Whether item is current checked.
+ */
 const onCheck = (item, setItems, selectedItems, checked) => {
   if (checked) {
     let newItemsArr = selectedItems.filter((ingredient) => ingredient !== item);
@@ -19,6 +33,19 @@ const onCheck = (item, setItems, selectedItems, checked) => {
   }
 };
 
+/**
+ * Renders a list of checkboxes.
+ *
+ * Returns a two column list of checkboxes; selected items are checked,
+ * unselected items are not.
+ *
+ * @param {string[]} selectedItems Array containing all currently selected items.
+ * @param {string[]} [itemsArr=[]] Array containing all checkbox items.
+ * @param {Function} setItems      Function to set value of selectedItems.
+ *
+ * @return {React.ReactElement} List of checkboxes.
+ * @constructor
+ */
 const Checkboxes = ({ selectedItems, itemsArr = [], setItems }) => (
   <FlatList
     style={styles.container}

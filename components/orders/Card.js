@@ -1,4 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+/**
+ * @file Creates card to display an order on home screen.
+ * @author Emily Sturman <emily@sturman.org>
+ */
+import React, { useRef } from "react";
 import {
   View,
   Text,
@@ -8,14 +12,30 @@ import {
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { Ionicons } from "@expo/vector-icons";
 import AnimatedTouchable from "../AnimatedTouchable";
-
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
-const isString = (str) => typeof str === "string";
 
-const getIngredientStr = (ingredients) => {
+/**
+ * Determines if provided input is a string.
+ *
+ * @param {*} val Input to be checked.
+ * @return {boolean} Whether input is a string.
+ */
+const isString = (val) => typeof val === "string";
+
+/**
+ * Combines all ingredients into one string.
+ *
+ * Combines string and array ingredient values into one comma-separated
+ * string with a capital first character.
+ *
+ * @param {Object<string, string|string[]>} ingredients Ingredient category mapped to selected value(s).
+ *
+ * @return {string} Comma-separated string containing all ingredients in order.
+ */
+export const getIngredientStr = (ingredients) => {
   let allIngredients = []
   for (let category in ingredients) {
     if (ingredients.hasOwnProperty(category)) {
@@ -33,10 +53,24 @@ const getIngredientStr = (ingredients) => {
   return ingredientStr.charAt(0).toUpperCase() + ingredientStr.slice(1).toLowerCase();
 }
 
+/**
+ * Returns icon rendered on card swipe.
+ *
+ * Renders icon that scales based on drag position; may either be trash icon (swipe right)
+ * or create icon (swipe left).
+ *
+ * @param {Animated.AnimatedInterpolation} progress   How far the card has been dragged.
+ * @param {string}                         icon       Name of icon to be rendered.
+ * @param {boolean}                        alignRight Whether icon should be rendered on right (true for swipe right).
+ *
+ * @return {React.ReactElement} Icon to be rendered on card swipe.
+ * @constructor
+ */
 const SwipeAction = ({ progress, icon, alignRight }) => {
   const scaleInterpolation = progress.interpolate({
-    inputRange: [0, 0.15, 1],
-    outputRange: [0.5, 1, 1]
+    inputRange: [0, 0.15],
+    outputRange: [0.5, 1],
+    extrapolate: "clamp"
   })
   return (
     <View style={[styles.swipeAction, alignRight && styles.swipeActionRight]}>
@@ -50,6 +84,21 @@ const SwipeAction = ({ progress, icon, alignRight }) => {
   );
 }
 
+/**
+ * Renders card to display orders.
+ *
+ * Renders a card displaying the title (for named orders), date, and ingredients of an
+ * order. Card may be swiped right to delete or swiped left/clicked to edit.
+ *
+ * @param {string}                          [title]     Title of order (for preset orders only).
+ * @param {string}                          date        Date of order (formatted as "dddd, MMMM Do").
+ * @param {Function}                        onPress     Function to execute when card is pressed (usually focuses order).
+ * @param {Function}                        onDelete    Function to delete order.
+ * @param {Object<string, string|string[]>} ingredients All order ingredients.
+ *
+ * @return {React.ReactElement} Card displaying sandwich order.
+ * @constructor
+ */
 const Card = ({ title, date, onPress, onDelete, ...ingredients }) => {
   const swipeableRef = useRef();
 
@@ -72,8 +121,8 @@ const Card = ({ title, date, onPress, onDelete, ...ingredients }) => {
     >
       <AnimatedTouchable onPress={onPress}>
         <View style={styles.cardContainer}>
-          {title && <Text style={styles.title}>{title}</Text>}
           <Text style={styles.date}>{date}</Text>
+          {title && <Text style={styles.title}>{title}</Text>}
           <Text style={styles.ingredients} numberOfLines={title ? 1 : 2}>{getIngredientStr(ingredients)}</Text>
         </View>
       </AnimatedTouchable>

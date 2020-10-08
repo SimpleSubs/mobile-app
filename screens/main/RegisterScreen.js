@@ -1,3 +1,7 @@
+/**
+ * @file Manages screen to register a new user
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import React, { useState } from "react";
 import {
   View,
@@ -6,23 +10,29 @@ import {
   TouchableOpacity
 } from "react-native";
 import { useSafeArea } from "react-native-safe-area-context";
-
-import AnimatedTouchable from "../../components/AnimatedTouchable";
 import InputsList from "../../components/userFields/UserInputsList";
 import SubmitButton from "../../components/userFields/SubmitButton";
-
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
-import { InputTypes, TextTypes } from "../../constants/Inputs";
 import { RegisterFields } from "../../constants/RequiredUserFields";
-
 import { createUser } from "../../redux/Actions";
 import { connect } from "react-redux";
 
+/**
+ * Renders screen to register/sign up user.
+ *
+ * @param {Object[]}                         registerUserFields Input fields to display in register screen.
+ * @param {function(string, string, Object)} createUser         Creates a user with the provided data.
+ * @param {Object}                           navigation         Navigation object passed by React Navigation.
+ *
+ * @return {React.ReactElement} Element to display.
+ * @constructor
+ */
 const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
   const [inputs, setInputs] = useState({});
   const inset = useSafeArea();
 
+  // Passes state to createUser action
   const createUserState = () => {
     let data = { ...inputs };
     for (let field of RegisterFields) {
@@ -31,6 +41,7 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
     createUser(inputs.email, inputs.password, data);
   };
 
+  // Button to submit form and register user
   const RegisterButton = (props) => <SubmitButton {...props} title={"Register"} />;
 
   return (
@@ -43,11 +54,7 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
         </View>
       )}
       ListFooterComponent={() => (
-        <TouchableOpacity
-          style={styles.linkTouchable}
-          onPress={() => navigation.navigate("Login")}
-          activeOpacity={0.5}
-        >
+        <TouchableOpacity style={styles.linkTouchable} onPress={() => navigation.navigate("Login")} activeOpacity={0.5}>
           <Text style={styles.linkTouchableText}>Already have an account? Click here to log in.</Text>
         </TouchableOpacity>
       )}

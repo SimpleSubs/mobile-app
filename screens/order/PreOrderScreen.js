@@ -1,10 +1,14 @@
+/**
+ * @file Manages home screen (main screen once user is signed in).
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import React from "react";
 import {
   View,
   StyleSheet
 } from "react-native";
 import Header from "../../components/Header";
-import DualOptionDisplay from "../../components/DualOptionDisplay";
+import MultipleOptionsList from "../../components/MultipleOptionsList";
 import Colors from "../../constants/Colors";
 
 const ORDER_PAGES = [
@@ -15,7 +19,7 @@ const ORDER_PAGES = [
 const PreOrderScreen = ({ navigation }) => (
   <View style={styles.container}>
     <Header title={"Order"} leftButton={{ name: "md-close", onPress: () => navigation.pop() }} />
-    <DualOptionDisplay pages={ORDER_PAGES} navigation={navigation} />
+    <MultipleOptionsList pages={ORDER_PAGES} navigation={navigation} />
   </View>
 );
 

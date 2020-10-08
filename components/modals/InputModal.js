@@ -1,27 +1,39 @@
+/**
+ * @file Creates modal containing a form (inputs and submit button).
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text
 } from "react-native";
-import AnimatedTouchable from "../AnimatedTouchable";
 import InputsList from "../userFields/UserInputsList";
-
+import SubmitButton from "../userFields/SubmitButton";
 import Colors from "../../constants/Colors";
 import Layout from "../../constants/Layout";
 import ModalTypes from "../../constants/ModalTypes";
 
-const InputModalContent = ({ inputData, setModalProps, title, buttonData, onSubmit }) => {
+/**
+ * Renders modal containing validated inputs and submit button.
+ *
+ * Uses InputsList component to render inputs; used for forgot
+ * password and change password modals.
+ *
+ * @see InputsList
+ *
+ * @param {Object[]} inputData     Data for InputsList.
+ * @param {Function} setModalProps Function to change/set props for modal.
+ * @param {string}   title         String to display at the top of the modal.
+ * @param {string}   buttonTitle   String to display within submit button.
+ * @param {Function} onSubmit      Function to execute when submit button is pressed.
+ *
+ * @returns {React.ReactElement} Component representing modal contents.
+ * @constructor
+ */
+const InputModalContent = ({ inputData, setModalProps, title, buttonTitle, onSubmit }) => {
   const [state, setState] = useState({});
-
-  const SubmitButton = ({ onPress }) => (
-    <AnimatedTouchable style={styles.touchable} onPress={onPress} {...buttonData}>
-      <Text style={styles.touchableText}>{buttonData.title}</Text>
-    </AnimatedTouchable>
-  );
-
-  const onClose = () => {
-    setState({});
-  }
+  const Submit = (props) => <SubmitButton {...props} title={buttonTitle} />;
+  const onClose = () => setState({});
 
   useEffect(() => {
     setModalProps({ onClose });
@@ -34,7 +46,7 @@ const InputModalContent = ({ inputData, setModalProps, title, buttonData, onSubm
       state={state}
       setInputs={setState}
       ListHeaderComponent={() => <Text style={styles.title}>{title}</Text>}
-      SubmitButton={SubmitButton}
+      SubmitButton={Submit}
       onSubmit={() => onSubmit(state)}
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
@@ -47,13 +59,29 @@ const InputModalContent = ({ inputData, setModalProps, title, buttonData, onSubm
   )
 };
 
-const inputModalProps = (title, inputData, buttonData, onSubmit, setModalProps) => ({
+/**
+ * Generates props to pass to global Modal component.
+ *
+ * Uses InputModalContent to generate props for a center spring
+ * modal containing validated inputs, a title, and a submit button.
+ *
+ * @see InputModalContent
+ *
+ * @param {string}   title         String to be displayed at the top of the modal.
+ * @param {Object[]} inputData     Data to be passed to InputsList.
+ * @param {string}   buttonTitle   String to display in submit button.
+ * @param {Function} onSubmit      Function to execute when submit button is pressed.
+ * @param {Function} setModalProps Function to change/set props for top-level modal.
+ *
+ * @returns {{ children: React.ReactElement, type: string }} Props to pass to top-level modal.
+ */
+const inputModalProps = (title, inputData, buttonTitle, onSubmit, setModalProps) => ({
   type: ModalTypes.CENTER_SPRING_MODAL,
   children: (
     <InputModalContent
       inputData={inputData}
       title={title}
-      buttonData={buttonData}
+      buttonTitle={buttonTitle}
       onSubmit={onSubmit}
       setModalProps={setModalProps}
     />
@@ -71,41 +99,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 0
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: Colors.textInputColor,
-    padding: 15,
-    fontFamily: "josefin-sans",
-    fontSize: Layout.fonts.body,
-    marginVertical: 10,
-    borderRadius: 10,
-    color: Colors.primaryText
-  },
-  touchable: {
-    borderRadius: 100,
-    backgroundColor: Colors.accentColor,
-    padding: 20,
-    marginTop: 20
-  },
-  touchableText: {
-    color: Colors.textOnBackground,
-    fontFamily: "josefin-sans-bold",
-    fontSize: Layout.fonts.title,
-    textAlign: "center"
-  },
-  loginButton: {
-    borderRadius: 100,
-    backgroundColor: Colors.accentColor,
-    padding: 20,
-    marginBottom: 20,
-    marginTop: 50
-  },
-  loginButtonText: {
-    color: Colors.textOnBackground,
-    fontFamily: "josefin-sans-bold",
-    fontSize: Layout.fonts.title,
-    textAlign: "center"
   },
   title: {
     fontFamily: "josefin-sans-bold",

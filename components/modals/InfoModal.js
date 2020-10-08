@@ -1,3 +1,7 @@
+/**
+ * @file Creates top-level info modal.
+ * @author Emily Sturman <emily@sturman.org>
+ */
 import React, { useRef, useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -5,20 +9,32 @@ import {
   Text,
   TouchableOpacity
 } from "react-native";
-
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
-
 import { setInfoMessage } from "../../redux/Actions";
 import { connect } from "react-redux";
 
-const PADDING_HORIZONTAL = 10;
-const PADDING_VERTICAL = 40;
+// Constants for horizontal/vertical margin
+const MARGIN_HORIZONTAL = 10;
+const MARGIN_VERTICAL = 40;
+// Time in seconds until modal automatically closes
 const CLOSE_MODAL_TIMEOUT = 10;
+// String that represents a closed modal
 export const CLOSED_INFO_MODAL = "    ";
 
 const TouchableAnimated = Animated.createAnimatedComponent(TouchableOpacity);
 
+/**
+ * Computes translate animation style for modal.
+ *
+ * Interpolates scale animated value (from 0 to 1) to correct values for modal
+ * to slide from bottom position to offscreen.
+ *
+ * @param {Animated.Value} animated     Animated value for translate/slide animation.
+ * @param {number}         distToTravel Distance required for modal to slide completely offscreen.
+ *
+ * @returns {Object} Style object to be applied to the modal.
+ */
 const getModalStyle = (animated, distToTravel) => {
   const interpolation = animated.interpolate({
     inputRange: [0, 1],
@@ -27,6 +43,15 @@ const getModalStyle = (animated, distToTravel) => {
   return { transform: [{ translateY: interpolation }] };
 };
 
+/**
+ * Triggers toggle animation for opening/closing modal.
+ *
+ * Starts timing animation for translate; closes modal
+ * if modal is open, opens modal if modal is closed.
+ *
+ * @param {boolean}        open     Whether modal is currently being opened.
+ * @param {Animated.Value} animated Animated value for translate animation.
+ */
 const toggleAnimation = (open, animated) => {
   animated.setValue(open ? 0 : 1);
   Animated.timing(animated, {
@@ -36,6 +61,19 @@ const toggleAnimation = (open, animated) => {
   }).start();
 };
 
+/**
+ * Renders a modal that displays important info messages at
+ * various places in the app.
+ *
+ * Uses Animated API to animate slide animation; modal also closes when tapped
+ * or when it times out.
+ *
+ * @param {string}   infoMessage Message to be displayed in modal; CLOSED_INFO_MODAL message will hide the modal.
+ * @param {Function} closeModal  Function to close the modal.
+ *
+ * @returns {React.ReactElement} Component representing modal.
+ * @constructor
+ */
 const InfoModal = ({ infoMessage, closeModal }) => {
   const animated = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef();
@@ -53,7 +91,7 @@ const InfoModal = ({ infoMessage, closeModal }) => {
     <TouchableAnimated
       onLayout={({ nativeEvent }) => setHeight(nativeEvent.layout.height)}
       onPress={closeModal}
-      style={[styles.container, getModalStyle(animated, modalHeight + PADDING_VERTICAL)]}
+      style={[styles.container, getModalStyle(animated, modalHeight + MARGIN_VERTICAL)]}
       activeOpacity={1}
     >
       <Text style={styles.text}>{infoMessage}</Text>
@@ -75,9 +113,9 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     zIndex: 1000000,
-    width: Layout.window.width - PADDING_HORIZONTAL * 2,
-    left: PADDING_HORIZONTAL,
-    bottom: PADDING_VERTICAL,
+    width: Layout.window.width - MARGIN_HORIZONTAL * 2,
+    left: MARGIN_HORIZONTAL,
+    bottom: MARGIN_VERTICAL,
     backgroundColor: Colors.infoModal,
     padding: 15,
     paddingTop: 17,
