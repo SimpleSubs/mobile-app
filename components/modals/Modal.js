@@ -82,11 +82,13 @@ const toggleAnimation = (open, timingAnimated, springAnimated, onClose, type) =>
     tension: 120,
     friction: 5,
     restDisplacementThreshold: 0.7,
-    toValue: endValue
+    toValue: endValue,
+    useNativeDriver: false
   }).start(closeHandler(ModalTypes.CENTER_SPRING_MODAL));
   Animated.timing(timingAnimated, {
     duration: 100,
-    toValue: endValue
+    toValue: endValue,
+    useNativeDriver: false
   }).start(closeHandler(ModalTypes.SLIDE_UP_MODAL));
 }
 

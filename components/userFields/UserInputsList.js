@@ -9,7 +9,7 @@ import {
   View,
   Keyboard
 } from "react-native";
-import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
+import { KeyboardAwareFlatList } from "@codler/react-native-keyboard-aware-scroll-view";
 import { Ionicons } from "@expo/vector-icons";
 import { ValidatedPicker, ValidatedTextInput } from "./ValidatedInputs";
 import AnimatedTouchable from "../AnimatedTouchable";
@@ -95,14 +95,14 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
       onChangeText={(text) => setState({ [item.key]: text })}
       onSubmitEditing={() => {
         if (inputRefs.length > index + 1) {
-          if (inputRefs[index + 1].focus) { inputRefs[index + 1].focus() }
+          if (inputRefs[index + 1].ref.focus) { inputRefs[index + 1].ref.focus() }
         } else {
           submit();
         }
       }}
       editable={editing && item.mutable && item.textType !== TextTypes.PASSWORD}
       otherInputs={item.key === "confirmPassword" ? [state.password || ""] : []}
-      setRef={(ref) => addRef(ref, index)}
+      setRef={(ref, validate) => addRef(ref, index, validate)}
       contentContainerStyle={editing && styles.inputContentContainer}
       style={editing && (
         item.editAction || !item.mutable
@@ -153,7 +153,7 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
 const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }) => {
   const thisPicker = (
     <ValidatedPicker
-      setRef={(ref) => addRef(ref, index)}
+      setRef={(ref, validate) => addRef(ref, index, validate)}
       value={value}
       onValueChange={(value) => setState({ [item.key]: value })}
       options={item.options}
@@ -272,26 +272,16 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
 
   const setState = (newState) => setInputs((prevState) => ({ ...prevState, ...newState }));
 
-  const addRef = (newRef, index) => {
+  const addRef = (newRef, index, validate) => {
     setInputRefs((prevState) => {
       let newState = prevState;
-      newState[index] = newRef;
+      newState[index] = { ref: newRef, validate: validate };
       return newState;
     })
   };
 
   const submit = () => {
-    let valid = inputRefs.map(({ props }, index) => {
-      const field = data[index];
-      switch (field.inputType) {
-        case InputTypes.TEXT_INPUT:
-          return props.onEndEditing();
-        case InputTypes.PICKER:
-          return props.onLongPress();
-        default:
-          return true;
-      }
-    }).reduce((a, b) => a && b);
+    let valid = inputRefs.map(({ validate }) => validate()).reduce((a, b) => a && b);
     if (valid) {
       Keyboard.dismiss();
       onSubmit(state);

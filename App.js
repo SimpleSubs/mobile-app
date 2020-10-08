@@ -7,9 +7,9 @@ import {
   StatusBar,
   StyleSheet,
   View,
-  YellowBox
+  LogBox
 } from "react-native";
-import { SplashScreen } from "expo";
+import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
 import Modal from "./components/modals/Modal";
@@ -24,7 +24,7 @@ import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
 
 // Ignore recurring "cycle" warning
-YellowBox.ignoreWarnings(
+LogBox?.ignoreLogs(
   ["Require cycle: components/modals/InputModal.js -> components/userFields/UserInputsList.js -> constants/DataActions.js -> components/modals/InputModal.js"]
 );
 
@@ -47,7 +47,7 @@ const App = ({ skipLoadingScreen }) => {
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-        SplashScreen.preventAutoHide();
+        await SplashScreen.preventAutoHideAsync();
         setInitialNavigationState(await getInitialState()); // Load our initial navigation state
         // Load fonts
         await Font.loadAsync({
@@ -60,7 +60,7 @@ const App = ({ skipLoadingScreen }) => {
         console.warn(e);
       } finally {
         setLoadingComplete(true);
-        SplashScreen.hide();
+        await SplashScreen.hideAsync();
       }
     }
     loadResourcesAndDataAsync();

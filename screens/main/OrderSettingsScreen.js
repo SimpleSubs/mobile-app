@@ -34,7 +34,7 @@ const OrderSettingsScreen = ({ orderPresets, uid, watchPresets, deletePreset, fo
   // Focuses an existing order preset and navigates to preset screen.
   const focusPresetNavigate = (id) => {
     focusPreset(id);
-    navigation.navigate("Preset");
+    navigation.navigate("Order", { screen: "Preset Order" });
   }
 
   // Creates listener for user's presets.

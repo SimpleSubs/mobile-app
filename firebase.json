@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "public": "web-build",
+    "site": "simple-subs-app",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

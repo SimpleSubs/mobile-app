@@ -152,7 +152,7 @@ export const ValidatedTextInput = ({ setRef, validate, value, otherInputs = [], 
       <TextInput
         {...props}
         value={value}
-        ref={setRef}
+        ref={(ref) => setRef(ref, () => isValidText(validate, value, setError, fixValue, otherInputs))}
         onEndEditing={() => isValidText(validate, value, setError, fixValue, otherInputs)}
         style={[styles.input, styles.inputText, style]}
       />
@@ -200,9 +200,8 @@ const ValidatedPickerComponent = ({ setRef, value, onValueChange, options, style
       <TouchableOpacity
         {...props}
         style={[styles.input, styles.pickerTouchable, style]}
-        onLongPress={() => isValidPicker(value, options, setError)}
         onPress={() => openModal(getPickerProps(myPicker))}
-        ref={setRef}
+        ref={(ref) => setRef(ref, () => isValidPicker(value, options, setError))}
       >
         <Text style={styles.inputText}>{value}</Text>
         <Ionicons name={"md-arrow-dropdown"} color={Colors.primaryText} size={Layout.fonts.body}/>

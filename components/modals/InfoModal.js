@@ -35,12 +35,12 @@ const TouchableAnimated = Animated.createAnimatedComponent(TouchableOpacity);
  *
  * @returns {Object} Style object to be applied to the modal.
  */
-const getModalStyle = (animated, distToTravel) => {
-  const interpolation = animated.interpolate({
+const getModalStyle = (animated) => {
+  const scaleInterpolation = animated.interpolate({
     inputRange: [0, 1],
-    outputRange: [distToTravel, 0]
+    outputRange: [0.9, 1]
   });
-  return { transform: [{ translateY: interpolation }] };
+  return { transform: [{ scale: scaleInterpolation }], opacity: animated };
 };
 
 /**
@@ -55,7 +55,7 @@ const getModalStyle = (animated, distToTravel) => {
 const toggleAnimation = (open, animated) => {
   animated.setValue(open ? 0 : 1);
   Animated.timing(animated, {
-    duration: 100,
+    duration: 50,
     toValue: open ? 1 : 0,
     useNativeDriver: true
   }).start();
@@ -77,7 +77,6 @@ const toggleAnimation = (open, animated) => {
 const InfoModal = ({ infoMessage, closeModal }) => {
   const animated = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef();
-  const [modalHeight, setHeight] = useState(0);
 
   useEffect(() => {
     if (timeoutRef.current) {
@@ -89,9 +88,8 @@ const InfoModal = ({ infoMessage, closeModal }) => {
 
   return (
     <TouchableAnimated
-      onLayout={({ nativeEvent }) => setHeight(nativeEvent.layout.height)}
       onPress={closeModal}
-      style={[styles.container, getModalStyle(animated, modalHeight + MARGIN_VERTICAL)]}
+      style={[styles.container, getModalStyle(animated)]}
       activeOpacity={1}
     >
       <Text style={styles.text}>{infoMessage}</Text>
