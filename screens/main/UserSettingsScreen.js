@@ -12,7 +12,7 @@ import SubmitButton from "../../components/userFields/SubmitButton";
 import Header from "../../components/Header";
 import { connect } from "react-redux";
 import { watchUserData, editUserData } from "../../redux/Actions";
-import { SettingsFields } from "../../constants/RequiredUserFields";
+import { EmailField, PasswordField } from "../../constants/RequiredFields";
 import Colors from "../../constants/Colors";
 
 /**
@@ -57,7 +57,7 @@ const UserSettingsScreen = ({ user, userFields, watchUserData, editUserData, nav
 
 const mapStateToProps = ({ user, stateConstants }) => ({
   user,
-  userFields: [...SettingsFields, ...stateConstants.userFields]
+  userFields: [EmailField, PasswordField, ...stateConstants.userFields]
 });
 
 const mapDispatchToProps = (dispatch) => ({

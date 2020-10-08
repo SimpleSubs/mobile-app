@@ -2,8 +2,8 @@
  * @file Manages fields to display in orders that may not be changed by admin.
  * @author Emily Sturman <emily@sturman.org>
  */
-import {InputTypes, TextTypes} from "./Inputs";
-import { DynamicOrderOptions } from "./DataActions";
+import { InputTypes, TextTypes } from "./Inputs";
+import { DynamicOrderOptions, EditActions } from "./DataActions";
 
 // Text input to set title for preset
 export const TitleField = {
@@ -43,7 +43,8 @@ export const EmailField = {
   title: "Email",
   placeholder: "Email",
   inputType: InputTypes.TEXT_INPUT,
-  textType: TextTypes.EMAIL
+  textType: TextTypes.EMAIL,
+  mutable: false
 };
 
 export const PasswordField = {
@@ -51,7 +52,9 @@ export const PasswordField = {
   title: "Password",
   placeholder: "Password",
   inputType: InputTypes.TEXT_INPUT,
-  textType: TextTypes.PASSWORD
+  textType: TextTypes.PASSWORD,
+  mutable: true,
+  editAction: EditActions.CHANGE_PASSWORD
 };
 
 export const NewPasswordField = {

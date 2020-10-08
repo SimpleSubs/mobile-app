@@ -14,9 +14,11 @@ import InputsList from "../../components/userFields/UserInputsList";
 import SubmitButton from "../../components/userFields/SubmitButton";
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
-import { RegisterFields } from "../../constants/RequiredUserFields";
+import { EmailField, NewPasswordField, ConfirmPasswordField } from "../../constants/RequiredFields";
 import { createUser } from "../../redux/Actions";
 import { connect } from "react-redux";
+
+const REGISTER_FIELDS = [EmailField, NewPasswordField, ConfirmPasswordField];
 
 /**
  * Renders screen to register/sign up user.
@@ -35,7 +37,7 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
   // Passes state to createUser action
   const createUserState = () => {
     let data = { ...inputs };
-    for (let field of RegisterFields) {
+    for (let field of REGISTER_FIELDS) {
       delete data[field.key];
     }
     createUser(inputs.email, inputs.password, data);
@@ -68,7 +70,7 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
 };
 
 const mapStateToProps = ({ stateConstants }) => ({
-  registerUserFields: [...RegisterFields, ...stateConstants.userFields]
+  registerUserFields: [...REGISTER_FIELDS, ...stateConstants.userFields]
 });
 
 const mapDispatchToProps = (dispatch) => ({

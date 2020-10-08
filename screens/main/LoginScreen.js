@@ -16,12 +16,14 @@ import InputsList from "../../components/userFields/UserInputsList";
 import SubmitButton from "../../components/userFields/SubmitButton";
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
-import { LoginFields, RequiredFields } from "../../constants/RequiredUserFields";
+import { EmailField, PasswordField } from "../../constants/RequiredFields";
 import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../redux/Actions";
 import { connect } from "react-redux";
 
 // Icon to display at the top of the screen.
 const MAIN_ICON = require("../../assets/images/icon.png");
+// Fields required for login
+const LOGIN_FIELDS = [EmailField, PasswordField];
 
 /**
  * Renders login screen.
@@ -60,7 +62,7 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
 
   const openForgotPasswordModal = () => openModal(inputModalProps(
     "Reset Password",
-    [{ ...RequiredFields.email, placeholder: "Your email address" }],
+    [{ ...EmailField, placeholder: "Your email address" }],
     "Send email",
     resetPassword,
     setModalProps
@@ -92,7 +94,7 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
           </TouchableOpacity>
         </View>
       )}
-      data={LoginFields}
+      data={LOGIN_FIELDS}
       state={inputs}
       setInputs={setInputs}
       SubmitButton={LoginButton}
