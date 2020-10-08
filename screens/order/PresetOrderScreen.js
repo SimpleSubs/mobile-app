@@ -8,7 +8,6 @@ import {READABLE_FORMAT} from "../../constants/Date";
 
 const PresetOrderScreen = ({ focusedOrder, createOrder, editOrder, deleteOrder, navigation }) => {
   const cancelOrder = () => navigation.navigate("Home");
-  console.log(focusedOrder);
   return (
     <OrderInputsList
       title={"Preset Order"}
@@ -36,7 +35,7 @@ const mapStateToProps = ({ focusedOrder, orders, orderPresets, user }) => ({
 const mapDispatchToProps = (dispatch) => ({
   createOrder: (data, uid) => createOrder(dispatch, data, uid),
   editOrder: (data, id, uid) => editOrder(dispatch, data, id, uid),
-  deleteOrder: (id, uid) => deleteOrder(dispatch, id, uid),
+  deleteOrder: (id) => deleteOrder(dispatch, id),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(PresetOrderScreen);

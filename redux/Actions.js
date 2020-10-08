@@ -20,16 +20,14 @@ const Actions = {
 
 export default Actions;
 
-const myOrders = (uid) => (
-  firestore.collection("orders")
-    .doc(uid)
-    .collection("myOrders")
-);
+const allOrders = firestore.collection("allOrders");
+
+const myOrders = (uid) => allOrders.where("uid", "==", uid);
 
 const myUserData = (uid) => firestore.collection("userData").doc(uid);
 
 const myPresets = (uid) => (
-  firestore.collection("orderPresets")
+  firestore.collection("userData")
     .doc(uid)
     .collection("myPresets")
 );
@@ -53,12 +51,10 @@ const successAction = (message, dispatch) => {
 
 export const createOrder = (dispatch, data, uid) => {
   dispatch(startLoading());
-  let newDate = toISO(data.date);
-  let dataToPush = { ...data };
-  delete dataToPush.date;
+  let dataToPush = { ...data, date: toISO(data.date), uid };
   return (
-    myOrders(uid).doc(newDate)
-      .set(dataToPush)
+    allOrders
+      .add(dataToPush)
       .then(() => successAction("Order created successfully", dispatch))
       .catch((error) => alertFirestoreError(dispatch, error))
   );
@@ -66,29 +62,20 @@ export const createOrder = (dispatch, data, uid) => {
 
 export const editOrder = (dispatch, data, id, uid) => {
   dispatch(startLoading());
-  let newDate = toISO(data.date);
-  let dataToPush = { ...data };
-  delete dataToPush.date;
-  if (newDate !== id) {
-    return Promise.all([
-      myOrders(uid).doc(id).delete(),
-      myOrders(uid).doc(newDate).set(dataToPush)
-    ]).then(() => successAction("Order updated successfully", dispatch))
-      .catch((error) => alertFirestoreError(dispatch, error));
-  } else {
-    return (
-      myOrders(uid).doc(id)
-        .set(dataToPush)
-        .then(() => successAction("Order updated successfully", dispatch))
-        .catch((error) => alertFirestoreError(dispatch, error))
-    );
-  }
+  let dataToPush = { ...data, date: toISO(data.date), uid };
+  return (
+    allOrders
+      .doc(id)
+      .set(dataToPush)
+      .then(() => successAction("Order updated successfully", dispatch))
+      .catch((error) => alertFirestoreError(dispatch, error))
+  );
 };
 
-export const deleteOrder = (dispatch, id, uid) => {
+export const deleteOrder = (dispatch, id) => {
   dispatch(startLoading());
   return (
-    myOrders(uid).doc(id)
+    allOrders.doc(id)
       .delete()
       .then(() => successAction("Order deleted successfully", dispatch))
       .catch((error) => alertFirestoreError(dispatch, error))
@@ -98,8 +85,8 @@ export const deleteOrder = (dispatch, id, uid) => {
 export const createPreset = (dispatch, data, uid) => {
   dispatch(startLoading());
   return (
-    myPresets(uid).doc(data.title)
-      .set(data)
+    myPresets(uid)
+      .add(data)
       .then(() => successAction("Preset created successfully", dispatch))
       .catch((error) => alertFirestoreError(dispatch, error))
   );
@@ -109,18 +96,10 @@ export const editPreset = (dispatch, data, id, uid) => {
   dispatch(startLoading());
   let dataToPush = { ...data };
   delete dataToPush.key;
-  if (data.title !== id) {
-    return Promise.all([
-      myOrders(uid).doc(id).delete(),
-      myPresets(uid).doc(data.title).set(dataToPush)
-    ]).then(() => successAction("Preset updated successfully", dispatch))
-      .catch((error) => alertFirestoreError(dispatch, error))
-  } else {
-    return myPresets(uid).doc(id)
-      .set(dataToPush)
-      .then(() => successAction("Preset updated successfully", dispatch))
-      .catch((error) => alertFirestoreError(dispatch, error))
-  }
+  return myPresets(uid).doc(id)
+    .set(dataToPush)
+    .then(() => successAction("Preset updated successfully", dispatch))
+    .catch((error) => alertFirestoreError(dispatch, error))
 };
 
 export const deletePreset = (dispatch, id, uid) => {
@@ -226,11 +205,13 @@ export const setInfoMessage = (message) => ({
 export const updateOrders = (querySnapshot) => {
   let orders = {};
   querySnapshot.forEach((doc) => {
-    orders[doc.id] = {
+    let data = {
       ...doc.data(),
-      date: moment(doc.id),
+      date: moment(doc.data().date),
       key: doc.id
     };
+    delete data.uid;
+    orders[doc.id] = data;
   });
   return {
     type: Actions.UPDATE_ORDERS,
@@ -257,9 +238,9 @@ export const logInAction = () => ({
   data: {}
 })
 
-export const updateUserData = (uid, email, doc) => ({
+export const updateUserData = (uid, doc) => ({
   type: Actions.UPDATE_USER_DATA,
-  data: { uid, email: auth().currentUser.email, ...doc.data() }
+  data: {uid, email: auth().currentUser.email, ...doc.data()}
 });
 
 export const logOutAction = () => ({
@@ -296,10 +277,7 @@ export const updateConstants = (data) => ({
 export const watchOrders = (dispatch, uid) => (
   myOrders(uid).onSnapshot(
     (querySnapshot) => dispatch(updateOrders(querySnapshot)),
-    (error) => {
-      console.log("this is the problem");
-      alertFirestoreError(dispatch, error)
-    }
+    (error) => alertFirestoreError(dispatch, error)
   )
 );
 
@@ -353,7 +331,7 @@ export const getAuthData = (dispatch, onSuccess, onError) => {
       dispatch(updateOrders(ordersSnapshot));
       dispatch(updateUserData(uid, userData));
       dispatch(updateConstants(stateConstants.data()));
-      dispatch(updatePresets(presetsSnapshot))
+      dispatch(updatePresets(presetsSnapshot));
       onSuccess();
     }).catch((error) => {
       alertFirestoreError(dispatch, error);

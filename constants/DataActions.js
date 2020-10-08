@@ -15,7 +15,7 @@ export const EditActions = {
 const isSchoolDay = (date) => date.day() > 0 && date.day() < 6;
 
 export const getDateOptions = (orders, focusedOrder, cutoffTime) => {
-  const orderKeys = Object.keys(orders);
+  const orderDates = Object.keys(orders).map((id) => orders[id].date.format(ISO_FORMAT));
   let dateOptions = [];
   let date = moment();
   if (date.isAfter(cutoffTime)) {
@@ -24,7 +24,7 @@ export const getDateOptions = (orders, focusedOrder, cutoffTime) => {
   for (let i = 0; i < 14; i++) {
     let isoDate = date.format(ISO_FORMAT);
     // date must be a school day (Mon-Fri) and there must be no other order on that date
-    if (isSchoolDay(date) && (!orderKeys.includes(isoDate) || (focusedOrder && focusedOrder.key === isoDate))) {
+    if (isSchoolDay(date) && (!orderDates.includes(isoDate) || (focusedOrder && focusedOrder.key === isoDate))) {
       dateOptions.push(toReadable(isoDate));
     }
     date.add(1, "days");

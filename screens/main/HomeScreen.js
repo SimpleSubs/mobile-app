@@ -110,7 +110,7 @@ const mapDispatchToProps = (dispatch) => ({
   logOut: () => logOut(dispatch),
   focusOrder: (id) => dispatch(focusOrder(id)),
   unfocusOrder: () => dispatch(unfocusOrder()),
-  deleteOrder: (id, uid) => deleteOrder(dispatch, id, uid),
+  deleteOrder: (id) => deleteOrder(dispatch, id),
   watchOrders: (uid) => watchOrders(dispatch, uid)
 })
 

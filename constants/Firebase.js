@@ -1,11 +1,6 @@
 import { initializeApp, firestore as db, auth as firebaseAuth } from "firebase";
+import firebaseConfig from "../firebase-config";
 import "firebase/firestore";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBIV-fwIGwS9sNbGxHH_kCTbx_BbpAJC2s",
-  authDomain: "sandwich-orders.firebaseapp.com",
-  projectId: "sandwich-orders"
-};
 
 initializeApp(firebaseConfig);
 

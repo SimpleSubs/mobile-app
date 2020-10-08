@@ -1,4 +1,5 @@
 import { InputTypes, TextTypes } from "./Inputs";
+import { EditActions } from "./DataActions";
 
 const RequiredFields = {
   email: {
@@ -13,9 +14,10 @@ const RequiredFields = {
     key: "password",
     title: "Password",
     placeholder: "Password",
-    mutable: true,
+    mutable: false,
     inputType: InputTypes.TEXT_INPUT,
-    textType: TextTypes.PASSWORD
+    textType: TextTypes.PASSWORD,
+    editAction: EditActions.CHANGE_PASSWORD
   },
   confirmPassword: {
     key: "confirmPassword",
