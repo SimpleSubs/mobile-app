@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Animated,
   Text,
-  TouchableOpacity
+  TouchableHighlight,
 } from "react-native";
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
@@ -22,7 +22,7 @@ const CLOSE_MODAL_TIMEOUT = 10;
 // String that represents a closed modal
 export const CLOSED_INFO_MODAL = "    ";
 
-const TouchableAnimated = Animated.createAnimatedComponent(TouchableOpacity);
+const TouchableAnimated = Animated.createAnimatedComponent(TouchableHighlight);
 
 /**
  * Computes translate animation style for modal.
@@ -49,16 +49,20 @@ const getModalStyle = (animated) => {
  * Starts timing animation for translate; closes modal
  * if modal is open, opens modal if modal is closed.
  *
- * @param {boolean}        open     Whether modal is currently being opened.
- * @param {Animated.Value} animated Animated value for translate animation.
+ * @param {boolean}        open           Whether modal is currently being opened.
+ * @param {Animated.Value} animated       Animated value for translate animation.
+ * @param {function()}     displayMessage Function that displays the new message on the modal (ensures that message doesn't disappear until after animation).
  */
-const toggleAnimation = (open, animated) => {
+const toggleAnimation = (open, animated, displayMessage) => {
   animated.setValue(open ? 0 : 1);
+  if (open) displayMessage();
   Animated.timing(animated, {
-    duration: 50,
+    duration: 100,
     toValue: open ? 1 : 0,
     useNativeDriver: true
-  }).start();
+  }).start(() => {
+    if (!open) displayMessage();
+  });
 };
 
 /**
@@ -75,6 +79,7 @@ const toggleAnimation = (open, animated) => {
  * @constructor
  */
 const InfoModal = ({ infoMessage, closeModal }) => {
+  const [displayedMessage, displayMessage] = useState(infoMessage);
   const animated = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef();
 
@@ -82,7 +87,7 @@ const InfoModal = ({ infoMessage, closeModal }) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    toggleAnimation(infoMessage !== CLOSED_INFO_MODAL, animated);
+    toggleAnimation(infoMessage !== CLOSED_INFO_MODAL, animated, () => displayMessage(infoMessage));
     timeoutRef.current = setTimeout(closeModal, CLOSE_MODAL_TIMEOUT * 1000);
   }, [infoMessage]);
 
@@ -90,9 +95,10 @@ const InfoModal = ({ infoMessage, closeModal }) => {
     <TouchableAnimated
       onPress={closeModal}
       style={[styles.container, getModalStyle(animated)]}
-      activeOpacity={1}
+      underlayColor={Colors.infoModal}
+      delayPressIn={0}
     >
-      <Text style={styles.text}>{infoMessage}</Text>
+      <Text style={styles.text}>{displayedMessage}</Text>
     </TouchableAnimated>
   )
 };

@@ -9,7 +9,7 @@ import {
   StyleSheet,
   TouchableOpacity
 } from "react-native";
-import { useSafeArea } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import InputsList from "../../components/userFields/UserInputsList";
 import SubmitButton from "../../components/userFields/SubmitButton";
 import Layout from "../../constants/Layout";
@@ -32,7 +32,7 @@ const REGISTER_FIELDS = [EmailField, NewPasswordField, ConfirmPasswordField];
  */
 const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
   const [inputs, setInputs] = useState({});
-  const inset = useSafeArea();
+  const inset = useSafeAreaInsets();
 
   // Passes state to createUser action
   const createUserState = () => {

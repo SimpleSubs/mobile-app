@@ -9,7 +9,7 @@ import {
   StyleSheet,
   FlatList
 } from "react-native";
-import { useSafeArea } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnimatedTouchable from "../../components/AnimatedTouchable";
 import Card from "../../components/orders/Card";
 import Header from "../../components/Header";
@@ -99,7 +99,7 @@ const HomeScreen = ({ orders = [], orderPresets = {}, uid, logOut, focusOrder, u
             {...item}
           />
         }
-        contentContainerStyle={[styles.contentContainer, { paddingBottom: useSafeArea().bottom }]}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: useSafeAreaInsets().bottom }]}
         style={styles.flatList}
       />
     </View>

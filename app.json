@@ -1,29 +1,61 @@
 {
   "expo": {
     "name": "SimpleSubs",
+    "description": "Order sandwiches easily up to two weeks in advance using this app",
     "slug": "simple-subs",
+    "sdkVersion": "39.0.0",
+    "version": "2.0.0",
     "platforms": [
       "ios",
       "android",
       "web"
     ],
-    "version": "1.0.0",
+    "githubUrl": "https://github.com/Creampelt/simple-subs",
     "orientation": "portrait",
+    "backgroundColor": "#ffffff",
+    "primaryColor": "#ffd541",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#00000000",
+      "hidden": false,
+      "translucent": true
+    },
+    "scheme": "simplesubs",
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 30000
+    },
+    "ios": {
+      "bundleIdentifier": "org.lwhs.simplesubs",
+      "buildNumber": "1.1.0",
+      "appStoreUrl": "https://apps.apple.com/us/app/id1464274843",
+      "supportsTablet": true,
+      "isTabletOnly": false,
+      "requireFullScreen": false
+    },
+    "android": {
+      "package": "org.lwhs.simplesubs",
+      "versionCode": 3,
+      "userInterfaceStyle": "automatic",
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=org.lwhs.simplesubs",
+      "permissions": []
+    },
+    "web": {
+      "favicon": "./assets/images/icon.png",
+      "themeColor": "#ffd541",
+      "description": "Order sandwiches easily up to two weeks in advance using this web app",
+      "orientation": "portrait",
+      "preferRelatedApplications": true
+    },
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
     "assetBundlePatterns": [
       "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true
-    }
+    ]
   }
 }

@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import AnimatedTouchable from "./AnimatedTouchable";
 import { Ionicons } from "@expo/vector-icons";
-import { useSafeArea } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "../constants/Colors";
 import Layout from "../constants/Layout";
 
@@ -45,7 +45,7 @@ const Spacer = () => (
  * @constructor
  */
 const Header = ({ title, style = {}, rightButton, leftButton, children }) => (
-  <View style={[styles.header, { paddingTop: styles.header.paddingVertical + useSafeArea().top }, style]}>
+  <View style={[styles.header, { paddingTop: styles.header.paddingVertical + useSafeAreaInsets().top }, style]}>
     {leftButton ? (
       <AnimatedTouchable style={styles.navigateButtons} endSize={0.8} onPress={leftButton.onPress}>
         <Ionicons

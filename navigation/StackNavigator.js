@@ -17,6 +17,7 @@ import OrderSettingsScreen from "../screens/main/OrderSettingsScreen";
 import PreOrderScreen from "../screens/order/PreOrderScreen";
 import OrderScreen from "../screens/order/OrderScreen";
 import PresetOrderScreen from "../screens/order/PresetOrderScreen";
+import PresetScreen from "../screens/PresetScreen";
 
 // Primary stack to display (home screen, login screen, etc.)
 const MainStack = createStackNavigator();
@@ -96,6 +97,7 @@ const StackNavigator = ({ containerRef, initialState, isSignedIn, watchAuthState
           {() => <MainStackScreen isSignedIn={isSignedIn} />}
         </RootStack.Screen>
         <RootStack.Screen name={"Order"} component={OrderStackScreen} />
+        <RootStack.Screen name={"Preset"} component={PresetScreen} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

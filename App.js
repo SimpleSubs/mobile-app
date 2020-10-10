@@ -7,8 +7,10 @@ import {
   StatusBar,
   StyleSheet,
   View,
-  LogBox
+  LogBox,
+  TouchableOpacity
 } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,10 +25,15 @@ import StackNavigator from "./navigation/StackNavigator";
 import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
 
+// TODO: add associatedDomains to app.json
+
 // Ignore recurring "cycle" warning
 LogBox?.ignoreLogs(
   ["Require cycle: components/modals/InputModal.js -> components/userFields/UserInputsList.js -> constants/DataActions.js -> components/modals/InputModal.js"]
 );
+
+// Overrides slight delay when pressing TouchableOpacity
+TouchableOpacity.defaultProps = { delayPressIn: 0 };
 
 // Creates store for Redux state management
 const store = createStore(sandwichApp, applyMiddleware(thunk));
@@ -71,14 +78,16 @@ const App = ({ skipLoadingScreen }) => {
     return null;
   } else {
     return (
-      <Provider store={store}>
-        <View style={styles.container}>
-          {Layout.ios && <StatusBar barStyle={Colors.statusBar} />}
-          <StackNavigator containerRef={containerRef} initialState={initialNavigationState} />
-          <InfoModal />
-          <Modal />
-        </View>
-      </Provider>
+      <SafeAreaProvider>
+        <Provider store={store}>
+          <View style={styles.container}>
+            {Layout.ios && <StatusBar barStyle={Colors.statusBar} />}
+            <StackNavigator containerRef={containerRef} initialState={initialNavigationState} />
+            <InfoModal />
+            <Modal />
+          </View>
+        </Provider>
+      </SafeAreaProvider>
     );
   }
 }

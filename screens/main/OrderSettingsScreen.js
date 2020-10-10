@@ -9,7 +9,7 @@ import {
   Text,
   FlatList
 } from "react-native";
-import { useSafeArea } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Header from "../../components/Header";
 import PresetCard from "../../components/orders/PresetCard";
 import { connect } from "react-redux";
@@ -34,7 +34,7 @@ const OrderSettingsScreen = ({ orderPresets, uid, watchPresets, deletePreset, fo
   // Focuses an existing order preset and navigates to preset screen.
   const focusPresetNavigate = (id) => {
     focusPreset(id);
-    navigation.navigate("Order", { screen: "Preset Order" });
+    navigation.navigate("Preset");
   }
 
   // Creates listener for user's presets.
@@ -63,7 +63,7 @@ const OrderSettingsScreen = ({ orderPresets, uid, watchPresets, deletePreset, fo
             {...item}
           />
         )}
-        contentContainerStyle={{ paddingBottom: useSafeArea().bottom }}
+        contentContainerStyle={{ paddingBottom: useSafeAreaInsets().bottom }}
         style={styles.flatList}
       />
     </View>

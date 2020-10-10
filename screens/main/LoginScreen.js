@@ -10,7 +10,7 @@ import {
   Image,
   TouchableOpacity
 } from "react-native";
-import { useSafeArea } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import inputModalProps from "../../components/modals/InputModal";
 import InputsList from "../../components/userFields/UserInputsList";
 import SubmitButton from "../../components/userFields/SubmitButton";
@@ -39,7 +39,7 @@ const LOGIN_FIELDS = [EmailField, PasswordField];
  * @constructor
  */
 const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswordAction, navigation }) => {
-  const inset = useSafeArea();
+  const inset = useSafeAreaInsets();
   const [inputs, setInputs] = useState({ email: "", password: "" });
 
   // Logs in using component state.

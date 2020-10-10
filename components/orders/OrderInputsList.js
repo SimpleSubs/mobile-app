@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { KeyboardAwareFlatList } from "@codler/react-native-keyboard-aware-scroll-view";
-import { useSafeArea } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AnimatedTouchable from "../AnimatedTouchable";
 import OrderField from "./OrderField";
@@ -223,7 +223,7 @@ const DeleteButton = ({ onPress, message }) => (
  */
 const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, editExisting, deleteExisting, uid, cutoffTime, deleteMessage, orderPresets }) => {
   const [state, setFullState] = useState(getDefault(focusedData, orderOptions));
-  const inset = useSafeArea();
+  const inset = useSafeAreaInsets();
 
   const submit = () => {
     // Ensure all required fields are filled out
