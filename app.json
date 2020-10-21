@@ -4,7 +4,7 @@
     "description": "Order sandwiches easily up to two weeks in advance using this app",
     "slug": "simple-subs",
     "sdkVersion": "39.0.0",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "platforms": [
       "ios",
       "android",
@@ -14,7 +14,7 @@
     "orientation": "portrait",
     "backgroundColor": "#ffffff",
     "primaryColor": "#ffd541",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/icon-not-transparent.png",
     "androidStatusBar": {
       "barStyle": "dark-content",
       "backgroundColor": "#00000000",
@@ -29,7 +29,7 @@
     },
     "ios": {
       "bundleIdentifier": "org.lwhs.simplesubs",
-      "buildNumber": "1.1.0",
+      "buildNumber": "2.1.0",
       "appStoreUrl": "https://apps.apple.com/us/app/id1464274843",
       "supportsTablet": true,
       "isTabletOnly": false,
@@ -37,7 +37,7 @@
     },
     "android": {
       "package": "org.lwhs.simplesubs",
-      "versionCode": 3,
+      "versionCode": 5,
       "userInterfaceStyle": "automatic",
       "playStoreUrl": "https://play.google.com/store/apps/details?id=org.lwhs.simplesubs",
       "permissions": []
@@ -53,6 +53,18 @@
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "lwhs",
+            "project": "simple-subs",
+            "authToken": "9b0c2b8c55894b9cad7e804fdef87e2013e8b7636b7542c4944f50f898c51cd5"
+          }
+        }
+      ]
     },
     "assetBundlePatterns": [
       "**/*"

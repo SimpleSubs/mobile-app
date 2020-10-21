@@ -52,9 +52,11 @@ const PickerAndroid = ({ changeValue, selectedValue, options }) => (
   <FlatList
     alwaysBounceVertical={false}
     data={options}
+    extraData={selectedValue}
     contentContainerStyle={styles.androidPicker}
     showsVerticalScrollIndicator={true}
     keyExtractor={(item) => item}
+    ListEmptyComponent={<Text style={styles.noOptionsText}>There are no available options</Text>}
     renderItem={({item}) => (
       <TouchableOpacity
         style={[styles.androidItemStyle, item === selectedValue ? styles.selectedAndroidItemStyle : {}]}
@@ -143,5 +145,13 @@ const styles = StyleSheet.create({
   },
   selectedItemTextStyle: {
     fontFamily: "josefin-sans-bold"
+  },
+  noOptionsText: {
+    fontFamily: "josefin-sans",
+    color: Colors.primaryText,
+    fontSize: Layout.fonts.body,
+    textAlign: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20
   }
 })

@@ -50,7 +50,6 @@ const pressAnimation = (animated, toValue) => {
   }).start();
 };
 
-// TODO: add animation for cancel press
 /**
  * Renders touchable with custom animation.
  *

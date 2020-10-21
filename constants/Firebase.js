@@ -2,9 +2,11 @@
  * @file Initializes and manages functions using Firebase API.
  * @author Emily Sturman <emily@sturman.org>
  */
-import { initializeApp, firestore as db, auth as firebaseAuth } from "firebase";
+import { initializeApp, firestore as db, auth as firebaseAuth } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import "firebase/firestore";
+import "firebase/auth";
+import * as Sentry from "sentry-expo";
 
 initializeApp(firebaseConfig);
 
@@ -51,6 +53,7 @@ export const authErrorMessage = (error) => {
         message: "The email you have chosen is already in use. Please choose a different email or contact an app admin."
       }
     default:
+      Sentry.captureException(error);
       return {
         title: "Error",
         message: "Something went wrong. Please try again later."
@@ -106,6 +109,7 @@ export const firestoreErrorMessage = (error) => {
         message: "Your authentication credentials are invalid. Try logging out and back in again."
       };
     default:
+      Sentry.captureException(error);
       return {
         title: "Error",
         message: "Something went wrong. Please try again later."

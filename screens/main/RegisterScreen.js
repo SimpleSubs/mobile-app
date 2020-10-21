@@ -2,7 +2,7 @@
  * @file Manages screen to register a new user
  * @author Emily Sturman <emily@sturman.org>
  */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -23,7 +23,7 @@ const REGISTER_FIELDS = [EmailField, NewPasswordField, ConfirmPasswordField];
 /**
  * Renders screen to register/sign up user.
  *
- * @param {Object[]}                         registerUserFields Input fields to display in register screen.
+ * @param {Object[]|null}                    registerUserFields Input fields to display in register screen.
  * @param {function(string, string, Object)} createUser         Creates a user with the provided data.
  * @param {Object}                           navigation         Navigation object passed by React Navigation.
  *
@@ -46,6 +46,12 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
   // Button to submit form and register user
   const RegisterButton = (props) => <SubmitButton {...props} title={"Register"} />;
 
+  useEffect(() => {
+    if (!registerUserFields) {
+      navigation.navigate("Loading");
+    }
+  }, [registerUserFields]);
+
   return (
     <InputsList
       style={styles.container}
@@ -61,7 +67,7 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
         </TouchableOpacity>
       )}
       SubmitButton={RegisterButton}
-      data={registerUserFields}
+      data={registerUserFields || []}
       state={inputs}
       setInputs={setInputs}
       onSubmit={createUserState}
@@ -70,7 +76,7 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
 };
 
 const mapStateToProps = ({ stateConstants }) => ({
-  registerUserFields: [...REGISTER_FIELDS, ...stateConstants.userFields]
+  registerUserFields: stateConstants.userFields ? [...REGISTER_FIELDS, ...stateConstants.userFields] : null
 });
 
 const mapDispatchToProps = (dispatch) => ({

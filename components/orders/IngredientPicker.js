@@ -4,11 +4,11 @@
  */
 import React from "react";
 import {
-  Picker,
   StyleSheet,
   Text,
   TouchableOpacity
 } from "react-native";
+import { Picker } from '@react-native-community/picker';
 import AnimatedDropdown from "./AnimatedDropdown";
 import AndroidPicker, { getPickerProps } from "../Picker";
 import { connect } from "react-redux";
@@ -16,8 +16,6 @@ import { openModal, closeModal } from "../../redux/Actions";
 import Colors from "../../constants/Colors";
 import Layout from "../../constants/Layout";
 import { InputTypes } from "../../constants/Inputs";
-
-// TODO: implement no options feature in Android
 
 /**
  * Renders a dropdown containing a picker; for iOS only.

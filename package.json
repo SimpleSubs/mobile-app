@@ -11,7 +11,7 @@
     "@codler/react-native-keyboard-aware-scroll-view": "^1.0.1",
     "@expo/vector-icons": "^10.0.0",
     "@react-native-community/masked-view": "0.1.10",
-    "@react-native-community/picker": "1.6.6",
+    "@react-native-community/picker": "^1.8.1",
     "@react-navigation/native": "^5.7.6",
     "@react-navigation/stack": "^5.9.3",
     "@react-navigation/web": "^1.0.0-alpha.9",
@@ -38,7 +38,8 @@
     "react-native-web": "~0.13.7",
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "sentry-expo": "^3.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",

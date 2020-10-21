@@ -13,6 +13,7 @@ import {
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
+import * as Sentry from "sentry-expo";
 import { Ionicons } from "@expo/vector-icons";
 import Modal from "./components/modals/Modal";
 import InfoModal from "./components/modals/InfoModal";
@@ -26,6 +27,13 @@ import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
 
 // TODO: add associatedDomains to app.json
+
+// Initialize Sentry for error reporting/management
+Sentry.init({
+  dsn: "https://527b49c979244102b126c4b26f140c90@o327609.ingest.sentry.io/1838264",
+  enableInExpoDevelopment: true,
+  debug: false
+});
 
 // Ignore recurring "cycle" warning
 LogBox?.ignoreLogs(
@@ -64,7 +72,7 @@ const App = ({ skipLoadingScreen }) => {
         });
       } catch (e) {
         // We might want to provide this error information to an error reporting service
-        console.warn(e);
+        Sentry.captureException(e);
       } finally {
         setLoadingComplete(true);
         await SplashScreen.hideAsync();
