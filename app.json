@@ -14,7 +14,7 @@
     "orientation": "portrait",
     "backgroundColor": "#ffffff",
     "primaryColor": "#ffd541",
-    "icon": "./assets/images/icon-not-transparent.png",
+    "icon": "./assets/images/icon-with-background.png",
     "androidStatusBar": {
       "barStyle": "dark-content",
       "backgroundColor": "#00000000",
@@ -52,7 +52,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#70798c"
     },
     "hooks": {
       "postPublish": [
@@ -68,6 +68,22 @@
     },
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "packagerOpts": {
+      "config": "metro.config.js",
+      "sourceExts": [
+        "expo.ts",
+        "expo.tsx",
+        "expo.js",
+        "expo.jsx",
+        "ts",
+        "tsx",
+        "js",
+        "jsx",
+        "json",
+        "wasm",
+        "svg"
+      ]
+    }
   }
 }

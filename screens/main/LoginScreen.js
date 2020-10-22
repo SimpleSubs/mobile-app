@@ -7,8 +7,8 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
-  TouchableOpacity
+  TouchableOpacity,
+  BackHandler
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import inputModalProps from "../../components/modals/InputModal";
@@ -19,9 +19,8 @@ import Colors from "../../constants/Colors";
 import { EmailField, PasswordField } from "../../constants/RequiredFields";
 import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../redux/Actions";
 import { connect } from "react-redux";
+import Logo from "../../assets/images/icon.svg";
 
-// Icon to display at the top of the screen.
-const MAIN_ICON = require("../../assets/images/icon.png");
 // Fields required for login
 const LOGIN_FIELDS = [EmailField, PasswordField];
 
@@ -60,6 +59,11 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
     })
   ), [navigation]);
 
+  useEffect(() => {
+    BackHandler.addEventListener("hardwareBackPress", () => true);
+    return () => BackHandler.removeEventListener("hardwareBackPress", () => true);
+  })
+
   const openForgotPasswordModal = () => openModal(inputModalProps(
     "Reset Password",
     [{ ...EmailField, placeholder: "Your email address" }],
@@ -74,10 +78,11 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
     <InputsList
       ListHeaderComponent={() => (
         <View style={styles.header}>
-          <Image source={MAIN_ICON} />
+          <Logo width={150} height={150} />
           <Text style={styles.title}>SimpleSubs</Text>
           <Text style={styles.text}>An app for sandwich ordering at Lick-Wilmerding High School</Text>
           <Text style={styles.text}>Built by Emily Sturman</Text>
+          <Text style={styles.text}>Logo designed by Ronan Furuta</Text>
         </View>
       )}
       ListFooterComponent={() => (

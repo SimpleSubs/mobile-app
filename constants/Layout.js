@@ -15,6 +15,8 @@ const Layout = {
   isSmallDevice: width < 375,
   // Whether device is iOS
   ios: Platform.OS === "ios",
+  // Whether device is web (false if it is a downloaded app for iOS/Android)
+  web: Platform.OS === "web",
   // Dimensions for place order button (on Home Screen)
   placeOrderButton: {
     height: 65.0,

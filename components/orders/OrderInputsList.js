@@ -2,13 +2,12 @@
  * @file Creates full page for order/preset screens.
  * @author Emily Sturman <emily@sturman.org>
  */
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  Alert,
+  TouchableOpacity
 } from "react-native";
 import { KeyboardAwareFlatList } from "@codler/react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,6 +20,7 @@ import Layout from "../../constants/Layout";
 import { READABLE_FORMAT } from "../../constants/Date";
 import { InputTypes } from "../../constants/Inputs";
 import { connect } from "react-redux";
+import alert from "../../constants/Alert";
 
 /**
  * Gets default state.
@@ -101,7 +101,7 @@ const isAfterCutoff = (readableDate, cutoffTime) => {
   const date = moment(readableDate, READABLE_FORMAT);
   const now = moment();
   if (now.isAfter(cutoffTime) && date.isSameOrBefore(now)) {
-    Alert.alert(
+    alert(
       "Invalid date",
       "The date you have selected is no longer valid. This could mean that the order cutoff has passed " +
       "since you began your order. Please try again later."
@@ -126,7 +126,7 @@ const isAfterCutoff = (readableDate, cutoffTime) => {
 const isUniqueTitle = (title, prevTitle = "", orderPresets) => {
   let otherWithTitle = Object.keys(orderPresets).filter((id) => orderPresets[id].title === title).length > 0;
   if (prevTitle !== title && otherWithTitle) {
-    Alert.alert(
+    alert(
       "Invalid title",
       "The current title is already in use. Please choose a unique title."
     );
@@ -229,7 +229,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
     // Ensure all required fields are filled out
     const invalidInputs = validateState(state, orderOptions);
     if (invalidInputs.length > 0) {
-      Alert.alert(
+      alert(
         "Fill out required fields",
         "The following fields need to be filled out before submission: " + invalidInputs.join(", ")
       );

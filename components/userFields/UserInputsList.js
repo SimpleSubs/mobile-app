@@ -95,14 +95,16 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
       onChangeText={(text) => setState({ [item.key]: text })}
       onSubmitEditing={() => {
         if (inputRefs.length > index + 1) {
-          if (inputRefs[index + 1].ref.focus) { inputRefs[index + 1].ref.focus() }
+          if (inputRefs[index + 1].canFocus) {
+            inputRefs[index + 1].ref.focus();
+          }
         } else {
           submit();
         }
       }}
       editable={editing && item.mutable && item.textType !== TextTypes.PASSWORD}
       otherInputs={item.key === "confirmPassword" ? [state.password || ""] : []}
-      setRef={(ref, validate) => addRef(ref, index, validate)}
+      setRef={(ref, validate) => addRef(item.key, ref, index, validate, true)}
       contentContainerStyle={editing && styles.inputContentContainer}
       style={editing && (
         item.editAction || !item.mutable
@@ -153,7 +155,7 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
 const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }) => {
   const thisPicker = (
     <ValidatedPicker
-      setRef={(ref, validate) => addRef(ref, index, validate)}
+      setRef={(ref, validate) => addRef(item.key, ref, index, validate, false)}
       value={value}
       onValueChange={(value) => setState({ [item.key]: value })}
       options={item.options}
@@ -272,16 +274,16 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
 
   const setState = (newState) => setInputs((prevState) => ({ ...prevState, ...newState }));
 
-  const addRef = (newRef, index, validate) => {
+  const addRef = (key, newRef, index, validate, canFocus) => {
     setInputRefs((prevState) => {
       let newState = prevState;
-      newState[index] = { ref: newRef, validate: validate };
+      newState[index] = { key, ref: newRef, validate, canFocus };
       return newState;
     })
   };
 
   const submit = () => {
-    let valid = inputRefs.map(({ validate }) => validate()).reduce((a, b) => a && b);
+    let valid = inputRefs.map(({ key, validate }) => validate(state[key] || "")).reduce((a, b) => a && b);
     if (valid) {
       Keyboard.dismiss();
       onSubmit(state);
@@ -297,7 +299,7 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
       keyboardDismissMode={Layout.ios ? "interactive" : "on-drag"}
       contentContainerStyle={[styles.contentContainer, props.contentContainerStyle || {}]}
       data={data}
-      extraData={state}
+      extraData={[state, inputRefs]}
       ListFooterComponent={() => (
         <View style={[styles.footer, ListFooterComponentStyle]}>
           <ListFooterComponent />

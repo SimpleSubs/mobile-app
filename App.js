@@ -7,7 +7,6 @@ import {
   StatusBar,
   StyleSheet,
   View,
-  LogBox,
   TouchableOpacity
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -26,6 +25,8 @@ import StackNavigator from "./navigation/StackNavigator";
 import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
 
+const { LogBox } = !Layout.web ? require("react-native") : { LogBox: null };
+
 // TODO: add associatedDomains to app.json
 
 // Initialize Sentry for error reporting/management
@@ -37,7 +38,10 @@ Sentry.init({
 
 // Ignore recurring "cycle" warning
 LogBox?.ignoreLogs(
-  ["Require cycle: components/modals/InputModal.js -> components/userFields/UserInputsList.js -> constants/DataActions.js -> components/modals/InputModal.js"]
+  [
+    "Require cycle: components/modals/InputModal.js -> components/userFields/UserInputsList.js -> constants/DataActions.js -> components/modals/InputModal.js",
+    "Setting a timer for a long period of time, i.e. multiple minutes, is a performance and correctness issue on Android as it keeps the timer module awake, and timers can only be called when the app is in the foreground. See https://github.com/facebook/react-native/issues/12981 for more info."
+  ]
 );
 
 // Overrides slight delay when pressing TouchableOpacity
@@ -71,8 +75,12 @@ const App = ({ skipLoadingScreen }) => {
           "josefin-sans-bold": require("./assets/fonts/JosefinSans-Bold.ttf")
         });
       } catch (e) {
-        // We might want to provide this error information to an error reporting service
-        Sentry.captureException(e);
+        // Report error to Sentry
+        if (Layout.web) {
+          Sentry.Browser.captureException(e);
+        } else {
+          Sentry.Native.captureException(e);
+        }
       } finally {
         setLoadingComplete(true);
         await SplashScreen.hideAsync();

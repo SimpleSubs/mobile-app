@@ -144,13 +144,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: "josefin-sans-bold",
-    fontSize: Layout.fonts.title,
+    fontSize: Layout.fonts.body,
     marginBottom: 5,
     color: Colors.primaryText
   },
   date: {
     fontFamily: "josefin-sans-bold",
-    fontSize: Layout.fonts.body,
+    fontSize: Layout.fonts.title,
     color: Colors.primaryText,
     marginBottom: 5
   },
