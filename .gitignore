@@ -17,3 +17,4 @@ web-report/
 
 firebase-config.json
 sentry-config.json
+sentry-api-token.txt

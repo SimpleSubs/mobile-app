@@ -38,7 +38,6 @@ const LOGIN_FIELDS = [EmailField, PasswordField];
  * @constructor
  */
 const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswordAction, navigation }) => {
-
   const inset = useSafeAreaInsets();
   const [inputs, setInputs] = useState({ email: "", password: "" });
 

@@ -2,7 +2,7 @@
  * @file Manages screen to update user profile.
  * @author Emily Sturman <emily@sturman.org>
  */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet, Text
@@ -10,7 +10,7 @@ import {
 import InputsList from "../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../components/userFields/SubmitButton";
 import { connect } from "react-redux";
-import { watchUserData, editUserData } from "../../../redux/Actions";
+import { watchUserData, editUserData, logOut } from "../../../redux/Actions";
 import Colors from "../../../constants/Colors";
 import { valueIsValid } from "../../../constants/Inputs";
 import Layout from "../../../constants/Layout";
@@ -25,12 +25,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
  * @param {Object}                   user          Object containing user data.
  * @param {Object[]}                 userFields    Array containing all invalid input fields.
  * @param {function(Object, string)} editUserData  Pushes edited data to Firebase.
+ * @param {function()}               logOut        Function to log user out of account
  * @param {Object}                   navigation    Navigation prop passed by React Navigation.
  *
  * @return {React.ReactElement} Element to display.
  * @constructor
  */
-const UpdateUserScreen = ({ user, userFields, editUserData, navigation }) => {
+const UpdateUserScreen = ({ user, userFields, editUserData, logOut, navigation }) => {
   const [state, setInputs] = useState(user);
   const inset = useSafeAreaInsets();
 
@@ -39,6 +40,12 @@ const UpdateUserScreen = ({ user, userFields, editUserData, navigation }) => {
     navigation.replace("Home");
   };
   const UpdateButton = (props) => <SubmitButton {...props} title={"Update"} style={styles.updateButton} />
+
+  useEffect(() => navigation.addListener("beforeRemove", (e) => {
+    if (e.data.action.type === "POP") {
+      logOut();
+    }
+  }), []);
 
   return (
     <InputsList
@@ -64,12 +71,13 @@ const UpdateUserScreen = ({ user, userFields, editUserData, navigation }) => {
 const mapStateToProps = ({ user, stateConstants }) => ({
   user,
   // Only include invalid userFields
-  userFields: stateConstants.userFields.filter((userField) => !valueIsValid(userField, user[userField.key]))
+  userFields: stateConstants.userFields.filter((userField) => !valueIsValid(userField, user ? user[userField.key] : null))
 });
 
 const mapDispatchToProps = (dispatch) => ({
   watchUserData: (uid) => watchUserData(dispatch, uid),
-  editUserData: (data, uid) => editUserData(dispatch, data, uid)
+  editUserData: (data, uid) => editUserData(dispatch, data, uid),
+  logOut: () => logOut(dispatch)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(UpdateUserScreen);
