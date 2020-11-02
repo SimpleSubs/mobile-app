@@ -7,10 +7,10 @@ import {
   View,
   StyleSheet
 } from "react-native";
-import Header from "../../components/Header";
-import MultipleOptionsList from "../../components/MultipleOptionsList";
-import Colors from "../../constants/Colors";
-import Layout from "../../constants/Layout";
+import Header from "../../../components/Header";
+import MultipleOptionsList from "../../../components/MultipleOptionsList";
+import Colors from "../../../constants/Colors";
+import Layout from "../../../constants/Layout";
 
 // Data for each settings page (user settings and order/preset settings
 const SETTINGS_PAGES = [

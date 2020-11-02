@@ -10,12 +10,12 @@ import {
   TouchableOpacity
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import InputsList from "../../components/userFields/UserInputsList";
-import SubmitButton from "../../components/userFields/SubmitButton";
-import Layout from "../../constants/Layout";
-import Colors from "../../constants/Colors";
-import { EmailField, NewPasswordField, ConfirmPasswordField } from "../../constants/RequiredFields";
-import { createUser } from "../../redux/Actions";
+import InputsList from "../../../components/userFields/UserInputsList";
+import SubmitButton from "../../../components/userFields/SubmitButton";
+import Layout from "../../../constants/Layout";
+import Colors from "../../../constants/Colors";
+import { EmailField, NewPasswordField, ConfirmPasswordField } from "../../../constants/RequiredFields";
+import { createUser } from "../../../redux/Actions";
 import { connect } from "react-redux";
 
 const REGISTER_FIELDS = [EmailField, NewPasswordField, ConfirmPasswordField];

@@ -2,19 +2,19 @@
  * @file Initializes and manages functions using Firebase API.
  * @author Emily Sturman <emily@sturman.org>
  */
-import { initializeApp, firestore as db, auth as firebaseAuth } from "firebase/app";
-import firebaseConfig from "../firebase-config";
+import * as firebase from "firebase/app";
+import firebaseConfig from "../firebase-config.json";
 import "firebase/firestore";
 import "firebase/auth";
-import * as Sentry from "sentry-expo";
+import reportToSentry from "./Sentry";
 import Layout from "./Layout";
 
-initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 
 // Firestore object (database)
-export const firestore = db();
+export const firestore = firebase.firestore();
 // Firebase auth object; notice firebaseAuth is not executed (will often need to execute when using)
-export const auth = firebaseAuth;
+export const auth = firebase.auth;
 
 /**
  * Gets an error message for Firebase authentication.
@@ -54,12 +54,7 @@ export const authErrorMessage = (error) => {
         message: "The email you have chosen is already in use. Please choose a different email or contact an app admin."
       }
     default:
-      // Report error to Sentry
-      if (Layout.web) {
-        Sentry.Browser.captureException(error);
-      } else {
-        Sentry.Native.captureException(error);
-      }
+      reportToSentry(error);
       return {
         title: "Error",
         message: "Something went wrong. Please try again later."
@@ -115,12 +110,7 @@ export const firestoreErrorMessage = (error) => {
         message: "Your authentication credentials are invalid. Try logging out and back in again."
       };
     default:
-      // Report error to Sentry
-      if (Layout.web) {
-        Sentry.Browser.captureException(error);
-      } else {
-        Sentry.Native.captureException(error);
-      }
+      reportToSentry(error);
       return {
         title: "Error",
         message: "Something went wrong. Please try again later."

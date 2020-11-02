@@ -10,12 +10,12 @@ import {
   FlatList
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Header from "../../components/Header";
-import PresetCard from "../../components/orders/PresetCard";
+import Header from "../../../components/Header";
+import PresetCard from "../../../components/orders/PresetCard";
 import { connect } from "react-redux";
-import { watchPresets, deletePreset, focusPreset } from "../../redux/Actions";
-import Colors from "../../constants/Colors";
-import Layout from "../../constants/Layout";
+import { watchPresets, deletePreset, focusPreset } from "../../../redux/Actions";
+import Colors from "../../../constants/Colors";
+import Layout from "../../../constants/Layout";
 
 /**
  * Renders order settings screen.

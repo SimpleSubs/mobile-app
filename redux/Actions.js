@@ -317,6 +317,7 @@ export const editUserData = (dispatch, data, uid) => {
   dispatch(startLoading());
   let newData = { ...data };
   delete newData.uid;
+  delete newData.password;
   firestore.collection("userData")
     .doc(uid)
     .set(newData)
@@ -579,54 +580,49 @@ export const watchAuthState = (dispatch) => (
 );
 
 /**
- * Creates listener for app constants when user is not authenticated.
+ * Fetches data for app constants when user is not authenticated.
  *
  * @param {function} dispatch  Dispatch function passed from Redux.
- * @param {function} onSuccess Function to execute if operation is successful.
- * @param {function} onError   Function to execute if operation fails.
  *
- * @return {function} Function to unsubscribe listener.
+ * @return {Promise<void>} Promise for function.
  */
-export const getUnauthData = (dispatch, onSuccess, onError) => (
-  firestore.collection("appData")
-    .doc("appConstants")
-    .get()
-    .then((doc) => {
-      dispatch(updateConstants(doc.data()));
-      onSuccess();
-    }).catch((error) => {
-      alertFirestoreError(dispatch, error);
-      onError();
-    })
-);
+export const getUnauthData = async (dispatch) => {
+  try {
+    let doc = await firestore.collection("appData").doc("appConstants").get();
+    dispatch(updateConstants(doc.data()));
+  } catch (error) {
+    alertFirestoreError(dispatch, error);
+    throw new Error(error);
+  }
+};
 
 /**
- * Creates listener for app constants when user is authenticated.
+ * Fetches data for app constants when user is authenticated.
  *
- * @param {function} dispatch  Dispatch function passed from Redux.
- * @param {function} onSuccess Function to execute if operation is successful.
- * @param {function} onError   Function to execute if operation fails.
+ * @param {function} dispatch Dispatch function passed from Redux.
  *
- * @return {Promise} Function to unsubscribe listener.
+ * @return {Promise<Object>} Promise for data that was just fetched.
  */
-export const getAuthData = (dispatch, onSuccess, onError) => {
+export const getAuthData = async (dispatch) => {
   const uid = auth().currentUser.uid;
-  return (
-    Promise.all([
+  try {
+    let results = await Promise.all([
       myOrders(uid).get(),
       myUserData(uid).get(),
       firestore.collection("appData").doc("appConstants").get(),
       myPresets(uid).get()
-    ]).then((results) => {
-      const [ordersSnapshot, userData, stateConstants, presetsSnapshot] = results;
-      dispatch(updateOrders(ordersSnapshot));
-      dispatch(updateUserData(uid, userData));
-      dispatch(updateConstants(stateConstants.data()));
-      dispatch(updatePresets(presetsSnapshot));
-      onSuccess();
-    }).catch((error) => {
-      alertFirestoreError(dispatch, error);
-      onError();
-    })
-  )
+    ]);
+    const [ordersSnapshot, userData, stateConstants, presetsSnapshot] = results;
+    dispatch(updateOrders(ordersSnapshot));
+    dispatch(updateUserData(uid, userData));
+    dispatch(updateConstants(stateConstants.data()));
+    dispatch(updatePresets(presetsSnapshot));
+    return {
+      user: userData.data(),
+      userFields: stateConstants.data().userFields
+    };
+  } catch (e) {
+    alertFirestoreError(dispatch, error);
+    throw new Error(e);
+  }
 };

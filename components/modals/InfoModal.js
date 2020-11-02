@@ -83,6 +83,7 @@ const InfoModal = ({ infoMessage, closeModal }) => {
   const animated = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef();
 
+  // Closes info modal after 10 seconds if new message does not appear
   useEffect(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -97,6 +98,7 @@ const InfoModal = ({ infoMessage, closeModal }) => {
       style={[styles.container, getModalStyle(animated)]}
       underlayColor={Colors.infoModal}
       delayPressIn={0}
+      activeOpacity={0.5}
     >
       <Text style={styles.text}>{displayedMessage}</Text>
     </TouchableAnimated>

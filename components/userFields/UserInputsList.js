@@ -283,7 +283,12 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
   };
 
   const submit = () => {
-    let valid = inputRefs.map(({ key, validate }) => validate(state[key] || "")).reduce((a, b) => a && b);
+    // Valid if 1. user is in editing mode and a. field is immutable (therefore user cannot change it) or b. field has
+    // a specific edit action (e.g. "CHANGE_PASSWORD") OR if 2. validation of field returns true.
+    let valid = inputRefs.map(({ key, validate }, index) => (
+      (editing && (!data[index].mutable || data[index].editAction)) ||
+      validate(state[key] || "")
+    )).reduce((a, b) => a && b);
     if (valid) {
       Keyboard.dismiss();
       onSubmit(state);

@@ -14,6 +14,54 @@ export const InputTypes = {
   TEXT_INPUT: "TEXT_INPUT"
 };
 
+/**
+ * Determines if a value in user's profile is valid.
+ *
+ * Returns false if value is undefined, if it isn't valid based on
+ * its defined text type (for text inputs), or if it's not in the provided
+ * options (for picker and checkbox).
+ *
+ * @param {Object}               userField User field containing data about profile value.
+ * @param {string|string[]|null} value     Value in user's profile (null if it's yet to be defined).
+ *
+ * @return {boolean} Whether value is valid.
+ */
+export const valueIsValid = (userField, value) => {
+  if (!value) {
+    return false;
+  }
+  switch (userField.inputType) {
+    case (InputTypes.TEXT_INPUT):
+      // Must be valid based on text type (e.g. "EMAIL" text type must be valid email)
+      return InputPresets[userField.textType]?.validate(value) === NO_ERROR;
+    case (InputTypes.PICKER):
+      // Must be a value contained in options
+      return userField.options.includes(value);
+    case (InputTypes.CHECKBOX):
+      // All values must be in options
+      return value.map((option) => userField.options.includes(option)).reduce((a, b) => a && b);
+    default:
+      // THIS SHOULD NEVER HAPPEN (but consider input valid if inputType is invalid)
+      return true;
+  }
+};
+
+/**
+ * Determines if a user's profile contains any invalid values (i.e. if userFields has changed).
+ *
+ * Checks each user field with `valueIsValid` function and ensures that all are true.
+ *
+ * @param {Object} user Object containing user data.
+ * @param {Object[]} userFields Array of UserField objects.
+ *
+ * @return {boolean} Whether all user fields of profile are valid.
+ */
+export const allValid = (user, userFields) => (
+  userFields
+    .map((userField) => valueIsValid(userField, user[userField.key]))
+    .reduce((a, b) => a && b)
+);
+
 // Presets for different types of text (for text input)
 export const InputPresets = {
   EMAIL: {

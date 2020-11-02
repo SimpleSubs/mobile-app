@@ -1,5 +1,5 @@
 /**
- * @file Manages main settings screen (in-between for user/preset settings)
+ * @file Manages user settings screen
  * @author Emily Sturman <emily@sturman.org>
  */
 import React, { useEffect, useState } from "react";
@@ -7,13 +7,13 @@ import {
   View,
   StyleSheet
 } from "react-native";
-import InputsList from "../../components/userFields/UserInputsList";
-import SubmitButton from "../../components/userFields/SubmitButton";
-import Header from "../../components/Header";
+import InputsList from "../../../components/userFields/UserInputsList";
+import SubmitButton from "../../../components/userFields/SubmitButton";
+import Header from "../../../components/Header";
 import { connect } from "react-redux";
-import { watchUserData, editUserData } from "../../redux/Actions";
-import { EmailField, PasswordField } from "../../constants/RequiredFields";
-import Colors from "../../constants/Colors";
+import { watchUserData, editUserData } from "../../../redux/Actions";
+import { EmailField, PasswordField } from "../../../constants/RequiredFields";
+import Colors from "../../../constants/Colors";
 
 /**
  * Renders user setting screen.
@@ -38,6 +38,7 @@ const UserSettingsScreen = ({ user, userFields, watchUserData, editUserData, nav
 
   // Listens for changes in user data when on this page
   useEffect(() => watchUserData(user.uid), []);
+  useEffect(() => setInputs(user), [user]);
 
   return (
     <View style={styles.container}>

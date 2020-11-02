@@ -8,12 +8,13 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { connect } from "react-redux";
 import { watchAuthState } from "../redux/Actions";
 import LoadingScreen from "../screens/main/LoadingScreen";
-import LoginScreen from "../screens/main/LoginScreen";
-import RegisterScreen from "../screens/main/RegisterScreen";
-import HomeScreen from "../screens/main/HomeScreen";
-import SettingsScreen from "../screens/main/SettingsScreen";
-import UserSettingsScreen from "../screens/main/UserSettingsScreen";
-import OrderSettingsScreen from "../screens/main/OrderSettingsScreen";
+import LoginScreen from "../screens/main/unauthenticated/LoginScreen";
+import RegisterScreen from "../screens/main/unauthenticated/RegisterScreen";
+import UpdateUserScreen from "../screens/main/authenticated/UpdateUserScreen";
+import HomeScreen from "../screens/main/authenticated/HomeScreen";
+import SettingsScreen from "../screens/main/authenticated/SettingsScreen";
+import UserSettingsScreen from "../screens/main/authenticated/UserSettingsScreen";
+import OrderSettingsScreen from "../screens/main/authenticated/OrderSettingsScreen";
 import PreOrderScreen from "../screens/order/PreOrderScreen";
 import OrderScreen from "../screens/order/OrderScreen";
 import PresetOrderScreen from "../screens/order/PresetOrderScreen";
@@ -47,6 +48,7 @@ const MainStackScreen = ({ isSignedIn }) => (
       </>
     ) : (
       <>
+        <MainStack.Screen name={"Update User"} component={UpdateUserScreen} />
         <MainStack.Screen name={"Home"} component={HomeScreen} />
         <MainStack.Screen name={"Settings"} component={SettingsScreen} />
         <MainStack.Screen name={"User Settings"} component={UserSettingsScreen} />

@@ -15,4 +15,5 @@ web-report/
 
 .idea/
 
-firebase-config.js
+firebase-config.json
+sentry-config.json

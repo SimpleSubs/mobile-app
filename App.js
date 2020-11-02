@@ -24,17 +24,15 @@ import useLinking from "./navigation/useLinking";
 import StackNavigator from "./navigation/StackNavigator";
 import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
+import sentryConfig from "./sentry-config.json";
 
+// Only import if not in web (LogBox doesn't exist in web)
 const { LogBox } = !Layout.web ? require("react-native") : { LogBox: null };
 
 // TODO: add associatedDomains to app.json
 
 // Initialize Sentry for error reporting/management
-Sentry.init({
-  dsn: "https://527b49c979244102b126c4b26f140c90@o327609.ingest.sentry.io/1838264",
-  enableInExpoDevelopment: true,
-  debug: false
-});
+Sentry.init(sentryConfig);
 
 // Ignore recurring "cycle" warning
 LogBox?.ignoreLogs(
@@ -67,6 +65,10 @@ const App = ({ skipLoadingScreen }) => {
     async function loadResourcesAndDataAsync() {
       try {
         await SplashScreen.preventAutoHideAsync();
+      } catch (e) {
+        console.warn(e);
+      }
+      try {
         setInitialNavigationState(await getInitialState()); // Load our initial navigation state
         // Load fonts
         await Font.loadAsync({
@@ -75,6 +77,7 @@ const App = ({ skipLoadingScreen }) => {
           "josefin-sans-bold": require("./assets/fonts/JosefinSans-Bold.ttf")
         });
       } catch (e) {
+        console.warn(e);
         // Report error to Sentry
         if (Layout.web) {
           Sentry.Browser.captureException(e);

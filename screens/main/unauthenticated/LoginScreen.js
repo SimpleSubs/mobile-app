@@ -11,15 +11,15 @@ import {
   BackHandler
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import inputModalProps from "../../components/modals/InputModal";
-import InputsList from "../../components/userFields/UserInputsList";
-import SubmitButton from "../../components/userFields/SubmitButton";
-import Layout from "../../constants/Layout";
-import Colors from "../../constants/Colors";
-import { EmailField, PasswordField } from "../../constants/RequiredFields";
-import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../redux/Actions";
+import inputModalProps from "../../../components/modals/InputModal";
+import InputsList from "../../../components/userFields/UserInputsList";
+import SubmitButton from "../../../components/userFields/SubmitButton";
+import Layout from "../../../constants/Layout";
+import Colors from "../../../constants/Colors";
+import { EmailField, PasswordField } from "../../../constants/RequiredFields";
+import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../../redux/Actions";
 import { connect } from "react-redux";
-import Logo from "../../assets/images/icon.svg";
+import Logo from "../../../assets/images/icon.svg";
 
 // Fields required for login
 const LOGIN_FIELDS = [EmailField, PasswordField];
@@ -38,6 +38,7 @@ const LOGIN_FIELDS = [EmailField, PasswordField];
  * @constructor
  */
 const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswordAction, navigation }) => {
+
   const inset = useSafeAreaInsets();
   const [inputs, setInputs] = useState({ email: "", password: "" });
 
