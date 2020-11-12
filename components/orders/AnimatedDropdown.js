@@ -87,12 +87,14 @@ const SecondaryTouchableText = ({ type, selectedValue, style }) => {
     case InputTypes.TEXT_INPUT:
     case InputTypes.CHECKBOX:
       return (
-        <AnimatedIonicons
-          name={"ios-arrow-down"}
-          size={Layout.fonts.title}
-          color={Colors.primaryText}
-          style={[styles.dropdownArrow, style]}
-        />
+        <View style={styles.arrowContainer}>
+          <AnimatedIonicons
+            name={"ios-arrow-down"}
+            size={Layout.fonts.title}
+            color={Colors.primaryText}
+            style={[styles.dropdownArrow, style]}
+          />
+        </View>
     );
     default:
       return null
@@ -119,7 +121,7 @@ const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () =>
   const [expanded, changeExpanded] = useState(false);
   const [minHeight, setMinHeight] = useState(57.5);
   const [maxHeight, setMaxHeight] = useState(minHeight);
-  const [height, setHeight] = useState(minHeight);
+  const [height, setHeight] = useState();
   const angleAnimated = useRef(new Animated.Value(0)).current;
 
   const onPressTouchable = () => {
@@ -130,10 +132,13 @@ const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () =>
   };
 
   return (
-    <View style={[styles.container, { height: height }]}>
+    <View style={[styles.container, height ? { height } : {}]}>
       <TouchableOpacity
         style={styles.touchable}
-        onLayout={({ nativeEvent }) => setMinHeight(nativeEvent.layout.height)}
+        onLayout={({ nativeEvent }) => {
+          setMinHeight(nativeEvent.layout.height);
+          setHeight(nativeEvent.layout.height);
+        }}
         onPress={onPressTouchable}
       >
         <Text style={styles.touchableText}>{title}</Text>
@@ -159,6 +164,7 @@ const styles = StyleSheet.create({
   touchable: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     padding: 20
   },
   touchableText: {
@@ -171,12 +177,14 @@ const styles = StyleSheet.create({
     fontSize: Layout.fonts.title,
     fontFamily: "josefin-sans",
     color: Colors.secondaryText,
-    flex: 1,
     textAlign: "right"
   },
   dropdownArrow: {
     alignItems: "center",
     justifyContent: "center",
     paddingTop: 3
+  },
+  arrowContainer: {
+    paddingLeft: 20
   }
 });
