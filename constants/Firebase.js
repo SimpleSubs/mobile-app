@@ -7,7 +7,6 @@ import firebaseConfig from "../firebase-config.json";
 import "firebase/firestore";
 import "firebase/auth";
 import reportToSentry from "./Sentry";
-import Layout from "./Layout";
 
 firebase.initializeApp(firebaseConfig);
 
@@ -48,9 +47,9 @@ export const authErrorMessage = (error) => {
         title: "Invalid Email",
         message: "There is no user with that email address. You may need to create an account."
       };
-    case "auth/email-already-exists":
+    case "auth/email-already-in-use":
       return {
-        title: "Email Already Exists",
+        title: "Email Already In Use",
         message: "The email you have chosen is already in use. Please choose a different email or contact an app admin."
       }
     default:

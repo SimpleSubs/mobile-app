@@ -3,7 +3,7 @@
  * @author Emily Sturman <emily@sturman.org>
  */
 import "react-native-get-random-values";
-import { Alert } from "react-native";
+import Alert from "../constants/Alert";
 import { firestore, auth, authErrorMessage, firestoreErrorMessage } from "../constants/Firebase";
 import moment from "moment";
 import { toISO } from "../constants/Date";
@@ -63,7 +63,7 @@ const myPresets = (uid) => (
 const alertAuthError = (dispatch, error) => {
   dispatch(stopLoading());
   const { title, message } = authErrorMessage(error);
-  Alert.alert(title, message);
+  Alert(title, message);
 };
 
 /**
@@ -74,7 +74,7 @@ const alertAuthError = (dispatch, error) => {
 const alertFirestoreError = (dispatch, error) => {
   dispatch(stopLoading());
   const { title, message } = firestoreErrorMessage(error);
-  Alert.alert(title, message);
+  Alert(title, message);
 };
 
 /**
