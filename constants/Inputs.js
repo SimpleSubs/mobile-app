@@ -5,7 +5,7 @@
 // Regular expression to detect if a given string is a valid email address
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 // String to signal to validated inputs that input contents are valid
-export const NO_ERROR = "   ";
+export const NO_ERROR = "NO_ERROR";
 
 // Different options for input
 export const InputTypes = {

@@ -84,16 +84,25 @@ const getTransformationStyle = (animated) => ({ opacity: animated });
  *
  * Fades out message if it is set to NO_ERROR, otherwise fades in message.
  *
- * @param {string}         errorMessage Error message to be displayed
- * @param {Animated.Value} animated     Animated value for opacity animation.
+ * @param {string}           errorMessage      Error message to be displayed
+ * @param {Animated.Value}   animated          Animated value for opacity animation.
+ * @param {function(string)} setDisplayedError Function to set displayed error message after hiding/before showing.
  */
-const textAnimation = (errorMessage, animated) => {
-  animated.setValue(errorMessage === NO_ERROR ? 1 : 0);
+const textAnimation = (errorMessage, animated, setDisplayedError) => {
+  let hiding = errorMessage === NO_ERROR;
+  animated.setValue(hiding ? 1 : 0);
+  if (!hiding) {
+    setDisplayedError(errorMessage);
+  }
   Animated.timing(animated, {
     duration: 250,
-    toValue: errorMessage.length === 0 ? 0 : 1,
+    toValue: hiding ? 0 : 1,
     useNativeDriver: true
-  }).start();
+  }).start(() => {
+    if (hiding) {
+      setDisplayedError(errorMessage)
+    }
+  });
 }
 
 /**
@@ -110,8 +119,9 @@ const textAnimation = (errorMessage, animated) => {
  * @constructor
  */
 const InputContainer = ({ error, textStyle = {}, contentContainerStyle = {}, children }) => {
+  const [displayedError, setDisplayedError] = useState(error);
   const animated = useRef(new Animated.Value(0)).current;
-  useEffect(() => textAnimation(error, animated), [error]);
+  useEffect(() => textAnimation(error, animated, setDisplayedError), [error]);
   return (
     <View style={contentContainerStyle}>
       {children}
@@ -120,7 +130,7 @@ const InputContainer = ({ error, textStyle = {}, contentContainerStyle = {}, chi
         ellipsizeMode={"tail"}
         numberOfLines={1}
       >
-        {error}
+        {displayedError}
       </Animated.Text>
     </View>
   )
