@@ -139,13 +139,15 @@ export default connect(mapStateToProps, mapDispatchToProps)(Modal);
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    zIndex: 100000
   },
   background: {
+    zIndex: 100000,
     position: "absolute",
     backgroundColor: "black",
     height: Layout.window.height,
-    width: Layout.window.width
+    width: Layout.window.width,
+    padding: 60,
+    alignItems: "center",
+    justifyContent: "center"
   }
 });

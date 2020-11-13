@@ -38,11 +38,11 @@ import { openModal, closeModal } from "../../redux/Actions";
 const isValidText = (validateFunc, value, setError, fixValue, otherInputs = []) => {
   let fixedValue = fixValue(value);
   if (fixedValue.length === 0) {
-    setError("Value must not be empty")
-    return false
+    setError("Value must not be empty");
+    return false;
   }
-  let errorMsg = validateFunc(fixedValue, ...otherInputs)
-  setError(errorMsg)
+  let errorMsg = validateFunc(fixedValue, ...otherInputs);
+  setError(errorMsg);
   return errorMsg === NO_ERROR;
 }
 
@@ -87,8 +87,13 @@ const getTransformationStyle = (animated) => ({ opacity: animated });
  * @param {string}           errorMessage      Error message to be displayed
  * @param {Animated.Value}   animated          Animated value for opacity animation.
  * @param {function(string)} setDisplayedError Function to set displayed error message after hiding/before showing.
+ * @param {React.Ref}        prevError         Ref containing previous error (or nothing, if page is first loading).
  */
-const textAnimation = (errorMessage, animated, setDisplayedError) => {
+const textAnimation = (errorMessage, animated, setDisplayedError, prevError) => {
+  if (!prevError.current) {
+    prevError.current = errorMessage;
+    return;
+}
   let hiding = errorMessage === NO_ERROR;
   animated.setValue(hiding ? 1 : 0);
   if (!hiding) {
@@ -100,7 +105,7 @@ const textAnimation = (errorMessage, animated, setDisplayedError) => {
     useNativeDriver: true
   }).start(() => {
     if (hiding) {
-      setDisplayedError(errorMessage)
+      setDisplayedError(errorMessage);
     }
   });
 }
@@ -110,9 +115,9 @@ const textAnimation = (errorMessage, animated, setDisplayedError) => {
  *
  * Returns view containing provided input with an animated error message below it.
  *
- * @param {string}        error                      Message to display in error text (NO_ERROR const for no error).
- * @param {Object}        [textStyle={}]             Style to apply to error text.
- * @param {Object}        [contentContainerStyle={}] Style to apply to container.
+ * @param {string}             error                      Message to display in error text (NO_ERROR const for no error).
+ * @param {Object}             [textStyle={}]             Style to apply to error text.
+ * @param {Object}             [contentContainerStyle={}] Style to apply to container.
  * @param {React.ReactElement} children                   Input to render within container.
  *
  * @return {React.ReactElement} View containing input and error message.
@@ -120,8 +125,9 @@ const textAnimation = (errorMessage, animated, setDisplayedError) => {
  */
 const InputContainer = ({ error, textStyle = {}, contentContainerStyle = {}, children }) => {
   const [displayedError, setDisplayedError] = useState(error);
+  const prevError = useRef();
   const animated = useRef(new Animated.Value(0)).current;
-  useEffect(() => textAnimation(error, animated, setDisplayedError), [error]);
+  useEffect(() => textAnimation(error, animated, setDisplayedError, prevError), [error]);
   return (
     <View style={contentContainerStyle}>
       {children}
@@ -173,7 +179,7 @@ export const ValidatedTextInput = ({ setRef, validate, value, otherInputs = [], 
 /**
  * Renders a picker touchable with validation.
  *
- * Returns a view containing a touchbale that opens a picker
+ * Returns a view containing a touchable that opens a picker
  * and an animated error message (for when input content is invalid).
  *
  * @param {function}         setRef                  Assigns text input ref to array of refs in parent element (for jumping to next input).

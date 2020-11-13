@@ -4,13 +4,13 @@
  */
 import React from "react";
 import {
-  Picker,
   StyleSheet,
   FlatList,
   Text,
   View,
   TouchableOpacity
 } from "react-native";
+import { Picker } from "@react-native-community/picker";
 import ModalTypes from "../constants/ModalTypes";
 import Layout from "../constants/Layout";
 import Colors from "../constants/Colors";
@@ -49,23 +49,22 @@ const PickerIOS = ({ changeValue, selectedValue, options }) => (
  * @constructor
  */
 const PickerAndroid = ({ changeValue, selectedValue, options }) => (
-  <FlatList
-    alwaysBounceVertical={false}
-    data={options}
-    extraData={selectedValue}
-    contentContainerStyle={styles.androidPicker}
-    showsVerticalScrollIndicator={true}
-    keyExtractor={(item) => item}
-    ListEmptyComponent={<Text style={styles.noOptionsText}>There are no available options</Text>}
-    renderItem={({item}) => (
-      <TouchableOpacity
-        style={[styles.androidItemStyle, item === selectedValue ? styles.selectedAndroidItemStyle : {}]}
-        onPress={() => changeValue(item)}
-      >
-        <Text style={[styles.itemTextStyle, item === selectedValue ? styles.selectedItemTextStyle : {}]}>{item}</Text>
-      </TouchableOpacity>
-    )}
-  />
+  <View style={styles.androidPickerContainer}>
+    <FlatList
+      alwaysBounceVertical={false}
+      data={options}
+      extraData={selectedValue}
+      contentContainerStyle={styles.androidPicker}
+      showsVerticalScrollIndicator={true}
+      keyExtractor={(item) => item}
+      ListEmptyComponent={<Text style={styles.noOptionsText}>There are no available options</Text>}
+      renderItem={({item}) => (
+        <TouchableOpacity style={styles.androidItemStyle} onPress={() => changeValue(item)}>
+          <Text style={[styles.itemTextStyle, item === selectedValue ? styles.selectedItemTextStyle : {}]}>{item}</Text>
+        </TouchableOpacity>
+      )}
+    />
+  </View>
 );
 
 /**
@@ -119,24 +118,24 @@ const styles = StyleSheet.create({
   itemTextStyle: {
     fontFamily: "josefin-sans",
     fontSize: Layout.fonts.body,
-    color: Colors.primaryText
+    color: Colors.primaryText,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 100
   },
   androidItemStyle: {
-    padding: 20,
     alignItems: "center"
-  },
-  selectedAndroidItemStyle: {
-    backgroundColor: Colors.accentColor
   },
   androidPicker: {
     alignItems: "stretch",
     paddingVertical: 30
   },
+  androidPickerContainer: {
+    maxHeight: 300
+  },
   pickerContainer: {
-    left: 125.0 / 2,
-    top: (Layout.window.height - 300) / 2,
     width: Layout.window.width - 125,
-    height: 300
+    maxWidth: 500
   },
   picker: {
     flexGrow: 1,
@@ -144,7 +143,8 @@ const styles = StyleSheet.create({
     borderRadius: 10
   },
   selectedItemTextStyle: {
-    fontFamily: "josefin-sans-bold"
+    fontFamily: "josefin-sans-bold",
+    backgroundColor: Colors.accentColor
   },
   noOptionsText: {
     fontFamily: "josefin-sans",
