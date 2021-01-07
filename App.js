@@ -29,12 +29,10 @@ import sentryConfig from "./sentry-config.json";
 // Only import if not in web (LogBox doesn't exist in web)
 const { LogBox } = !Layout.web ? require("react-native") : { LogBox: null };
 
-// TODO: add associatedDomains to app.json
-
 // Initialize Sentry for error reporting/management
 Sentry.init(sentryConfig);
 
-// Ignore recurring "cycle" warning
+// Ignore recurring "cycle" warning and Firebase timer error on Android
 LogBox?.ignoreLogs(
   [
     "Require cycle: components/modals/InputModal.js -> components/userFields/UserInputsList.js -> constants/DataActions.js -> components/modals/InputModal.js",
