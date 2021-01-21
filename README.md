@@ -13,82 +13,7 @@ Download
 * [Download on Android](https://play.google.com/store/apps/details?id=org.lwhs.simplesubs)
 * [View on Web](https://simple-subs-app.web.app)
 
-Run the App Independently
--------------------------
-
-If you'd like to test out the app on your own (only LWHS students and faculty may log into the app), follow these steps:
-
-### 1. Install Expo CLI
-
-Follow the instructions on Expo's [installation page](https://docs.expo.io/get-started/installation/) to install the
-Expo CLI and iOS/Android client.
-
-### 2. Install Yarn
-
-Run `npm install -g yarn` in the command line to globally install Yarn, which is used for package management.
-
-### 3. Clone this repository
-
-### 4. Add required files
-
-There are a couple of files that are not included on GitHub because they contain sensitive information. These are:
-
-#### `firebase-config.json`
-
-Firebase is necessary to store order and user data. To get started, create a project in Firebase, then navigate to the
-Project Settings page. Add a web app, then copy the config object and paste it into a JSON file. The file should look
-something like:
-
-```json
-{
-  "apiKey": "<API_KEY>",
-  "authDomain": "<AUTH_DOMAIN>",
-  "databaseURL": "<DATABASE_URL>",
-  "projectId": "<PROJECT_ID>",
-  "storageBucket": "<STORAGE_BUCKET>",
-  "messagingSenderId": "<MESSAGING_SENDER_ID>",
-  "appId": "<APP_ID>"
-}
-```
-
-You'll also need to populate the `appData` collection with a doc titled `appConstants`:
-
-```
-{
-  cutoffTime: {
-    hours: <number between 0 and 24 (excl)>,
-    minutes: <number between 0 and 60 (excl)>
-  },
-  orderOptions: <Array of `OrderOption`s>,
-  userFields: <Array of `UserField`s>
-}
-```
-
-#### `sentry-config.json`
-
-If you'd like to include [Sentry](https://sentry.io) error reporting in the app, create a project in the Sentry console
-and copy the DSN key into a file called `sentry-config.json`. Also include any other config options you'd like. For the
-production version of SimpleSubs, the file looks like this:
-
-```json
-{
-  "dsn": "<DSN_KEY>",
-  "enableInExpoDevelopment": true,
-  "debug": false
-}
-```
-
-Also paste your Sentry API token into the `authToken` field in `app.json`, which currently reads `"SENTRY_API_TOKEN"`.
-Then run `expo publish` in the command line to connect Sentry with your project.
-
-### 5. Install dependencies
-
-Inside the main project directory, run `yarn install` to install all Node dependencies.
-
-### 6. Run the project
-
-In the main project directly, run `expo start` to run your project. You may scan the barcode to run it on your own
-device, or you can run it on Android/iOS simulators or on the web.
+If you would like a demo or trial of the app, you can contact me at [emily@sturman.org](mailto:emily@sturman.org).
 
 State Management
 ----------------
@@ -222,6 +147,8 @@ Object containing app state
 focused)
 
 `user` (`User`): a `User` object representing the user currently logged in (`null` if no user is logged in)
+
+`hasAuthenticated` (`bool`): whether the app has gotten its initial auth state
 
 `orderPresets` (`Array` of `OrderPreset`s): an array containing presets defined by user
 
