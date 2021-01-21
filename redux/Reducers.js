@@ -48,6 +48,12 @@ const user = (state = null, action) => (
     : state
 );
 
+const hasAuthenticated = (state = false, action) => (
+  action.type === Actions.UPDATE_USER_DATA
+    ? true
+    : state
+)
+
 /**
  * Gets app's modal state.
  *
@@ -87,6 +93,12 @@ const infoMessage = (state = CLOSED_INFO_MODAL, action) => (
 const stateConstants = (state = {}, action) => (
   action.type === Actions.UPDATE_CONSTANTS
     ? action.data
+    : state
+);
+
+const domain = (state = null, action) => (
+  action.type === Actions.SET_DOMAIN
+    ? action.domain
     : state
 );
 
@@ -140,10 +152,12 @@ const sandwichApp = combineReducers({
   focusedOrder,
   focusedPreset,
   user,
+  hasAuthenticated,
   orderPresets,
   modal,
   infoMessage,
   stateConstants,
+  domain,
   loading
 })
 

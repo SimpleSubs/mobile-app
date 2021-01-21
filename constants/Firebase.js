@@ -15,6 +15,28 @@ export const firestore = firebase.firestore();
 // Firebase auth object; notice firebaseAuth is not executed (will often need to execute when using)
 export const auth = firebase.auth;
 
+const executeFunction = async (name, data = {}) => {
+  let authorization = firebase.auth().currentUser ?
+    { "Authorization": "Bearer " + await firebase.auth().currentUser.getIdToken(true) } :
+    {};
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authorization,
+    },
+    body: JSON.stringify({ data })
+  };
+  try {
+    let response = await fetch("https://us-central1-sandwich-orders.cloudfunctions.net/" + name, requestOptions);
+    return (await response.json()).result;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
+
+export const deleteFailedUser = (uid) => executeFunction("deleteFailedUser", { uid });
+
 /**
  * Gets an error message for Firebase authentication.
  *

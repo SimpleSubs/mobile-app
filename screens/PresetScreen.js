@@ -15,12 +15,12 @@ import { TitleField } from "../constants/RequiredFields";
  * to presets and titling them (all presets MUST have a unique title).
  *
  * @param {Object|null}                    focusedPreset Preset being currently edited (null if creating new preset).
- * @param {Object[]}                       orderOptions Array of order fields required/asked for order.
+ * @param {Object[]}                       orderOptions  Array of order fields required/asked for order.
  * @param {function()}                     unfocusPreset Sets state-wide focusedPreset to null.
- * @param {function(Object,string)}        createPreset Pushes a new preset to Firebase.
- * @param {function(Object,string,string)} editPreset Pushes edits to exiting preset to Firebase.
- * @param {function(string,string)}        deletePreset Deletes existing preset from Firebase.
- * @param {Object}                         navigation Navigation object passed by React Navigation.
+ * @param {function(Object,string)}        createPreset  Pushes a new preset to Firebase.
+ * @param {function(Object,string,string)} editPreset    Pushes edits to exiting preset to Firebase.
+ * @param {function(string,string)}        deletePreset  Deletes existing preset from Firebase.
+ * @param {Object}                         navigation    Navigation object passed by React Navigation.
  *
  * @return {React.ReactElement} Element to render.
  * @constructor
@@ -55,9 +55,9 @@ const mapStateToProps = ({ focusedPreset, orderPresets, stateConstants }) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   unfocusPreset: () => dispatch(unfocusPreset()),
-  createPreset: (data, uid) => createPreset(dispatch, data, uid),
-  editPreset: (data, id, uid) => editPreset(dispatch, data, id, uid),
-  deletePreset: (id, uid) => deletePreset(dispatch, id, uid)
+  createPreset: (data, uid, domain) => createPreset(dispatch, data, uid, domain),
+  editPreset: (data, id, uid, domain) => editPreset(dispatch, data, id, uid, domain),
+  deletePreset: (id, uid, domain) => deletePreset(dispatch, id, uid, domain)
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(PresetScreen);

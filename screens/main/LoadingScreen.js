@@ -8,7 +8,7 @@ import {
   StyleSheet,
   ActivityIndicator
 } from "react-native";
-import { getAuthData, getUnauthData, logOut } from "../../redux/Actions";
+import { getAuthData, logOut } from "../../redux/Actions";
 import { connect } from "react-redux";
 import Colors from "../../constants/Colors";
 import { allValid } from "../../constants/Inputs";
@@ -19,20 +19,21 @@ import { allValid } from "../../constants/Inputs";
  * Renders an activity indicator (loading symbol) and fetches app data based
  * on whether user is authorized (signed in).
  *
- * @param {bool}       isLoggedIn    Whether user is logged in.
- * @param {function()} getAuthData   Gets data for when user is signed in.
- * @param {function()} getUnauthData Gets data for when user is not signed in.
- * @param {function()} logOut        Signs user out.
- * @param {Object}     navigation    Navigation object (passed from React Navigation).
+ * @param {bool}       isLoggedIn       Whether user is logged in.
+ * @param {bool}       hasAuthenticated Whether app has gotten initial auth state.
+ * @param {function()} getAuthData      Gets data for when user is signed in.
+ * @param {function()} logOut           Signs user out.
+ * @param {Object}     navigation       Navigation object (passed from React Navigation).
  *
  * @return {React.ReactElement} Element to render loading screen.
  * @constructor
  */
-const LoadingScreen = ({ isLoggedIn, getAuthData, getUnauthData, logOut, navigation }) => {
+const LoadingScreen = ({ isLoggedIn, hasAuthenticated, getAuthData, logOut, navigation }) => {
   const prevAuthRef = useRef();
 
   // Gets different state constants depending on whether user is logged in.
   useEffect(() => {
+    if (!hasAuthenticated) return;
     const prevAuthState = prevAuthRef.current;
     if (isLoggedIn && !prevAuthState) {
       getAuthData().then(({ user, userFields }) => {
@@ -41,12 +42,15 @@ const LoadingScreen = ({ isLoggedIn, getAuthData, getUnauthData, logOut, navigat
         } else {
           navigation.navigate("Main", { screen: "Home" });
         }
-      }).catch(logOut);
+      }).catch((e) => {
+        console.log(e);
+        logOut();
+      });
     } else if (prevAuthState || prevAuthState === undefined) {
-      getUnauthData().then(() => navigation.navigate("Main", { screen: "Login" }));
+      navigation.navigate("Main", { screen: "Login" });
     }
     prevAuthRef.current = isLoggedIn;
-  }, [isLoggedIn]);
+  }, [isLoggedIn, hasAuthenticated]);
 
   return (
     <View style={styles.container}>
@@ -55,15 +59,15 @@ const LoadingScreen = ({ isLoggedIn, getAuthData, getUnauthData, logOut, navigat
   );
 };
 
-const mapStateToProps = ({ user, stateConstants }) => ({
+const mapStateToProps = ({ user, hasAuthenticated, stateConstants, domain }) => ({
   isLoggedIn: !!user,
-  user,
-  userFields: stateConstants.userFields
+  hasAuthenticated,
+  userFields: stateConstants.userFields,
+  domain
 });
 
 const mapDispatchToProps = (dispatch) => ({
   getAuthData: async () => await getAuthData(dispatch),
-  getUnauthData: async () => await getUnauthData(dispatch),
   logOut: () => logOut(dispatch)
 });
 

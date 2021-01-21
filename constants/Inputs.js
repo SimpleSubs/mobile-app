@@ -58,7 +58,7 @@ export const valueIsValid = (userField, value) => {
  */
 export const allValid = (user, userFields) => (
   userFields
-    .map((userField) => valueIsValid(userField, user[userField.key]))
+    .map((userField) => valueIsValid(userField, user ? user[userField.key] : null))
     .reduce((a, b) => a && b)
 );
 
@@ -104,10 +104,21 @@ export const InputPresets = {
     fixValue: (value) => value,
     validate: (value) => value.length === 4 && !isNaN(parseInt(value, 10)) ? NO_ERROR : "Invalid PIN"
   },
+  CODE: {
+    autoCorrect: false,
+    maxLength: 6,
+    fixValue: (value) => value.trim().toUpperCase(),
+    validate: (value) => value.length === 6 ? NO_ERROR : "Code must be exactly 6 digits"
+  },
   NAME: {
     autoCapitalize: "words",
     autoCompleteType: "name",
     textContentType: "name",
+    fixValue: (value) => value.trim(),
+    validate: (value) => NO_ERROR
+  },
+  MULTILINE: {
+    multiline: true,
     fixValue: (value) => value.trim(),
     validate: (value) => NO_ERROR
   },
@@ -124,6 +135,8 @@ export const TextTypes = {
   NEW_PASSWORD: "NEW_PASSWORD",
   CONFIRM_PASSWORD: "CONFIRM_PASSWORD",
   PIN: "PIN",
+  CODE: "CODE",
   NAME: "NAME",
+  MULTILINE: "MULTILINE",
   PLAIN: "PLAIN"
 };

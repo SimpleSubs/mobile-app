@@ -215,13 +215,14 @@ const DeleteButton = ({ onPress, message }) => (
  * @param {function}            deleteExisting Function to delete order/preset.
  * @param {string}              uid            Unique user ID (from Firebase Auth).
  * @param {moment.Moment}       cutoffTime     Time after which orders may not be placed for that day.
+ * @param {string}              domain         Domain key for user's domain.
  * @param {string}              deleteMessage  Message to be displayed on delete button.
  * @param {Object<key, Object>} orderPresets   All of the user's order presets.
  *
  * @return {React.ReactElement} Screen element displaying order or preset fields.
  * @constructor
  */
-const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, editExisting, deleteExisting, uid, cutoffTime, deleteMessage, orderPresets }) => {
+const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, editExisting, deleteExisting, uid, cutoffTime, domain, deleteMessage, orderPresets }) => {
   const [state, setFullState] = useState(getDefault(focusedData, orderOptions));
   const inset = useSafeAreaInsets();
 
@@ -254,16 +255,16 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
     }
     // Pushes to existing doc if editing, otherwise creates new doc
     if (focusedData) {
-      editExisting(newState, focusedData.key, uid);
+      editExisting(newState, focusedData.key, uid, domain);
     } else {
-      createNew(newState, uid);
+      createNew(newState, uid, domain);
     }
     cancel();
   };
 
   const deleteAndNavigate = () => {
     if (focusedData) {
-      deleteExisting(focusedData.key, uid);
+      deleteExisting(focusedData.key, domain);
     }
     cancel();
   }
@@ -299,10 +300,11 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
   )
 };
 
-const mapStateToProps = ({ stateConstants, orderPresets, user }) => ({
+const mapStateToProps = ({ stateConstants, orderPresets, user, domain }) => ({
   cutoffTime: stateConstants.cutoffTime,
   orderPresets,
-  uid: user.uid
+  uid: user.uid,
+  domain: domain.id
 });
 
 export default connect(mapStateToProps, null)(OrderInputsList);

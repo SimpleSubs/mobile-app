@@ -50,9 +50,9 @@ const mapStateToProps = ({ focusedOrder, orders, stateConstants }) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  createOrder: (data, uid) => createOrder(dispatch, data, uid),
-  editOrder: (data, id, uid) => editOrder(dispatch, data, id, uid),
-  deleteOrder: (id) => deleteOrder(dispatch, id),
+  createOrder: (data, uid, domain) => createOrder(dispatch, data, uid, domain),
+  editOrder: (data, id, uid, domain) => editOrder(dispatch, data, id, uid, domain),
+  deleteOrder: (id, domain) => deleteOrder(dispatch, id, domain),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(OrderScreen);

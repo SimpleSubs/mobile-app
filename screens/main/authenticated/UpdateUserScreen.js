@@ -10,7 +10,7 @@ import {
 import InputsList from "../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../components/userFields/SubmitButton";
 import { connect } from "react-redux";
-import { watchUserData, editUserData, logOut } from "../../../redux/Actions";
+import { editUserData, logOut } from "../../../redux/Actions";
 import Colors from "../../../constants/Colors";
 import { valueIsValid } from "../../../constants/Inputs";
 import Layout from "../../../constants/Layout";
@@ -22,21 +22,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
  * Renders inputs list (FlatList of ValidatedInputs) displaying invalid user fields
  * so that user must update user fields when changed from backend.
  *
- * @param {Object}                   user          Object containing user data.
- * @param {Object[]}                 userFields    Array containing all invalid input fields.
- * @param {function(Object, string)} editUserData  Pushes edited data to Firebase.
- * @param {function()}               logOut        Function to log user out of account
- * @param {Object}                   navigation    Navigation prop passed by React Navigation.
+ * @param {Object}                           user          Object containing user data.
+ * @param {string}                           domain        Domain key for user's domain.
+ * @param {Object[]}                         userFields    Array containing all invalid input fields.
+ * @param {function(Object, string, string)} editUserData  Pushes edited data to Firebase.
+ * @param {function()}                       logOut        Function to log user out of account
+ * @param {Object}                           navigation    Navigation prop passed by React Navigation.
  *
  * @return {React.ReactElement} Element to display.
  * @constructor
  */
-const UpdateUserScreen = ({ user, userFields, editUserData, logOut, navigation }) => {
+const UpdateUserScreen = ({ user, domain, userFields, editUserData, logOut, navigation }) => {
   const [state, setInputs] = useState(user);
   const inset = useSafeAreaInsets();
 
   const submitData = () => {
-    editUserData(state, user.uid);
+    editUserData(state, user.uid, domain);
     navigation.replace("Home");
   };
   const UpdateButton = (props) => <SubmitButton {...props} title={"Update"} style={styles.updateButton} />
@@ -68,15 +69,15 @@ const UpdateUserScreen = ({ user, userFields, editUserData, logOut, navigation }
   )
 };
 
-const mapStateToProps = ({ user, stateConstants }) => ({
+const mapStateToProps = ({ user, stateConstants, domain }) => ({
   user,
+  domain: domain.id,
   // Only include invalid userFields
   userFields: stateConstants.userFields.filter((userField) => !valueIsValid(userField, user ? user[userField.key] : null))
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  watchUserData: (uid) => watchUserData(dispatch, uid),
-  editUserData: (data, uid) => editUserData(dispatch, data, uid),
+  editUserData: (data, uid, domain) => editUserData(dispatch, data, uid, domain),
   logOut: () => logOut(dispatch)
 });
 

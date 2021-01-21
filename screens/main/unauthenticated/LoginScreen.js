@@ -92,7 +92,7 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.linkTouchable}
-            onPress={() => navigation.navigate("Register")}
+            onPress={() => navigation.navigate("Register", { screen: "Domain" })}
             activeOpacity={0.5}
           >
             <Text style={styles.linkTouchableText}>Don't have an account? Click here to create one.</Text>

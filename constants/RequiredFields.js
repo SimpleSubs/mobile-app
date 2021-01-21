@@ -69,3 +69,20 @@ export const ConfirmPasswordField = {
   inputType: InputTypes.TEXT_INPUT,
   textType: TextTypes.CONFIRM_PASSWORD
 }
+
+export const DomainCodeField = {
+  key: "domainCode",
+  title: "Organization",
+  placeholder: "6-digit organization code",
+  inputType: InputTypes.TEXT_INPUT,
+  textType: TextTypes.CODE
+}
+
+export const DomainNameField = {
+  key: "domain",
+  title: "School",
+  placeholder: "Organization name",
+  inputType: InputTypes.TEXT_INPUT,
+  textType: TextTypes.MULTILINE,
+  mutable: false
+}

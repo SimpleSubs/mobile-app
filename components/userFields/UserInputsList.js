@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   editableTextInput: {
-    backgroundColor: Colors.mode === "LIGHT" ? Colors.textInputColor : Colors.backgroundColor
+    backgroundColor: Colors.mode === "LIGHT" ? Colors.darkerTextInputColor : Colors.backgroundColor
   },
   nonEditableInput: {
     backgroundColor: "transparent"

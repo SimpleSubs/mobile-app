@@ -10,27 +10,30 @@ import {
   TouchableOpacity
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import InputsList from "../../../components/userFields/UserInputsList";
-import SubmitButton from "../../../components/userFields/SubmitButton";
-import Layout from "../../../constants/Layout";
-import Colors from "../../../constants/Colors";
-import { EmailField, NewPasswordField, ConfirmPasswordField } from "../../../constants/RequiredFields";
-import { createUser } from "../../../redux/Actions";
+import InputsList from "../../../../components/userFields/UserInputsList";
+import SubmitButton from "../../../../components/userFields/SubmitButton";
+import Layout from "../../../../constants/Layout";
+import Colors from "../../../../constants/Colors";
+import { EmailField, NewPasswordField, ConfirmPasswordField } from "../../../../constants/RequiredFields";
+import { createUser } from "../../../../redux/Actions";
 import { connect } from "react-redux";
+import AnimatedTouchable from "../../../../components/AnimatedTouchable";
+import {Ionicons} from "@expo/vector-icons";
 
 const REGISTER_FIELDS = [EmailField, NewPasswordField, ConfirmPasswordField];
 
 /**
  * Renders screen to register/sign up user.
  *
- * @param {Object[]|null}                    registerUserFields Input fields to display in register screen.
- * @param {function(string, string, Object)} createUser         Creates a user with the provided data.
- * @param {Object}                           navigation         Navigation object passed by React Navigation.
+ * @param {Object[]|null}                            registerUserFields Input fields to display in register screen.
+ * @param {Object}                                   domain             Object representing user's domain.
+ * @param {function(string, string, Object, string)} createUser         Creates a user with the provided data.
+ * @param {Object}                                   navigation         Navigation object passed by React Navigation.
  *
  * @return {React.ReactElement} Element to display.
  * @constructor
  */
-const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
+const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) => {
   const [inputs, setInputs] = useState({});
   const inset = useSafeAreaInsets();
 
@@ -40,7 +43,7 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
     for (let field of REGISTER_FIELDS) {
       delete data[field.key];
     }
-    createUser(inputs.email, inputs.password, data);
+    createUser(inputs.email, inputs.password, data, domain.id);
   };
 
   // Button to submit form and register user
@@ -58,11 +61,14 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
       contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
       ListHeaderComponent={() => (
         <View style={styles.header}>
-          <Text style={styles.title}>Create an account</Text>
+          <AnimatedTouchable style={styles.closeButton} onPress={() => navigation.pop()} endSize={0.8}>
+            <Ionicons name={"ios-arrow-back"} size={Layout.fonts.icon} color={Colors.primaryText} />
+          </AnimatedTouchable>
+          <Text style={styles.title}>Join the {domain.name} Organization</Text>
         </View>
       )}
       ListFooterComponent={() => (
-        <TouchableOpacity style={styles.linkTouchable} onPress={() => navigation.navigate("Login")} activeOpacity={0.5}>
+        <TouchableOpacity style={styles.linkTouchable} onPress={() => navigation.navigate("Main", { screen: "Login" })} activeOpacity={0.5}>
           <Text style={styles.linkTouchableText}>Already have an account? Click here to log in.</Text>
         </TouchableOpacity>
       )}
@@ -75,12 +81,13 @@ const RegisterScreen = ({ registerUserFields, createUser, navigation }) => {
   );
 };
 
-const mapStateToProps = ({ stateConstants }) => ({
-  registerUserFields: stateConstants.userFields ? [...REGISTER_FIELDS, ...stateConstants.userFields] : null
+const mapStateToProps = ({ stateConstants, domain }) => ({
+  registerUserFields: stateConstants.userFields ? [...REGISTER_FIELDS, ...stateConstants.userFields] : null,
+  domain
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  createUser: (email, password, data) => createUser(dispatch, email, password, data)
+  createUser: (email, password, data, domain) => createUser(dispatch, email, password, data, domain)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RegisterScreen);
@@ -90,13 +97,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundColor,
     flex: 1
   },
+  closeButton: {
+    position: "absolute",
+    top: 0,
+    left: 0
+  },
   header: {
     alignItems: "center",
     marginVertical: 30
   },
   title: {
     fontFamily: "josefin-sans-bold",
-    fontSize: Layout.fonts.mainTitle,
+    fontSize: Layout.fonts.header,
     margin: 20,
     textAlign: "center",
     color: Colors.primaryText
