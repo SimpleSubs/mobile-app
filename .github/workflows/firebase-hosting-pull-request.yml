@@ -17,6 +17,8 @@ jobs:
           expo-username: '${{ secrets.EXPO_CLI_USERNAME }}'
           expo-password: '${{ secrets.EXPO_CLI_PASSWORD }}'
           expo-cache: true
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       - run: yarn install
       - run: expo build:web
       - uses: FirebaseExtended/action-hosting-deploy@v0
