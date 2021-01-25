@@ -23,10 +23,11 @@ jobs:
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       - run: yarn install
-      - run: expo publish
       - run: expo build:web
-      - run: expo build:ios
-      - run: expo build:android
+      - run: expo build:ios --apple-id emily@sturman.org --team-id LHY4TUGYG8 -t archive
+        env:
+          EXPO_APPLE_PASSWORD: '${{ secrets.EXPO_APPLE_PASSWORD }}'
+      - run: expo build:android -t app-bundle
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
