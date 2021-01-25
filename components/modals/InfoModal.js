@@ -31,7 +31,6 @@ const TouchableAnimated = Animated.createAnimatedComponent(TouchableHighlight);
  * to slide from bottom position to offscreen.
  *
  * @param {Animated.Value} animated     Animated value for translate/slide animation.
- * @param {number}         distToTravel Distance required for modal to slide completely offscreen.
  *
  * @returns {Object} Style object to be applied to the modal.
  */
@@ -92,17 +91,22 @@ const InfoModal = ({ infoMessage, closeModal }) => {
     timeoutRef.current = setTimeout(closeModal, CLOSE_MODAL_TIMEOUT * 1000);
   }, [infoMessage]);
 
-  return (
-    <TouchableAnimated
-      onPress={closeModal}
-      style={[styles.container, getModalStyle(animated)]}
-      underlayColor={Colors.infoModal}
-      delayPressIn={0}
-      activeOpacity={0.5}
-    >
-      <Text style={styles.text}>{displayedMessage}</Text>
-    </TouchableAnimated>
-  )
+  // render nothing if closed (so you can click through the hidden modal)
+  if (displayedMessage === CLOSED_INFO_MODAL && infoMessage === CLOSED_INFO_MODAL) {
+    return null;
+  } else {
+    return (
+      <TouchableAnimated
+        onPress={closeModal}
+        style={[styles.container, getModalStyle(animated)]}
+        underlayColor={Colors.infoModal}
+        delayPressIn={0}
+        activeOpacity={0.5}
+      >
+        <Text style={styles.text}>{displayedMessage}</Text>
+      </TouchableAnimated>
+    );
+  }
 };
 
 const mapStateToProps = ({ infoMessage }) => ({
