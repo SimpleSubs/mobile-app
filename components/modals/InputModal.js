@@ -5,7 +5,8 @@
 import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
-  Text
+  Text,
+  View
 } from "react-native";
 import InputsList from "../userFields/UserInputsList";
 import SubmitButton from "../userFields/SubmitButton";
@@ -41,21 +42,21 @@ const InputModalContent = ({ inputData, setModalProps, title, buttonTitle, onSub
   }, []);
 
   return (
-    <InputsList
-      data={inputData}
-      state={state}
-      setInputs={setState}
-      ListHeaderComponent={() => <Text style={styles.title}>{title}</Text>}
-      SubmitButton={Submit}
-      onSubmit={() => onSubmit(state)}
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      onLayout={({ nativeEvent }) => setModalProps({ style: {
-        left: (Layout.window.width - nativeEvent.layout.width) / 2,
-        top: (Layout.window.height - nativeEvent.layout.height) / 2
-      }})}
-      scrollEnabled={false}
-    />
+    <>
+      <View style={styles.spacer} />
+      <InputsList
+        data={inputData}
+        state={state}
+        setInputs={setState}
+        ListHeaderComponent={() => <Text style={styles.title}>{title}</Text>}
+        SubmitButton={Submit}
+        onSubmit={onSubmit}
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        scrollEnabled={false}
+      />
+      <View style={styles.spacer} />
+    </>
   )
 };
 
@@ -93,9 +94,13 @@ export default inputModalProps;
 const styles = StyleSheet.create({
   container: {
     width: Layout.window.width - 125,
+    maxWidth: 500,
     backgroundColor: Colors.backgroundColor,
     padding: 30,
-    borderRadius: 10,
+    borderRadius: 10
+  },
+  spacer: {
+    flex: 100000000
   },
   contentContainer: {
     paddingHorizontal: 0

@@ -39,6 +39,8 @@ const getModalStyle = (type, springAnimated, timingAnimated) => {
         outputRange: [Layout.window.height, 0]
       });
       return { transform: [{ translateY: positionInterpolation }]};
+    default:
+      return {};
   }
 }
 
@@ -121,7 +123,7 @@ const Modal = ({ children, type = ModalTypes.CENTER_SPRING_MODAL, closeModal, st
         pointerEvents={open ? "auto": "none"}
         style={[styles.background, getBackgroundStyle(timingAnimated)]}
       >
-        <Animated.View style={[styles.container, getModalStyle(type, springAnimated, timingAnimated), style]}>
+        <Animated.View style={[style, getModalStyle(type, springAnimated, timingAnimated)]}>
           {children}
         </Animated.View>
       </Animated.View>
@@ -138,15 +140,12 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(mapStateToProps, mapDispatchToProps)(Modal);
 
 const styles = StyleSheet.create({
-  container: {
-  },
   background: {
     zIndex: 100000,
     position: "absolute",
     backgroundColor: "black",
-    height: Layout.window.height,
-    width: Layout.window.width,
-    padding: 60,
+    width: "100%",
+    height: "100%",
     alignItems: "center",
     justifyContent: "center"
   }
