@@ -14,7 +14,3 @@ web-report/
 .DS_Store
 
 .idea/
-
-firebase-config.json
-sentry-config.json
-sentry-api-token.txt

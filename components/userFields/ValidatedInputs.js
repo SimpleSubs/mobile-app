@@ -32,12 +32,13 @@ import { openModal, closeModal } from "../../redux/Actions";
  * @param {function(string)}                   setError         Function that sets error message for text input.
  * @param {function(string):string}            fixValue         Adjusts text value before validating and passing to state (e.g. trims whitespace).
  * @param {string[]}                           [otherInputs=[]] Other inputs to consider while validating (e.g. comparing confirm password to password field).
+ * @param {boolean}                            required         Whether input field is required.
  *
  * @return {boolean} Whether text is valid for submission.
  */
-const isValidText = (validateFunc, value, setError, fixValue, otherInputs = []) => {
+const isValidText = (validateFunc, value, setError, fixValue, otherInputs = [], required) => {
   let fixedValue = fixValue(value);
-  if (fixedValue.length === 0) {
+  if (required && fixedValue.length === 0) {
     setError("Value must not be empty");
     return false;
   }
@@ -56,12 +57,13 @@ const isValidText = (validateFunc, value, setError, fixValue, otherInputs = []) 
  * @param {string}           value    Selected value in picker.
  * @param {string[]}         options  All options for picker.
  * @param {function(string)} setError Function that sets error message for text input.
+ * @param {boolean}          required Whether picker field is required.
  *
  * @return {boolean} Whether picker value is valid for submission.
  */
-const isValidPicker = (value, options, setError) => {
+const isValidPicker = (value, options, setError, required) => {
   const valid = options.includes(value);
-  if (!valid) {
+  if (required && !valid) {
     setError("Please select a value");
   } else {
     setError(NO_ERROR);
@@ -156,20 +158,21 @@ const InputContainer = ({ error, textStyle = {}, contentContainerStyle = {}, chi
  * @param {Object}                      errorTextStyle          Style object o apply to error text.
  * @param {function(string):string}     fixValue                Adjusts text value before validating and passing to state (e.g. trims whitespace).
  * @param {Object}                      [contentContainerStyle] Style object to apply to input container.
+ * @param {boolean}                     required                Whether input is required/must have a value.
  * @param {Object}                      props                   Any other properties to pass to text input.
  *
  * @return {React.ReactElement} View containing text input and error message.
  * @constructor
  */
-export const ValidatedTextInput = ({ setRef, validate, value, otherInputs = [], style = {}, errorTextStyle, fixValue, contentContainerStyle, ...props }) => {
+export const ValidatedTextInput = ({ setRef, validate, value, otherInputs = [], style = {}, errorTextStyle, fixValue, contentContainerStyle, required, ...props }) => {
   const [errorMessage, setError] = useState(NO_ERROR);
   return (
     <InputContainer contentContainerStyle={contentContainerStyle} error={errorMessage} textStyle={errorTextStyle}>
       <TextInput
         {...props}
         value={value}
-        ref={(ref) => setRef(ref, (val) => isValidText(validate, val, setError, fixValue, otherInputs))}
-        onEndEditing={() => isValidText(validate, value, setError, fixValue, otherInputs)}
+        ref={(ref) => setRef(ref, (val) => isValidText(validate, val, setError, fixValue, otherInputs, required))}
+        onEndEditing={() => isValidText(validate, value, setError, fixValue, otherInputs, required)}
         style={[styles.input, styles.inputText, style]}
       />
     </InputContainer>
@@ -191,12 +194,13 @@ export const ValidatedTextInput = ({ setRef, validate, value, otherInputs = [], 
  * @param {Object}           errorTextStyle          Style object o apply to error text.
  * @param {function(Object)} openModal               Opens top-level modal.
  * @param {function()}       closeModal              Closes top-level modal.
+ * @param {boolean}          required
  * @param {Object}           props                   Any other properties to pass to picker touchable.
  *
  * @return {React.ReactElement} View containing picker and error message.
  * @constructor
  */
-const ValidatedPickerComponent = ({ setRef, value, onValueChange, options, style = {}, contentContainerStyle, errorTextStyle, openModal, closeModal, ...props }) => {
+const ValidatedPickerComponent = ({ setRef, value, onValueChange, options, style = {}, contentContainerStyle, errorTextStyle, openModal, closeModal, required, ...props }) => {
   const [errorMessage, setError] = useState(NO_ERROR);
   const prevValueRef = useRef();
 
@@ -206,7 +210,7 @@ const ValidatedPickerComponent = ({ setRef, value, onValueChange, options, style
 
   useEffect(() => {
     if (prevValueRef.current) {
-      isValidPicker(value, options, setError);
+      isValidPicker(value, options, setError, required);
     }
     prevValueRef.current = value;
   }, [value]);
@@ -217,7 +221,7 @@ const ValidatedPickerComponent = ({ setRef, value, onValueChange, options, style
         {...props}
         style={[styles.input, styles.pickerTouchable, style]}
         onPress={() => openModal(getPickerProps(myPicker))}
-        ref={(ref) => setRef(ref, (val) => isValidPicker(val, options, setError))}
+        ref={(ref) => setRef(ref, (val) => isValidPicker(val, options, setError, required))}
       >
         <Text style={styles.inputText}>{value}</Text>
         <Ionicons name={"md-arrow-dropdown"} color={Colors.primaryText} size={Layout.fonts.body}/>

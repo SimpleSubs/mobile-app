@@ -24,13 +24,16 @@ import useLinking from "./navigation/useLinking";
 import StackNavigator from "./navigation/StackNavigator";
 import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
-import sentryConfig from "./sentry-config.json";
 
 // Only import if not in web (LogBox doesn't exist in web)
 const { LogBox } = !Layout.web ? require("react-native") : { LogBox: null };
 
 // Initialize Sentry for error reporting/management
-Sentry.init(sentryConfig);
+Sentry.init({
+  "dsn": "https://b94b0a4a89a6438591f3c5aa07dca44d@o327609.ingest.sentry.io/1838264",
+  "enableInExpoDevelopment": true,
+  "debug": false
+});
 
 // Ignore recurring "cycle" warning and Firebase timer error on Android
 LogBox?.ignoreLogs(

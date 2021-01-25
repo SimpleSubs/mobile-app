@@ -1,0 +1,10 @@
+{
+    "apiKey": "AIzaSyCjnmkb4LyI1gaEQCk8sAXzfjOt-NedfBY",
+    "authDomain": "sandwich-orders.firebaseapp.com",
+    "databaseURL": "https://sandwich-orders.firebaseio.com",
+    "projectId": "sandwich-orders",
+    "storageBucket": "sandwich-orders.appspot.com",
+    "messagingSenderId": "940239502337",
+    "appId": "1:940239502337:web:00596e8bddae9401f65400",
+    "measurementId": "G-8BGEPNTS0X"
+}
