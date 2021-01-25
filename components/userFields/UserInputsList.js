@@ -70,6 +70,7 @@ const EditButton = ({ editAction, openModal, closeModal, setModalProps, changePa
  * @param {boolean}     item.mutable     Whether input is mutable after creation.
  * @param {string|null} item.editAction  Key for an edit action to execute when edit button is pressed; null renders no button.
  * @param {string}      item.title       Title of field to display when editing.
+ * @param {boolean}     item.required    Whether the field is required.
  * @param {Object[]}    inputRefs        Array of refs to inputs in inputs list.
  * @param {Function}    addRef           Adds a ref to inputRefs.
  * @param {Function}    submit           Submits data.
@@ -88,6 +89,7 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
   const thisInput = (
     <ValidatedTextInput
       placeholder={item.placeholder}
+      required={item.required}
       placeholderTextColor={Colors.textInputText}
       returnKeyType={inputRefs.length > index + 1 ? "next" : "go"}
       value={editing && item.textType === TextTypes.PASSWORD ? PASSWORD_PLACEHOLDER : value}
@@ -138,16 +140,17 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
  *
  * Picker may contain title field.
  *
- * @param {boolean}     editing      Whether user is editing data or creating new data.
- * @param {string}      value        Current value for picker.
- * @param {Object}      item         Object containing data for input.
- * @param {string[]}    item.options Options to display within picker.
- * @param {string}      item.key     Key for input (used to access value in state)
- * @param {boolean}     item.mutable Whether input is mutable after creation.
- * @param {string}      item.title   Title of field to display when editing.
- * @param {Function}    addRef       Adds a ref to inputRefs.
- * @param {number}      index        Index of input (starts at 0)
- * @param {Function}    setState     Sets values of inputs (only sets specified values; others remain the same).
+ * @param {boolean}  editing       Whether user is editing data or creating new data.
+ * @param {string}   value         Current value for picker.
+ * @param {Object}   item          Object containing data for input.
+ * @param {string[]} item.options  Options to display within picker.
+ * @param {string}   item.key      Key for input (used to access value in state)
+ * @param {boolean}  item.mutable  Whether input is mutable after creation.
+ * @param {string}   item.title    Title of field to display when editing.
+ * @param {boolean}  item.required Whether the field is required.
+ * @param {Function} addRef        Adds a ref to inputRefs.
+ * @param {number}   index         Index of input (starts at 0)
+ * @param {Function} setState      Sets values of inputs (only sets specified values; others remain the same).
  *
  * @return {React.ReactElement} Validated picker touchable to render in inputs list.
  * @constructor
@@ -159,6 +162,7 @@ const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }
       value={value}
       onValueChange={(value) => setState({ [item.key]: value })}
       options={item.options}
+      required={item.required}
       style={editing && !item.mutable
         ? { ...styles.editableTextInput, ...styles.nonEditableInput }
         : (editing ? styles.editableTextInput : {})
@@ -282,6 +286,27 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
     })
   };
 
+  const getSubmitState = (state) => {
+    let submitState = {}
+    for (let item of data) {
+      let value = state[item.key];
+      switch (item.inputType) {
+        case (InputTypes.TEXT_INPUT):
+          submitState[item.key] = value ? InputPresets[item.textType].fixValue(value) : "";
+          break;
+        case (InputTypes.PICKER):
+          submitState[item.key] = value || "";
+          break;
+        case (InputTypes.CHECKBOX):
+          submitState[item.key] = value || [];
+          break;
+        default:
+          break;
+      }
+    }
+    return submitState;
+  }
+
   const submit = () => {
     // Valid if 1. user is in editing mode and a. field is immutable (therefore user cannot change it) or b. field has
     // a specific edit action (e.g. "CHANGE_PASSWORD") OR if 2. validation of field returns true.
@@ -291,7 +316,7 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
     )).reduce((a, b) => a && b);
     if (valid) {
       Keyboard.dismiss();
-      onSubmit(state);
+      onSubmit(getSubmitState(state));
     }
   };
 

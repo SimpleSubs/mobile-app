@@ -27,7 +27,7 @@ export const InputTypes = {
  * @return {boolean} Whether value is valid.
  */
 export const valueIsValid = (userField, value) => {
-  if (!value) {
+  if (value === null || value === undefined) {
     return false;
   }
   switch (userField.inputType) {
