@@ -264,7 +264,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
 
   const deleteAndNavigate = () => {
     if (focusedData) {
-      deleteExisting(focusedData.key, domain);
+      deleteExisting(focusedData.key, domain, uid);
     }
     cancel();
   }
