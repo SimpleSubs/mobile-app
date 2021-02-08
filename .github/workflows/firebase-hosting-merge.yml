@@ -24,11 +24,6 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       - run: yarn install
       - run: expo build:web
-      - run: expo build:ios --apple-id emily@sturman.org --team-id LHY4TUGYG8 -t archive --no-wait
-        env:
-          EXPO_APPLE_PASSWORD: '${{ secrets.EXPO_APPLE_PASSWORD }}'
-          FASTLANE_SESSION: '${{ secrets.FASTLANE_SESSION }}'
-      - run: expo build:android -t app-bundle --no-wait
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -37,3 +32,9 @@ jobs:
           projectId: sandwich-orders
         env:
           FIREBASE_CLI_PREVIEWS: hostingchannels
+      - run: expo build:android -t app-bundle --no-wait
+      - run: expo build:ios --apple-id emily@sturman.org --team-id LHY4TUGYG8 -t archive
+        env:
+          EXPO_APPLE_PASSWORD: '${{ secrets.EXPO_APPLE_PASSWORD }}'
+          FASTLANE_SESSION: '${{ secrets.FASTLANE_SESSION }}'
+
