@@ -1,0 +1,18 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [ "LHY4TUGYG8.org.lwhs.simplesubs" ],
+        "components": [
+          {
+            "/": "/*",
+            "comment": "Matches all URLs"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [ "LHY4TUGYG8.org.lwhs.simplesubs" ]
+  }
+}

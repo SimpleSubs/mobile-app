@@ -57,7 +57,7 @@ const mapDispatchToProps = (dispatch) => ({
   unfocusPreset: () => dispatch(unfocusPreset()),
   createPreset: (data, uid, domain) => createPreset(dispatch, data, uid, domain),
   editPreset: (data, id, uid, domain) => editPreset(dispatch, data, id, uid, domain),
-  deletePreset: (id, uid, domain) => deletePreset(dispatch, id, uid, domain)
+  deletePreset: (id, domain, uid) => deletePreset(dispatch, id, uid, domain)
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(PresetScreen);
