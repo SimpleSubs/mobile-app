@@ -6,6 +6,7 @@ import { ISO_FORMAT, toReadable, toISO } from "./Date";
 import inputModalProps from "../components/modals/InputModal";
 import { InputTypes, TextTypes } from "./Inputs";
 import moment from "moment";
+import Schedule from "./Schedule";
 
 // Options for dynamic order actions (on order screen)
 export const DynamicOrderOptions = {
@@ -18,16 +19,33 @@ export const EditActions = {
   CHANGE_PASSWORD: "CHANGE_PASSWORD"
 }
 
-// TODO: integrate actual school schedule (for days off, etc.)
+/**
+ * Gets the index of a given date on the provided school schedule.
+ *
+ * Calculates the difference between the schedule start date and
+ * the provided date, then calculates the remainder when that is
+ * divided by the schedule length (schedule repeats).
+ *
+ * @param {moment.Moment} date           Date to get the index of.
+ * @param {string}        startDate      Start date of schedule.
+ * @param {number}        scheduleLength Length of provided schedule.
+ *
+ * @return {number} The index of the date on the schedule.
+ */
+const getScheduleIndex = (date, startDate, scheduleLength) => date.diff(startDate, "days") % scheduleLength;
 
 /**
- * Whether a given date is a school day (Mon-Fri)
+ * Whether a given date is a school day (determined by given school schedule).
  *
- * @param {moment.Moment} date The date in question.
+ * @param {moment.Moment} date     The date in question.
+ * @param {Object}        schedule An object representing a repeating school schedule.
  *
  * @return {boolean} Whether date is a school day.
  */
-const isSchoolDay = (date) => date.day() > 0 && date.day() < 6;
+const isSchoolDay = (date, schedule) => {
+  let scheduleIndex = getScheduleIndex(date, schedule.startDate, schedule.values.length);
+  return schedule.values[scheduleIndex];
+}
 
 /**
  * Gets all days on which user may place an order.
@@ -51,8 +69,11 @@ export const getDateOptions = (orders, focusedOrder, cutoffTime) => {
   }
   for (let i = 0; i < 14; i++) {
     let isoDate = date.format(ISO_FORMAT);
-    // date must be a school day (Mon-Fri) and there must be no other order on that date
-    if (isSchoolDay(date) && (!orderDates.includes(isoDate) || (focusedOrder && toISO(focusedOrder.date) === isoDate))) {
+    // date must be a school day as determined by given schedule and there must be no other order on that date
+    if (
+      isSchoolDay(date, Schedule) &&
+      (!orderDates.includes(isoDate) || (focusedOrder && toISO(focusedOrder.date) === isoDate))
+    ) {
       dateOptions.push(toReadable(isoDate));
     }
     date.add(1, "days");
