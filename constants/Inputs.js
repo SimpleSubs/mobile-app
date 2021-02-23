@@ -51,7 +51,7 @@ export const valueIsValid = (userField, value) => {
  *
  * Checks each user field with `valueIsValid` function and ensures that all are true.
  *
- * @param {Object} user Object containing user data.
+ * @param {Object}   user       Object containing user data.
  * @param {Object[]} userFields Array of UserField objects.
  *
  * @return {boolean} Whether all user fields of profile are valid.
@@ -59,7 +59,7 @@ export const valueIsValid = (userField, value) => {
 export const allValid = (user, userFields) => (
   userFields
     .map((userField) => valueIsValid(userField, user ? user[userField.key] : null))
-    .reduce((a, b) => a && b)
+    .reduce((a, b) => a && b, true)
 );
 
 // Presets for different types of text (for text input)
