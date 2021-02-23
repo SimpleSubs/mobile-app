@@ -110,13 +110,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 30,
     padding: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingVertical: 20,
     fontSize: Layout.fonts.body,
     color: Colors.primaryText,
     borderRadius: 5
   },
   multilineInput: {
-    height: 150
+    height: 150,
+    paddingTop: 20,
+    paddingBottom: 20
   }
 })
