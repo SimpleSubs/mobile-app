@@ -4,10 +4,12 @@
  */
 import React, { useState } from "react";
 import {
-  FlatList,
-  StyleSheet
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity
 } from "react-native";
-import { CheckBox } from "react-native-elements";
+import { Checkbox } from "react-native-paper";
 import Colors from "../../constants/Colors";
 import Layout from "../../constants/Layout";
 
@@ -31,6 +33,34 @@ const onCheck = (item, setItems, selectedItems, checked) => {
 };
 
 /**
+ * Gets 2D array for checkbox columns and rows.
+ *
+ * Splits given array of items into specified number of columns. Follows order
+ * horizontal wrapping (left-to-right, then top-to-bottom).
+ *
+ * @param {string[]} items      1D array of items to split.
+ * @param {number}   numColumns Number of columns to split array into.
+ *
+ * @returns {string[][]} 2D array containing given items split into specified
+ * number of columns.
+ */
+const getColumnArr = (items, numColumns) => {
+  let columnArray = [];
+  for (let i = 0; i < numColumns; i++) {
+    columnArray.push([]);
+  }
+  let col = 0;
+  for (let item of items) {
+    columnArray[col].push(item);
+    col++;
+    if (col >= numColumns) {
+      col = 0;
+    }
+  }
+  return columnArray;
+}
+
+/**
  * Renders a checkbox that instantaneously updates (rather than re-processing state
  * each time) for faster UI reaction.
  *
@@ -38,7 +68,7 @@ const onCheck = (item, setItems, selectedItems, checked) => {
  * @param {string}             item          Title value for this checkbox.
  * @param {function(string[])} setItems      Function to set value of selectedItems.
  *
- * @return {React.ReactElement} CheckBox to render.
+ * @return {React.ReactElement} Checkbox to render.
  * @constructor
  */
 const CheckBoxWithState = ({ selectedItems, item, setItems }) => {
@@ -51,20 +81,26 @@ const CheckBoxWithState = ({ selectedItems, item, setItems }) => {
   };
 
   return (
-    <CheckBox
-      containerStyle={styles.checkbox}
-      textStyle={styles.checkboxText}
-      checkedColor={Colors.accentColor}
-      uncheckedColor={Colors.uncheckedCheckbox}
-      title={item}
-      checked={checked}
-      iconType={"ionicon"}
-      checkedIcon={"md-checkbox-outline"}
-      uncheckedIcon={"md-square-outline"}
-      onPress={toggleCheckbox}
-    />
-  )
-}
+    <TouchableOpacity style={styles.checkboxContainer} onPress={toggleCheckbox}>
+      <Checkbox.Android
+        status={checked ? "checked" : "unchecked"}
+        onPress={toggleCheckbox}
+        uncheckedColor={Colors.uncheckedCheckbox}
+        color={Colors.accentColor}
+      />
+      <Text style={styles.checkboxText}>{item}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const ColumnLayout = ({ numColumns, items, ...props }) => {
+  const columnArr = getColumnArr(items, numColumns);
+  return columnArr.map((column, colIndex ) => (
+    <View style={styles.column} key={colIndex}>
+      {column.map((item, index) => <CheckBoxWithState item={item} key={index} {...props} />)}
+    </View>
+  ));
+};
 
 /**
  * Renders a list of checkboxes.
@@ -80,16 +116,9 @@ const CheckBoxWithState = ({ selectedItems, item, setItems }) => {
  * @constructor
  */
 const Checkboxes = ({ selectedItems, itemsArr = [], setItems }) => (
-  <FlatList
-    style={styles.container}
-    data={itemsArr}
-    extraData={selectedItems}
-    keyExtractor={(item, index) => index.toString()}
-    numColumns={2}
-    renderItem={({item}) => <CheckBoxWithState item={item} selectedItems={selectedItems} setItems={setItems} />}
-    scrollEnabled={false}
-    alwaysBounceVertical={false}
-  />
+  <View style={styles.container}>
+    <ColumnLayout items={itemsArr} numColumns={2} selectedItems={selectedItems} setItems={setItems} />
+  </View>
 )
 
 export default Checkboxes;
@@ -97,11 +126,15 @@ export default Checkboxes;
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 10,
-    paddingBottom: 15
+    paddingBottom: 15,
+    flexDirection: "row"
   },
-  checkbox: {
-    flex: 1,
+  column: {
+    flex: 1
+  },
+  checkboxContainer: {
     backgroundColor: Colors.backgroundColor,
+    alignItems: "center",
     borderColor: "#0000",
     padding: 5,
     margin: 0,
