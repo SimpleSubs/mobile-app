@@ -58,11 +58,11 @@ const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) 
   return (
     <InputsList
       style={styles.container}
-      contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
+      contentContainerStyle={{ paddingBottom: inset.bottom }}
       ListHeaderComponent={() => (
         <View style={styles.header}>
           <AnimatedTouchable style={styles.closeButton} onPress={() => navigation.pop()} endSize={0.8}>
-            <Ionicons name={"ios-arrow-back"} size={Layout.fonts.icon} color={Colors.primaryText} />
+            <Ionicons name={"arrow-back"} size={Layout.fonts.icon} color={Colors.primaryText} />
           </AnimatedTouchable>
           <Text style={styles.title}>Join the {domain.name} Organization</Text>
         </View>
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   closeButton: {
     position: "absolute",
     top: 0,
-    left: 0
+    left: -20
   },
   header: {
     alignItems: "center",

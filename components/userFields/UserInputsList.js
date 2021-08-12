@@ -9,7 +9,7 @@ import {
   View,
   Keyboard
 } from "react-native";
-import { KeyboardAwareFlatList } from "@codler/react-native-keyboard-aware-scroll-view";
+import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import { Ionicons } from "@expo/vector-icons";
 import { ValidatedPicker, ValidatedTextInput } from "./ValidatedInputs";
 import AnimatedTouchable from "../AnimatedTouchable";
@@ -48,7 +48,7 @@ const EditButton = ({ editAction, openModal, closeModal, setModalProps, changePa
       action = () => openChangePasswordModal(openModal, setModalProps, changePasswordAndClose);
       return (
         <AnimatedTouchable endSize={0.8} onPress={action}>
-          <Ionicons name={"md-create"} color={Colors.primaryText} size={Layout.fonts.icon} style={styles.editIcon}/>
+          <Ionicons name={"create-outline"} color={Colors.primaryText} size={Layout.fonts.icon} style={styles.editIcon}/>
         </AnimatedTouchable>
       );
     default:

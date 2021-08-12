@@ -32,7 +32,7 @@ const MultipleOptionsList = ({ pages, navigation }) => (
     renderItem={({ item }) => (
       <TouchableOpacity activeOpacity={0.5} style={styles.navigateTouchable} onPress={() => navigation.navigate(item.page)}>
         <Text style={styles.navigateTouchableText}>{item.title}</Text>
-        <Ionicons name={"ios-arrow-dropright-circle"} color={Colors.primaryText} size={Layout.fonts.icon} />
+        <Ionicons name={"chevron-forward"} color={Colors.primaryText} size={Layout.fonts.icon} />
       </TouchableOpacity>
     )}
   />

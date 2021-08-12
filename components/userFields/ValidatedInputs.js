@@ -224,7 +224,7 @@ const ValidatedPickerComponent = ({ setRef, value, onValueChange, options, style
         ref={(ref) => setRef(ref, (val) => isValidPicker(val, options, setError, required))}
       >
         <Text style={styles.inputText}>{value}</Text>
-        <Ionicons name={"md-arrow-dropdown"} color={Colors.primaryText} size={Layout.fonts.body}/>
+        <Ionicons name={"chevron-down"} color={Colors.primaryText} size={Layout.fonts.body}/>
       </TouchableOpacity>
     </InputContainer>
   )

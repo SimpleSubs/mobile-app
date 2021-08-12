@@ -139,8 +139,8 @@ const HomeScreen = ({ orders = [], orderPresets = {}, orderOptions, uid, logOut,
       <Header
         title={"Home"}
         style={styles.header}
-        leftButton={{ name: "md-log-out", style: styles.logOutIcon, onPress: () => navigation.pop() }}
-        rightButton={{ name: "md-settings", onPress: editUser }}
+        leftButton={{ name: "log-out-outline", style: styles.logOutIcon, onPress: () => navigation.pop() }}
+        rightButton={{ name: "settings-outline", onPress: editUser }}
       >
         <AnimatedTouchable style={styles.placeOrderButton} endOpacity={1} onPress={newOrder}>
           <Text style={styles.placeOrderButtonText}>Place an order</Text>

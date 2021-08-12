@@ -89,7 +89,7 @@ const SecondaryTouchableText = ({ type, selectedValue, style }) => {
       return (
         <View style={styles.arrowContainer}>
           <AnimatedIonicons
-            name={"ios-arrow-down"}
+            name={"chevron-down"}
             size={Layout.fonts.title}
             color={Colors.primaryText}
             style={[styles.dropdownArrow, style]}

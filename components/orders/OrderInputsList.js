@@ -9,7 +9,7 @@ import {
   Text,
   TouchableOpacity
 } from "react-native";
-import { KeyboardAwareFlatList } from "@codler/react-native-keyboard-aware-scroll-view";
+import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AnimatedTouchable from "../AnimatedTouchable";
@@ -171,14 +171,21 @@ const resetPickerVals = (state, orderOptions) => {
  */
 const CancelDoneButtons = ({ cancelOnPress, doneOnPress }) => (
   <View style={styles.cancelDoneButtonsContainer}>
-    <TouchableOpacity style={styles.cancelButton} onPress={cancelOnPress}>
+    <TouchableOpacity
+      style={Layout.isSmallDevice ? styles.cancelButtonMobile : styles.cancelButton}
+      onPress={cancelOnPress}
+    >
       {Layout.isSmallDevice ?
-        <Ionicons name={"md-close"} color={Colors.secondaryText} size={Layout.fonts.icon} /> :
+        <Ionicons name={"close"} color={Colors.primaryText} size={50} /> :
         <Text style={styles.cancelButtonText}>Cancel</Text>}
     </TouchableOpacity>
-    <AnimatedTouchable style={styles.doneButton} endSize={0.9} onPress={doneOnPress}>
+    <AnimatedTouchable
+      style={Layout.isSmallDevice ? styles.doneButtonMobile : styles.doneButton}
+      endSize={0.9}
+      onPress={doneOnPress}
+    >
       {Layout.isSmallDevice ?
-        <Ionicons name={"md-checkmark"} color={Colors.secondaryText} size={Layout.fonts.icon} /> :
+        <Ionicons name={"checkbox"} color={Colors.accentColor} size={50} /> :
         <Text style={styles.doneButtonText}>Done</Text>}
     </AnimatedTouchable>
   </View>
@@ -273,8 +280,9 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
     setFullState((prevState) => ({ ...prevState, ...newState }));
   };
 
+  // May need to reinsert insets for Android (depends on how modal renders)
   return (
-    <View style={[styles.container, { paddingTop: inset.top }]}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>{title}</Text>
         <CancelDoneButtons cancelOnPress={cancel} doneOnPress={submit} />
@@ -341,6 +349,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
+  cancelButtonMobile: {
+    alignItems: "center",
+    justifyContent: "center"
+  },
   cancelButtonText: {
     fontFamily: "josefin-sans",
     fontSize: Layout.fonts.title,
@@ -354,6 +366,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 10,
     backgroundColor: Colors.accentColor
+  },
+  doneButtonMobile: {
+    marginLeft: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10
   },
   doneButtonText: {
     fontFamily: "josefin-sans-bold",

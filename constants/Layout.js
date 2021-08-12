@@ -24,6 +24,7 @@ const Layout = {
   },
   // Font sizes
   fonts: {
+    largeIcon: 40,
     icon: 34,
     header: 24,
     title: 20,
