@@ -24,13 +24,16 @@ import Colors from "../constants/Colors";
  * @param {function(string)} changeValue   Sets selected value of picker and closes modal.
  * @param {string}           selectedValue Value that is currently selected in picker.
  * @param {string[]}         options       Array of options to display in picker.
+ * @param {boolean}          useIndexValue Whether picker value should refer to index or string value of options.
  *
  * @return {React.ReactElement} Picker element to render.
  * @constructor
  */
-const PickerIOS = ({ changeValue, selectedValue, options }) => (
+const PickerIOS = ({ changeValue, selectedValue, options, useIndexValue }) => (
   <Picker selectedValue={selectedValue} onValueChange={changeValue} itemStyle={styles.itemTextStyle}>
-    {options.map((value) => <Picker.Item key={value} label={value} value={value}/>)}
+    {options.map((value, i) => (
+      <Picker.Item key={value} label={useIndexValue ? i : value} value={value} />
+    ))}
   </Picker>
 );
 
@@ -42,13 +45,14 @@ const PickerIOS = ({ changeValue, selectedValue, options }) => (
  * the native Picker element.
  *
  * @param {function(string)} changeValue   Sets selected value of picker and closes modal.
- * @param {string}           selectedValue Value that is currently selected in picker.
+ * @param {string|number}    selectedValue Value that is currently selected in picker.
  * @param {string[]}         options       Array of options to display in picker.
+ * @param {boolean}          useIndexValue Whether picker value should refer to index or string value of options.
  *
  * @return {React.ReactElement} Picker element to render.
  * @constructor
  */
-const PickerAndroid = ({ changeValue, selectedValue, options }) => (
+const PickerAndroid = ({ changeValue, selectedValue, options, useIndexValue }) => (
   <View style={styles.androidPickerContainer}>
     <FlatList
       alwaysBounceVertical={false}
@@ -58,9 +62,12 @@ const PickerAndroid = ({ changeValue, selectedValue, options }) => (
       showsVerticalScrollIndicator={true}
       keyExtractor={(item) => item}
       ListEmptyComponent={<Text style={styles.noOptionsText}>There are no available options</Text>}
-      renderItem={({item}) => (
-        <TouchableOpacity style={styles.androidItemStyle} onPress={() => changeValue(item)}>
-          <Text style={[styles.itemTextStyle, item === selectedValue ? styles.selectedItemTextStyle : {}]}>{item}</Text>
+      renderItem={({ item, index }) => (
+        <TouchableOpacity style={styles.androidItemStyle} onPress={() => changeValue(useIndexValue ? index : item)}>
+          <Text style={[
+            styles.itemTextStyle,
+            (useIndexValue ? index === selectedValue : item === selectedValue) ? styles.selectedItemTextStyle : {}
+          ]}>{item}</Text>
         </TouchableOpacity>
       )}
     />
@@ -74,15 +81,16 @@ const PickerAndroid = ({ changeValue, selectedValue, options }) => (
  * modal; returns a native picker element for iOS, custom
  * picker for Android.
  *
- * @param {function()}       closeModal    Closes picker's modal.
- * @param {string}           selectedValue Value that is currently selected in picker.
- * @param {function(string)} onValueChange Function to execute when value is changed/selected in picker.
- * @param {string[]}         options       Array of options to display in picker.
+ * @param {function()}       closeModal            Closes picker's modal.
+ * @param {string}           selectedValue         Value that is currently selected in picker.
+ * @param {function(string)} onValueChange         Function to execute when value is changed/selected in picker.
+ * @param {string[]}         options               Array of options to display in picker.
+ * @param {boolean}          [useIndexValue=false] Whether picker value should refer to index or string value of options.
  *
  * @return {React.ReactElement} Picker element to render.
  * @constructor
  */
-const PickerCrossPlatform = ({ closeModal, selectedValue, onValueChange, options }) => {
+const PickerCrossPlatform = ({ closeModal, selectedValue, onValueChange, options, useIndexValue = false }) => {
   const changeValue = (newValue) => {
     onValueChange(newValue);
     if (newValue !== selectedValue) { closeModal(); }
@@ -94,6 +102,7 @@ const PickerCrossPlatform = ({ closeModal, selectedValue, onValueChange, options
       selectedValue={selectedValue}
       onValueChange={onValueChange}
       options={options}
+      useIndexValue={useIndexValue}
     />
   ) : (
     <PickerAndroid
@@ -102,6 +111,7 @@ const PickerCrossPlatform = ({ closeModal, selectedValue, onValueChange, options
       selectedValue={selectedValue}
       onValueChange={onValueChange}
       options={options}
+      useIndexValue={useIndexValue}
     />
   );
 }

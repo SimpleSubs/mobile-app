@@ -75,7 +75,7 @@ const SwipeAction = ({ progress, icon, alignRight }) => {
   return (
     <View style={[styles.swipeAction, alignRight && styles.swipeActionRight]}>
       <AnimatedIonicons
-        name={`md-${icon}`}
+        name={`${icon}`}
         size={Layout.fonts.icon}
         color={Colors.primaryText}
         style={{ transform: [{ scale: scaleInterpolation }]}}
@@ -91,7 +91,8 @@ const SwipeAction = ({ progress, icon, alignRight }) => {
  * order. Card may be swiped right to delete or swiped left/clicked to edit.
  *
  * @param {string}                          [title]     Title of order (for preset orders only).
- * @param {string}                          date        Date of order (formatted as "dddd, MMMM Do").
+ * @param {string}                          date        Date of order (formatted as "dddd, MMMM Do" or "M/DD to M/DD").
+ * @param {Object[]}                        [data]      Data for order group (for dynamic ordering only).
  * @param {Function}                        onPress     Function to execute when card is pressed (usually focuses order).
  * @param {Function}                        onDelete    Function to delete order.
  * @param {Object<string, string|string[]>} ingredients All order ingredients.
@@ -99,7 +100,7 @@ const SwipeAction = ({ progress, icon, alignRight }) => {
  * @return {React.ReactElement} Card displaying sandwich order.
  * @constructor
  */
-const Card = ({ title, date, onPress, onDelete, ...ingredients }) => {
+const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
   const swipeableRef = useRef();
 
   const focusAndClose = () => {
@@ -109,21 +110,32 @@ const Card = ({ title, date, onPress, onDelete, ...ingredients }) => {
     onPress();
   }
 
+  const CardSection = ({ title, date, ingredients }) => (
+    <>
+      {date && <Text style={styles.smallerDate}>{date}</Text>}
+      {title && <Text style={styles.title}>{title}</Text>}
+      <Text style={styles.ingredients} numberOfLines={title ? 1 : 2}>{getIngredientStr(ingredients)}</Text>
+    </>
+  )
+
   return (
     <Swipeable
       ref={(ref) => swipeableRef.current = ref}
       leftThreshold={50}
       rightThreshold={50}
-      renderLeftActions={(progress) => <SwipeAction progress={progress} icon={"create"}/>}
-      renderRightActions={(progress) => <SwipeAction progress={progress} icon={"trash"} alignRight />}
+      renderLeftActions={(progress) => <SwipeAction progress={progress} icon={"create-outline"}/>}
+      renderRightActions={(progress) => <SwipeAction progress={progress} icon={"trash-outline"} alignRight />}
       onSwipeableLeftOpen={focusAndClose}
       onSwipeableRightOpen={onDelete}
     >
       <AnimatedTouchable onPress={onPress}>
         <View style={styles.cardContainer}>
           <Text style={styles.date}>{date}</Text>
-          {title && <Text style={styles.title}>{title}</Text>}
-          <Text style={styles.ingredients} numberOfLines={title ? 1 : 2}>{getIngredientStr(ingredients)}</Text>
+          {data ?
+            data.map(({ date, title, key, ...ingredients }) => (
+              <CardSection key={key} date={date} title={title} ingredients={ingredients} />
+            )) : <CardSection title={title} ingredients={ingredients} />
+          }
         </View>
       </AnimatedTouchable>
     </Swipeable>
@@ -153,6 +165,13 @@ const styles = StyleSheet.create({
     fontSize: Layout.fonts.title,
     color: Colors.primaryText,
     marginBottom: 5
+  },
+  smallerDate: {
+    fontFamily: "josefin-sans-bold",
+    fontSize: Layout.fonts.body,
+    color: Colors.primaryText,
+    marginBottom: 5,
+    marginTop: 10
   },
   ingredients: {
     fontFamily: "josefin-sans",

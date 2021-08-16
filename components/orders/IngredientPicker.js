@@ -24,20 +24,22 @@ import { InputTypes } from "../../constants/Inputs";
  * available options, it instead returns a "no options" message. The dropdown
  * touchable contains secondary text with the current value of the picker.
  *
- * @param {string}   title         Title to be displayed in touchable.
- * @param {string[]} [options=[]]  Array containing all picker options.
- * @param {string}   selectedValue Currently selected value in picker.
- * @param {Function} changeValue   Sets selectedValue.
+ * @param {string}   title                 Title to be displayed in touchable.
+ * @param {string[]} [options=[]]          Array containing all picker options.
+ * @param {string}   selectedValue         Currently selected value in picker.
+ * @param {Function} changeValue           Sets selectedValue.
+ * @param {boolean}  [useIndexValue=false] Whether picker value should refer to index or string value of options.
  *
  * @return {React.ReactElement} Touchable and dropdown containing a picker.
  */
-const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue }) => (
+const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue, useIndexValue = false }) => (
   <AnimatedDropdown
     title={title}
     type={InputTypes.PICKER}
     selectedValue={selectedValue}
     changeValue={changeValue}
     options={options}
+    useIndexValue={useIndexValue}
   >
     {options.length > 0 ? (
       <Picker
@@ -45,7 +47,9 @@ const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue })
         selectedValue={selectedValue}
         onValueChange={(itemValue) => changeValue(itemValue)}
       >
-        {options.map((item) => <Picker.Item label={item} value={item} key={item}/>)}
+        {options.map((item, i) => (
+          <Picker.Item label={item} value={useIndexValue ? i : item} key={item} />
+        ))}
       </Picker>
     ) : <Text style={styles.noOptionsText}>There are no available options</Text>}
   </AnimatedDropdown>
@@ -58,23 +62,25 @@ const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue })
  * a custom picker (FlatList with selectable options). The dropdown touchable
  * contains secondary text with the current value of the picker.
  *
- * @param {Function} openModal     Function to open the modal.
- * @param {Function} closeModal    Function to close the modal.
- * @param {string}   title         Title to be displayed in touchable.
- * @param {string[]} [options=[]]  Array containing all picker options.
- * @param {string}   selectedValue Currently selected value in picker.
- * @param {Function} changeValue   Sets selectedValue.
+ * @param {Function} openModal             Function to open the modal.
+ * @param {Function} closeModal            Function to close the modal.
+ * @param {string}   title                 Title to be displayed in touchable.
+ * @param {string[]} [options=[]]          Array containing all picker options.
+ * @param {string}   selectedValue         Currently selected value in picker.
+ * @param {Function} changeValue           Sets selectedValue.
+ * @param {boolean}  [useIndexValue=false] Whether picker value should refer to index or string value of options.
  *
  * @return {React.ReactElement} Touchable that opens a picker modal.
  * @constructor
  */
-const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], selectedValue, changeValue }) => {
+const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], selectedValue, changeValue, useIndexValue = false }) => {
   const myPicker = (
     <AndroidPicker
       closeModal={closeModal}
       selectedValue={selectedValue}
       onValueChange={changeValue}
       options={options}
+      useIndexValue={useIndexValue}
     />
   );
   return (
