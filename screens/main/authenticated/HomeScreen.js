@@ -74,7 +74,7 @@ const getData = async () => {
  * @return {React.ReactElement} Element to render.
  * @constructor
  */
-const HomeScreen = ({ orders = [], orderPresets = {}, orderOptions, orderSchedule, lunchSchedule, uid, logOut, focusOrder, unfocusOrder, deleteOrder, watchOrders, domain, navigation }) => {
+const HomeScreen = ({ orders = [], orderPresets = {}, orderSchedule, lunchSchedule, uid, logOut, focusOrder, unfocusOrder, deleteOrder, watchOrders, domain, navigation }) => {
   const [loadedData, setLoadedData] = useState(false);
   const editUser = () => navigation.navigate("Settings");
 
@@ -117,28 +117,6 @@ const HomeScreen = ({ orders = [], orderPresets = {}, orderOptions, orderSchedul
 
   // Unfocuses orders when page loads
   useEffect(() => navigation.addListener("focus", () => unfocusOrder()), [navigation]);
-
-  // Handles storing/comparing data from current & previous sessions
-  useEffect(() => {
-    // If page has just loaded, compare current data with last session's data
-    if (!loadedData) {
-      getData().then((prevOptions) => {
-        setLoadedData(true);
-        if (prevOptions) {
-          const prevOptionsStr = JSON.stringify(prevOptions);
-          const currentOptionsStr = JSON.stringify(orderOptions);
-          if (prevOptionsStr !== currentOptionsStr) {
-            Alert(
-              "Order Fields Changed",
-              "Order fields have changed since your last session. Please edit your orders, or they may be invalid."
-            );
-          }
-        }
-      });
-    }
-    // Store order options for future sessions
-    storeData(orderOptions);
-  }, [orderPresets]);
 
   return (
     <View style={styles.container}>
@@ -205,7 +183,6 @@ const getOrdersArr = (orders, dynamicSchedule) => {
 const mapStateToProps = ({ orders, orderPresets, stateConstants, user, domain }) => ({
   orders: getOrdersArr(orders, stateConstants.orderSchedule?.scheduleType === OrderScheduleTypes.CUSTOM),
   orderPresets,
-  orderOptions: stateConstants.orderOptions,
   orderSchedule: stateConstants.orderSchedule,
   lunchSchedule: stateConstants.lunchSchedule,
   uid: user?.uid,
