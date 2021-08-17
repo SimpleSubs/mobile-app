@@ -17,13 +17,13 @@ import { InputTypes } from "../../constants/Inputs";
  *
  * Returns an animated touchable with a corresponding form of input (usually a dropdown).
  *
- * @param {string}                                                     title             Title to be displayed in touchable.
- * @param {string}                                                     type              Input type (e.g. "PICKER").
- * @param {{keys: string[], values: string[], useIndexValue: boolean}} options           Either a key representing dynamic order options or an array of options.
- * @param {string|string[]}                                            value             Current value of input; either a string (for pickers and text inputs) or an array of strings (for checkboxes).
- * @param {string}                                                     [placeholder]     Placeholder value for text input.
- * @param {Function}                                                   setValue          Sets currently selected value(s).
- * @param {boolean}                                                    [multiline=false] Whether input is multiline (for text input).
+ * @param {string}                                                            title             Title to be displayed in touchable.
+ * @param {string}                                                            type              Input type (e.g. "PICKER").
+ * @param {{keys: string[], values: string[], useIndexValue: boolean}|string} options           Either a key representing dynamic order options or an array of options.
+ * @param {string|string[]}                                                   value             Current value of input; either a string (for pickers and text inputs) or an array of strings (for checkboxes).
+ * @param {string}                                                            [placeholder]     Placeholder value for text input.
+ * @param {Function}                                                          setValue          Sets currently selected value(s).
+ * @param {boolean}                                                           [multiline=false] Whether input is multiline (for text input).
  *
  * @return {React.ReactElement|null} Order field (animated touchable with form of input).
  * @constructor

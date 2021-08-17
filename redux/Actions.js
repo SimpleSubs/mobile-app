@@ -749,14 +749,41 @@ export const getUnauthData = async (dispatch, code) => {
   return success;
 };
 
+const getDynamicOrderOptions = async (domain) => {
+  const validWeeks = (new Array(3))
+    .fill(null)
+    .map((_, i) => moment().day(i * 7).format(ISO_FORMAT));
+  const querySnapshot = await myAppData(domain)
+    .doc("orderOptions")
+    .collection("dynamicMenu")
+    .where("active", "array-contains-any", validWeeks) // Only include next 3 weeks (including this week)
+    .get();
+  const allOrderOptions = { dynamic: true };
+  querySnapshot.forEach((doc) => {
+    const { active, orderOptions } = doc.data();
+    // One menu may contain multiple dates, but that date must be unique across all menus
+    for (const date of active) {
+      allOrderOptions[date] = orderOptions;
+    }
+  });
+  return allOrderOptions
+}
+
 const getStateConstants = async (domain) => {
   let querySnapshot = await myAppData(domain).get();
   let constants = {};
-  querySnapshot.forEach((doc) => {
+  for (const doc of querySnapshot.docs) {
     switch (doc.id) {
       case "userFields":
-      case "orderOptions":
         constants[doc.id] = Object.values(doc.data() || {});
+        break;
+      case "orderOptions":
+        const data = doc.data();
+        if (data.dynamic) {
+          constants[doc.id] = await getDynamicOrderOptions(domain);
+        } else {
+          constants[doc.id] = data;
+        }
         break;
       case "lunchSchedule":
       case "orderSchedule":
@@ -765,7 +792,7 @@ const getStateConstants = async (domain) => {
       default:
         break;
     }
-  });
+  }
   return constants;
 }
 

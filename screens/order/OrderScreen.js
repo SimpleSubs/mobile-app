@@ -8,14 +8,13 @@ import { DateField } from "../../constants/RequiredFields";
 import { READABLE_FORMAT } from "../../constants/Date";
 import { createOrder, deleteOrder, editOrder } from "../../redux/Actions";
 import { connect } from "react-redux";
-import {OrderScheduleTypes} from "../../constants/Schedule";
-import {getDateOptions} from "../../constants/DataActions";
+import { OrderScheduleTypes } from "../../constants/Schedule";
 
 /**
  * Renders main order screen to navigate to either sub-screen (custom or preset order).
  *
  * @param {Object|null}                            focusedOrder Currently focused order (null if new order is being created).
- * @param {Array}                                  orderOptions Fields for order ingredients.
+ * @param {Object}                                 orderOptions Fields for order ingredients.
  * @param {function(Object,string,boolean)}        createOrder  Pushes new order to Firebase.
  * @param {function(Object,string,string,boolean)} editOrder    Pushes edits for existing order to Firebase.
  * @param {function(string)}                       deleteOrder  Deletes existing order from Firebase.
@@ -47,15 +46,15 @@ const mapStateToProps = ({ focusedOrder, orders, stateConstants }) => ({
       ? orders[focusedOrder].date[0]
       : orders[focusedOrder].date.format(READABLE_FORMAT)
   } : null,
-  orderOptions: [
-    DateField,
+  orderOptions: {
+    requireDate: true,
     ...stateConstants.orderOptions
-  ]
+  }
 });
 
 const mapDispatchToProps = (dispatch) => ({
   createOrder: (data, uid, domain, dynamicSchedule) => createOrder(dispatch, data, uid, domain, dynamicSchedule),
-  editOrder: (data, id, uid, domain, dynamicSchedule) => editOrder(dispatch, data, id, uid, domain, dynamicSchedule),
+  editOrder: (data, ids, uid, domain, dynamicSchedule) => editOrder(dispatch, data, ids, uid, domain, dynamicSchedule),
   deleteOrder: (id, domain) => deleteOrder(dispatch, id, domain),
 })
 

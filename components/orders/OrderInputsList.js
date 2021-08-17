@@ -17,12 +17,13 @@ import OrderField from "./OrderField";
 import moment from "moment";
 import Colors from "../../constants/Colors";
 import Layout from "../../constants/Layout";
-import {READABLE_FORMAT, toReadable, toSimple} from "../../constants/Date";
+import {ISO_FORMAT, parseISO, READABLE_FORMAT, toReadable, toSimple} from "../../constants/Date";
 import { InputTypes } from "../../constants/Inputs";
 import { connect } from "react-redux";
 import alert from "../../constants/Alert";
 import { DynamicOrderOptions, getDateOptions } from "../../constants/DataActions";
 import {OrderScheduleTypes} from "../../constants/Schedule";
+import { DateField } from "../../constants/RequiredFields";
 
 /**
  * Gets default state.
@@ -109,12 +110,10 @@ const validateState = (state, orderOptions, hasDynamicSchedule) => {
           }
           break;
         case InputTypes.PICKER:
-          // TODO: don't trust UI for correct input for dynamic options; get options and check manually
-          if (option.dynamic) {
-            if (subState[option.key] === option.defaultValue) {
-              invalidInputs.push(option.title + finalStateName);
-            }
-          } else if (!option.options.includes(subState[option.key])) {
+          if (
+            (option.options.useIndexValue && (typeof subState[option.key] !== "number" || subState[option.key] >= 0)) ||
+            (!option.options.useIndexValue && !option.options.values.includes(subState[option.key]))
+          ) {
             invalidInputs.push(option.title + finalStateName);
           }
           break;
@@ -206,7 +205,7 @@ const resetPickerVals = (state, orderOptions) => {
   let newState = { ...state };
   for (let option of orderOptions) {
     if (option.type === InputTypes.PICKER && !option.dynamic && !option.required
-      && !option.options.includes(state[option.key])) {
+      && !option.options.values.includes(state[option.key])) {
       newState[option.key] = "";
     }
   }
@@ -262,7 +261,69 @@ const DeleteButton = ({ onPress, message }) => (
   <TouchableOpacity style={styles.deleteButton} onPress={onPress}>
     <Text style={styles.deleteButtonText}>{message}</Text>
   </TouchableOpacity>
-)
+);
+
+const getDynamicOrderOptions = (orderOptions, orderSchedule, orders, focusedData, orderPresets, lunchSchedule, state) => {
+  if (!orderOptions.requireDate || !isDynamic(orderSchedule)) {
+    return orderOptions.orderOptions.map((orderOption) => ({
+      ...orderOption,
+      options: getDynamicOptions(orderOption.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
+    }));
+  }
+  const dateField = {
+    ...DateField,
+    options: getDynamicOptions(DateField.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
+  };
+  if ((!state.date && state.date !== 0) || typeof state.date !== "number") {
+    return [dateField];
+  }
+  let optionsToMap;
+  if (!orderOptions.dynamic) {
+    optionsToMap = orderOptions.orderOptions;
+  } else {
+    const dateOptions = dateField.options.keys;
+    if (dateOptions && dateOptions.length > state.date) {
+      const selectedDate = dateOptions[state.date][0];
+      const sunday = parseISO(selectedDate).day(0).format(ISO_FORMAT);
+      optionsToMap = orderOptions[sunday] || [];
+    } else {
+      optionsToMap = [];
+    }
+  }
+  return [
+    dateField,
+    ...optionsToMap.map((orderOption) => ({
+      ...orderOption,
+      options: getDynamicOptions(orderOption.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
+    }))
+  ];
+}
+
+const getDisplayOrderFields = (orderOptions, orderSchedule, focusedData, state, setFullState) => {
+  const dateIndex = orderOptions.findIndex(({ key }) => key === "date");
+  if (!isDynamic(orderSchedule) || dateIndex === -1) {
+    return [{ data: orderOptions, isNested: false }];
+  } else if ((!state.date && state.date !== 0) || typeof state.date !== "number") {
+    return [{ data: [orderOptions[dateIndex]], isNested: false }];
+  } else {
+    const dateField = orderOptions.splice(dateIndex, 1)[0];
+    const selectedDateGroup = dateField.options.keys[state.date] || [];
+    let newState = {};
+    selectedDateGroup.forEach((date) => {
+      newState[date] = getDefault(focusedData && focusedData[date], orderOptions);
+    });
+    setFullState({ date: state.date, ...newState });
+    return [
+      { data: [dateField], isNested: false },
+      ...selectedDateGroup.map((date) => ({
+        key: date,
+        title: toReadable(date),
+        data: orderOptions,
+        isNested: true
+      }))
+    ];
+  }
+}
 
 /**
  * Renders a screen that displays order-type fields.
@@ -271,7 +332,7 @@ const DeleteButton = ({ onPress, message }) => (
  *
  * @param {string}                 title          String to display in header.
  * @param {Object|null}            focusedData    Data that user is editing (null if order/preset is being created).
- * @param {Object[]}               orderOptions   Order/preset fields.
+ * @param {Object}                 orderOptions   Order/preset fields.
  * @param {function}               cancel         Function to cancel order.
  * @param {function}               createNew      Function to create order/preset.
  * @param {function}               editExisting   Function to push edits to order/preset.
@@ -288,14 +349,25 @@ const DeleteButton = ({ onPress, message }) => (
  * @constructor
  */
 const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, editExisting, deleteExisting, uid, domain, deleteMessage, orderPresets, orders, lunchSchedule, orderSchedule }) => {
-  const [state, setFullState] = useState(getDefault(focusedData, orderOptions));
-  const [dynamicOptions, setOptions] = useState([]);
+  const [dynamicOptions, setDynamicOptions] = useState(
+    getDynamicOrderOptions(
+      orderOptions,
+      orderSchedule,
+      orders,
+      focusedData,
+      orderPresets,
+      lunchSchedule,
+      {}
+    )
+  );
+  const [state, setFullState] = useState(getDefault(focusedData, dynamicOptions));
+  const [displayOptions, setDisplayOptions] = useState([]);
   const inset = useSafeAreaInsets();
 
   const submit = () => {
     // Ensure all required fields are filled out
     const hasDynamicSchedule = isDynamic(orderSchedule);
-    const invalidInputs = validateState(state, orderOptions, hasDynamicSchedule);
+    const invalidInputs = validateState(state, dynamicOptions, hasDynamicSchedule);
     if (invalidInputs.length > 0) {
       alert(
         "Fill out required fields",
@@ -315,11 +387,11 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
       let presetKey = Object.keys(orderPresets).filter((id) => orderPresets[id].title === state.preset);
       newState = { ...orderPresets[presetKey], date: state.date };
     } else {
-      newState = resetPickerVals(state, orderOptions);
+      newState = resetPickerVals(state, dynamicOptions);
     }
     // Pushes to existing doc if editing, otherwise creates new doc
     if (focusedData) {
-      editExisting(newState, focusedData.key, uid, domain, hasDynamicSchedule);
+      editExisting(newState, focusedData.keys || focusedData.key, uid, domain, hasDynamicSchedule);
     } else {
       createNew(newState, uid, domain, hasDynamicSchedule);
     }
@@ -348,35 +420,30 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
   };
 
   useEffect(() => {
-    const newDynamicOptions = orderOptions.map((orderOption) => ({
-      ...orderOption,
-      options: getDynamicOptions(orderOption.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
-    }));
-    const dateIndex = newDynamicOptions.findIndex(({ key }) => key === "date");
-    // If date key isn't present, then this is an order preset (and there is therefore no dates)
-    if (!isDynamic(orderSchedule) || dateIndex === -1) {
-      setOptions([{ data: newDynamicOptions, isNested: false }]);
-    } else if ((!state.date && state.date !== 0) || typeof state.date !== "number") {
-      setOptions([{ data: [newDynamicOptions[dateIndex]], isNested: false }]);
-    } else {
-      const dateField = newDynamicOptions.splice(dateIndex, 1);
-      const selectedDateGroup = dateField[0].options.keys[state.date] || [];
-      setOptions([
-        { data: dateField, isNested: false },
-        ...selectedDateGroup.map((date) => ({
-          key: date,
-          title: toReadable(date),
-          data: newDynamicOptions,
-          isNested: true
-        }))
-      ]);
-      let newState = {};
-      selectedDateGroup.forEach((date) => {
-        newState[date] = getDefault(focusedData && focusedData[date], newDynamicOptions);
-      });
-      setFullState({ date: state.date, ...newState });
-    }
-  }, [orderOptions, focusedData, orderPresets, lunchSchedule, orderSchedule, orders, state.date]);
+    setDynamicOptions(
+      getDynamicOrderOptions(
+        orderOptions,
+        orderSchedule,
+        orders,
+        focusedData,
+        orderPresets,
+        lunchSchedule,
+        state
+      )
+    );
+  }, [orderOptions, orderSchedule, orders, focusedData, orderPresets, lunchSchedule, state.date]);
+
+  useEffect(() => {
+    setDisplayOptions(
+      getDisplayOrderFields(
+        dynamicOptions,
+        orderSchedule,
+        focusedData,
+        state,
+        setFullState
+      )
+    );
+  }, [dynamicOptions, focusedData, orderPresets, lunchSchedule, orderSchedule, orders, state.date]);
 
   // May need to reinsert insets for Android (depends on how modal renders)
   return (
@@ -392,7 +459,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
         keyboardDismissMode={Layout.ios ? "interactive" : "on-drag"}
         contentContainerStyle={{ paddingBottom: inset.bottom }}
         ListFooterComponent={focusedData && <DeleteButton onPress={deleteAndNavigate} message={deleteMessage} />}
-        sections={dynamicOptions}
+        sections={displayOptions}
         renderItem={({ item, section }) => (
           <OrderField
             {...item}
