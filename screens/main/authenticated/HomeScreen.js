@@ -59,6 +59,7 @@ const getData = async () => {
  *
  * @param {Object[]}                 [orders=[]]       Array of user's upcoming orders sorted in chronological order (soonest to farthest).
  * @param {Object}                   [orderPresets={}] Object containing user's order presets.
+ * @param {Object}                   dynamicMenu       Whether menu is dynamic (changes weekly).
  * @param {Object[]}                 orderOptions      Array of order options.
  * @param {Object}                   orderSchedule     Contains data for ordering days.
  * @param {Object}                   lunchSchedule     Contains data for lunch days.
@@ -74,13 +75,18 @@ const getData = async () => {
  * @return {React.ReactElement} Element to render.
  * @constructor
  */
-const HomeScreen = ({ orders = [], orderPresets = {}, orderSchedule, lunchSchedule, uid, logOut, focusOrder, unfocusOrder, deleteOrder, watchOrders, domain, navigation }) => {
-  const [loadedData, setLoadedData] = useState(false);
-  const editUser = () => navigation.navigate("Settings");
+const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule, lunchSchedule, uid, logOut, focusOrder, unfocusOrder, deleteOrder, watchOrders, domain, navigation }) => {
+  const editUser = () => {
+    if (dynamicMenu) {
+      navigation.navigate("User Settings");
+    } else {
+      navigation.navigate("Settings")
+    }
+  };
 
   // Opens the order screen for a new order.
   const newOrder = () => {
-    if (Object.keys(orderPresets).length === 0) {
+    if (dynamicMenu || Object.keys(orderPresets).length === 0) {
       navigation.navigate("Order", { screen: "Custom Order"});
     } else {
       navigation.navigate("Order")
@@ -93,7 +99,7 @@ const HomeScreen = ({ orders = [], orderPresets = {}, orderSchedule, lunchSchedu
       return;
     }
     focusOrder(id);
-    if (hasTitle) {
+    if (hasTitle && !dynamicMenu) {
       navigation.navigate("Order", { screen: "Preset Order" });
     } else {
       navigation.navigate("Order", { screen: "Custom Order" });
@@ -183,6 +189,7 @@ const getOrdersArr = (orders, dynamicSchedule) => {
 const mapStateToProps = ({ orders, orderPresets, stateConstants, user, domain }) => ({
   orders: getOrdersArr(orders, stateConstants.orderSchedule?.scheduleType === OrderScheduleTypes.CUSTOM),
   orderPresets,
+  dynamicMenu: stateConstants.orderOptions.dynamic,
   orderSchedule: stateConstants.orderSchedule,
   lunchSchedule: stateConstants.lunchSchedule,
   uid: user?.uid,

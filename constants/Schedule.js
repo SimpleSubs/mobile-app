@@ -145,7 +145,7 @@ export const getLunchSchedule = (orderSchedule, lunchSchedule, start = moment().
       } else if (orderSchedule.scheduleType === OrderScheduleTypes.DAY_BEFORE) {
         rangeStart.add(2, "days");
       }
-      lunchDays = getDateRange(rangeStart, parseISO(end).diff(parseISO(start)), 1, excludedLunchDates);
+      lunchDays = getDateRange(rangeStart, parseISO(end).diff(start, "days"), 1, excludedLunchDates);
       break;
     case OrderScheduleTypes.CUSTOM:
       let orderDays = getCustomOrderSchedule(orderSchedule.defaultTime, orderSchedule.schedule, start, end, includeCurrent);

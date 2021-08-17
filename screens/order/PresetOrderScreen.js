@@ -7,7 +7,7 @@ import OrderInputsList from "../../components/orders/OrderInputsList";
 import { createOrder, deleteOrder, editOrder } from "../../redux/Actions";
 import { connect } from "react-redux";
 import { DateField, PresetField } from "../../constants/RequiredFields";
-import { READABLE_FORMAT } from "../../constants/Date";
+import {READABLE_FORMAT, toReadable} from "../../constants/Date";
 
 /**
  * Renders screen for placing orders from existing user presets.
@@ -30,7 +30,7 @@ const PresetOrderScreen = ({ focusedOrder, createOrder, editOrder, deleteOrder, 
     <OrderInputsList
       title={"Preset Order"}
       focusedData={focusedOrder}
-      orderOptions={[DateField, PresetField]}
+      orderOptions={{ orderOptions: [DateField, PresetField] }}
       cancel={cancelOrder}
       createNew={createOrder}
       editExisting={editOrder}
@@ -44,14 +44,14 @@ const mapStateToProps = ({ focusedOrder, orders, user }) => ({
   focusedOrder: focusedOrder ? {
     key: focusedOrder,
     preset: orders[focusedOrder].title,
-    date: orders[focusedOrder].date.format(READABLE_FORMAT)
+    date: toReadable(orders[focusedOrder].date)
   } : null,
   uid: user.uid
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  createOrder: (data, uid, domain) => createOrder(dispatch, data, uid, domain),
-  editOrder: (data, id, uid, domain) => editOrder(dispatch, data, id, uid, domain),
+  createOrder: (data, uid, domain) => createOrder(dispatch, data, uid, domain, false),
+  editOrder: (data, id, uid, domain) => editOrder(dispatch, data, id, uid, domain, false),
   deleteOrder: (id, domain) => deleteOrder(dispatch, id, domain),
 })
 

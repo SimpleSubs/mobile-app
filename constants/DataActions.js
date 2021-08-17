@@ -68,8 +68,8 @@ export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedul
     return {
       // Exclude dates included in order dates and that order is not currently focused
       values: allOptions.filter((date) => (
-        !orderDates.includes(date) || focusedOrder?.date === date
-      )),
+        !orderDates.includes(date) || focusedOrder?.date === toReadable(date)
+      )).map((date) => toReadable(date)),
       useIndexValue: false
     };
   }

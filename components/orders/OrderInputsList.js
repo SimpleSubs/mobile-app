@@ -94,12 +94,11 @@ const isDynamic = (orderSchedule) => orderSchedule.scheduleType === OrderSchedul
  * @return {string[]} Array containing titles of invalid inputs
  */
 const validateState = (state, orderOptions, hasDynamicSchedule) => {
-  // Note: if checkDate is true, then ONLY check date (no other fields)
-  const validateFields = (subState, stateName, checkDate = true) => {
+  const validateFields = (subState, checkDate = true, checkOnlyDate = false, stateName = null) => {
     const invalidInputs = [];
     const finalStateName =  stateName ? ` (${stateName})` : "";
     for (const option of orderOptions) {
-      if ((!checkDate && option.key === "date") || (checkDate && option.key !== "date") || !option.required) {
+      if ((!checkDate && option.key === "date") || (checkOnlyDate && option.key !== "date") || !option.required) {
         continue;
       }
       switch (option.type) {
@@ -126,14 +125,14 @@ const validateState = (state, orderOptions, hasDynamicSchedule) => {
   if (!hasDynamicSchedule) {
     return validateFields(state);
   } else {
-    let invalidInputs = validateFields({ date: state.date });
+    let invalidInputs = validateFields({ date: state.date }, true, true);
     if (invalidInputs.length > 0) {
       return invalidInputs;
     }
     for (const key of Object.keys(state)) {
       // If key isn't date field, then it is a date mapping to order substate
       if (key !== "date") {
-        invalidInputs = [...invalidInputs, ...validateFields(state[key], toSimple(key), false)]
+        invalidInputs = [...invalidInputs, ...validateFields(state[key], false, false, toSimple(key))]
       }
     }
     return invalidInputs;
@@ -264,7 +263,7 @@ const DeleteButton = ({ onPress, message }) => (
 );
 
 const getDynamicOrderOptions = (orderOptions, orderSchedule, orders, focusedData, orderPresets, lunchSchedule, state) => {
-  if (!orderOptions.requireDate || !isDynamic(orderSchedule)) {
+  if (!orderOptions.requireDate) {
     return orderOptions.orderOptions.map((orderOption) => ({
       ...orderOption,
       options: getDynamicOptions(orderOption.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
@@ -274,6 +273,15 @@ const getDynamicOrderOptions = (orderOptions, orderSchedule, orders, focusedData
     ...DateField,
     options: getDynamicOptions(DateField.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
   };
+  if (!isDynamic(orderSchedule)) {
+    return [
+      dateField,
+      ...orderOptions.orderOptions.map((orderOption) => ({
+        ...orderOption,
+        options: getDynamicOptions(orderOption.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
+      }))
+    ]
+  }
   if ((!state.date && state.date !== 0) || typeof state.date !== "number") {
     return [dateField];
   }
@@ -392,7 +400,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
     }
     // Pushes to existing doc if editing, otherwise creates new doc
     if (focusedData) {
-      editExisting(newState, focusedData.keys || focusedData.key, uid, domain, hasDynamicSchedule);
+      editExisting(newState, focusedData.keys || [focusedData.key], uid, domain, hasDynamicSchedule);
     } else {
       createNew(newState, uid, domain, hasDynamicSchedule);
     }
@@ -401,7 +409,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
 
   const deleteAndNavigate = () => {
     if (focusedData) {
-      deleteExisting(focusedData.key, domain, uid);
+      deleteExisting(focusedData.keys || focusedData.key, domain, uid);
     }
     cancel();
   }

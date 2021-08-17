@@ -5,7 +5,7 @@
 import React from "react";
 import OrderInputsList from "../../components/orders/OrderInputsList";
 import { DateField } from "../../constants/RequiredFields";
-import { READABLE_FORMAT } from "../../constants/Date";
+import { toReadable } from "../../constants/Date";
 import { createOrder, deleteOrder, editOrder } from "../../redux/Actions";
 import { connect } from "react-redux";
 import { OrderScheduleTypes } from "../../constants/Schedule";
@@ -44,7 +44,7 @@ const mapStateToProps = ({ focusedOrder, orders, stateConstants }) => ({
     ...orders[focusedOrder],
     date: !stateConstants.orderSchedule || stateConstants.orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM
       ? orders[focusedOrder].date[0]
-      : orders[focusedOrder].date.format(READABLE_FORMAT)
+      : toReadable(orders[focusedOrder].date)
   } : null,
   orderOptions: {
     requireDate: true,
