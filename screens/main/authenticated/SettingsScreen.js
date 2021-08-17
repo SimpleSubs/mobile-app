@@ -28,7 +28,7 @@ const SETTINGS_PAGES = [
  */
 const SettingsScreen = ({ navigation }) => (
   <View style={styles.container}>
-    <Header title={"Settings"} leftButton={{ name: "ios-arrow-back", onPress: () => navigation.pop() }} />
+    <Header title={"Settings"} leftButton={{ name: "arrow-back", onPress: () => navigation.pop() }} />
     <MultipleOptionsList pages={SETTINGS_PAGES} navigation={navigation} />
   </View>
 );

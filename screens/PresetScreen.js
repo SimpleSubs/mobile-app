@@ -47,16 +47,19 @@ const PresetScreen = ({ focusedPreset, orderOptions, unfocusPreset, createPreset
 const mapStateToProps = ({ focusedPreset, orderPresets, stateConstants }) => ({
   focusedPreset: focusedPreset ? orderPresets[focusedPreset] : null,
   orderPresets,
-  orderOptions: [
-    TitleField,
-    ...stateConstants.orderOptions
-  ]
+  orderOptions: {
+    ...stateConstants.orderOptions,
+    orderOptions: [
+      TitleField,
+      ...stateConstants.orderOptions.orderOptions
+    ]
+  }
 });
 
 const mapDispatchToProps = (dispatch) => ({
   unfocusPreset: () => dispatch(unfocusPreset()),
   createPreset: (data, uid, domain) => createPreset(dispatch, data, uid, domain),
-  editPreset: (data, id, uid, domain) => editPreset(dispatch, data, id, uid, domain),
+  editPreset: (data, id, uid, domain) => editPreset(dispatch, data, id[0], uid, domain),
   deletePreset: (id, domain, uid) => deletePreset(dispatch, id, uid, domain)
 })
 

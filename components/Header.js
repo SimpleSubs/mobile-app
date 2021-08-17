@@ -26,7 +26,7 @@ import Layout from "../constants/Layout";
 const Spacer = () => (
   <Ionicons
     style={styles.navigateButtons}
-    name={"md-square-outline"}
+    name={"square-outline"}
     color={Colors.backgroundColor}
     size={Layout.fonts.icon}
   />
@@ -35,17 +35,18 @@ const Spacer = () => (
 /**
  * Renders standard header for pages in main stack.
  *
- * @param {string}                                             title         Title of page (to render in header).
- * @param {Object}                                             [style={}]    Style object to apply to header.
- * @param {{name: string, style: Object, onPress: function()}} [rightButton] Data for icon button to be rendered to the right of the title.
- * @param {{name: string, style: Object, onPress: function()}} [leftButton]  Data for icon button to be rendered to the left of the title.
+ * @param {string}                                             title           Title of page (to render in header).
+ * @param {Object}                                             [style={}]      Style object to apply to header.
+ * @param {{name: string, style: Object, onPress: function()}} [rightButton]   Data for icon button to be rendered to the right of the title.
+ * @param {{name: string, style: Object, onPress: function()}} [leftButton]    Data for icon button to be rendered to the left of the title.
+ * @param {boolean}                                            [includeInsets] Whether vertical inset should be included in header (usually excluded for modal).
  * @param {React.ReactElement}                                      [children]    Other elements to render within header (such as place order button on home screen).
  *
  * @return {React.ReactElement} Header element.
  * @constructor
  */
-const Header = ({ title, style = {}, rightButton, leftButton, children }) => (
-  <View style={[styles.header, { paddingTop: styles.header.paddingVertical + useSafeAreaInsets().top }, style]}>
+const Header = ({ title, style = {}, rightButton, leftButton, includeInsets = true, children }) => (
+  <View style={[styles.header, { paddingTop: styles.header.paddingVertical + (includeInsets ? useSafeAreaInsets().top : 0) }, style]}>
     {leftButton ? (
       <AnimatedTouchable style={styles.navigateButtons} endSize={0.8} onPress={leftButton.onPress}>
         <Ionicons
