@@ -89,7 +89,9 @@ const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], se
       onPress={() => openModal(getPickerProps(myPicker))}
     >
       <Text style={styles.touchableText}>{title}</Text>
-      <Text style={styles.selectedItem} numberOfLines={1}>{selectedValue}</Text>
+      <Text style={styles.selectedItem} numberOfLines={1}>
+        {useIndexValue && typeof selectedValue === "number" ? options[selectedValue] : selectedValue}
+      </Text>
     </TouchableOpacity>
   )
 }

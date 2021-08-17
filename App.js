@@ -2,7 +2,7 @@
  * @file Manages entire RN Expo app.
  * @author Emily Sturman <emily@sturman.org>
  */
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StatusBar,
   StyleSheet,
@@ -30,7 +30,7 @@ const { LogBox } = !Layout.web ? require("react-native") : { LogBox: null };
 // Initialize Sentry for error reporting/management
 Sentry.init({
   "dsn": "https://b94b0a4a89a6438591f3c5aa07dca44d@o327609.ingest.sentry.io/1838264",
-  "enableInExpoDevelopment": true,
+  "enableInExpoDevelopment": false,
   "debug": false
 });
 

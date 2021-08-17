@@ -310,7 +310,8 @@ const getDisplayOrderFields = (orderOptions, orderSchedule, focusedData, state, 
     const selectedDateGroup = dateField.options.keys[state.date] || [];
     let newState = {};
     selectedDateGroup.forEach((date) => {
-      newState[date] = getDefault(focusedData && focusedData[date], orderOptions);
+      const existsInState = state[date] && Object.keys(state[date]).length > 0;
+      newState[date] = existsInState ? state[date] : getDefault(focusedData && focusedData[date], orderOptions);
     });
     setFullState({ date: state.date, ...newState });
     return [
@@ -407,43 +408,38 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
 
   const setState = (newState, sectionKey) => {
     if (sectionKey) {
-      setFullState((prevState) => ({
-        ...prevState,
+      setFullState({
+        ...state,
         [sectionKey]: {
-          ...(prevState[sectionKey] || {}),
+          ...(state[sectionKey] || {}),
           ...newState
         }
-      }));
+      });
     } else {
-      setFullState((prevState) => ({ ...prevState, ...newState }));
+      setFullState({ ...state, ...newState });
     }
   };
 
   useEffect(() => {
-    setDynamicOptions(
-      getDynamicOrderOptions(
-        orderOptions,
-        orderSchedule,
-        orders,
-        focusedData,
-        orderPresets,
-        lunchSchedule,
-        state
-      )
+    const newOptions = getDynamicOrderOptions(
+      orderOptions,
+      orderSchedule,
+      orders,
+      focusedData,
+      orderPresets,
+      lunchSchedule,
+      state
     );
+    const newDisplayOptions = getDisplayOrderFields(
+      newOptions,
+      orderSchedule,
+      focusedData,
+      state,
+      setFullState
+    );
+    setDynamicOptions(newOptions);
+    setDisplayOptions(newDisplayOptions);
   }, [orderOptions, orderSchedule, orders, focusedData, orderPresets, lunchSchedule, state.date]);
-
-  useEffect(() => {
-    setDisplayOptions(
-      getDisplayOrderFields(
-        dynamicOptions,
-        orderSchedule,
-        focusedData,
-        state,
-        setFullState
-      )
-    );
-  }, [dynamicOptions, focusedData, orderPresets, lunchSchedule, orderSchedule, orders, state.date]);
 
   // May need to reinsert insets for Android (depends on how modal renders)
   return (

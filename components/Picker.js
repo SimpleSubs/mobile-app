@@ -93,7 +93,9 @@ const PickerAndroid = ({ changeValue, selectedValue, options, useIndexValue }) =
 const PickerCrossPlatform = ({ closeModal, selectedValue, onValueChange, options, useIndexValue = false }) => {
   const changeValue = (newValue) => {
     onValueChange(newValue);
-    if (newValue !== selectedValue) { closeModal(); }
+    if (newValue !== selectedValue) {
+      closeModal();
+    }
   };
   return Layout.ios ? (
     <PickerIOS

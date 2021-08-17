@@ -75,17 +75,15 @@ export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedul
   }
   const optionGroups = getScheduleGroups(allOptions, lunchSchedule.schedule);
   const orderDates = Object.values(orders).map(({ date }) => date).reduce((prev, current) => [...prev, ...current], []);
-  let focusedDate;
+  let focusedDate = focusedOrder?.date;
+  let isStringDate = typeof focusedDate === "string";
   // Exclude option groups where order dates includes a date within the group and that order is not currently focused
-  const filteredOptionGroups = optionGroups.filter((group, i) => {
-    let focusedIndex = focusedOrder?.key;
-    if (focusedIndex === i) {
-      focusedDate = group[0];
-    }
-    return !group.some((date) => orderDates.includes(date)) || (focusedIndex === i);
-  });
+  const filteredOptionGroups = optionGroups.filter((group, i) => (
+    !group.some((date) => orderDates.includes(date)) ||
+    (isStringDate ? focusedDate === group[0] : focusedDate === i)
+  ));
   // TODO fixme this is a SUPER janky solution
-  if (focusedOrder && focusedDate) {
+  if (isStringDate) {
     focusedOrder.date = filteredOptionGroups.findIndex((group) => group[0] === focusedDate);
   }
   const groupNames = filteredOptionGroups.map((group) => (
