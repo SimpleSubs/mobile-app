@@ -42,7 +42,7 @@ const RootStack = createStackNavigator();
  * @constructor
  */
 const MainStackScreen = ({ isSignedIn }) => (
-  <MainStack.Navigator headerMode={"none"}>
+  <MainStack.Navigator screenOptions={{ headerShown: false }}>
     <MainStack.Screen name={"Loading"} component={LoadingScreen} options={{ gestureEnabled: false }} />
     {!isSignedIn ? (
       <>
@@ -70,7 +70,7 @@ const MainStackScreen = ({ isSignedIn }) => (
  * @constructor
  */
 const OrderStackScreen = () => (
-  <OrderStack.Navigator headerMode={"none"}>
+  <OrderStack.Navigator screenOptions={{ headerShown: false }}>
     <MainStack.Screen name={"Preorder"} component={PreOrderScreen} />
     <MainStack.Screen name={"Custom Order"} component={OrderScreen} />
     <MainStack.Screen name={"Preset Order"} component={PresetOrderScreen} />
@@ -78,9 +78,9 @@ const OrderStackScreen = () => (
 );
 
 const RegisterStackScreen = () => (
-  <RegisterStack.Navigator headerMode={"none"}>
+  <RegisterStack.Navigator screenOptions={{ headerShown: false }}>
     <RegisterStack.Screen name={"Domain"} component={DomainScreen} />
-    <RegisterStack.Screen name={"Register"} component={RegisterScreen} />
+    <RegisterStack.Screen name={"Register User"} component={RegisterScreen} />
   </RegisterStack.Navigator>
 )
 
@@ -91,19 +91,17 @@ const RegisterStackScreen = () => (
  * Sub-stacks animate as standard screens, while the root
  * stack animates as fullscreen modals.
  *
- * @param {React.ElementRef} containerRef Element ref to assign navigation container to.
- * @param {Object} initialState Initial navigation state.
  * @param {boolean} isSignedIn Whether user is authenticated.
  * @param {function()} watchAuthState Listener for changes in user authentication.
  *
  * @return {React.ReactElement} Navigation container with root stack.
  * @constructor
  */
-const StackNavigator = ({ containerRef, initialState, isSignedIn, watchAuthState }) => {
+const StackNavigator = ({ isSignedIn, watchAuthState }) => {
   useEffect(watchAuthState, []);
   return (
-    <NavigationContainer ref={containerRef} initialState={initialState}>
-      <RootStack.Navigator headerMode={"none"} mode={"modal"}>
+    <NavigationContainer>
+      <RootStack.Navigator screenOptions={{ headerShown: false, presentation: "modal" }}>
         <RootStack.Screen name={"Main"}>
           {() => <MainStackScreen isSignedIn={isSignedIn} />}
         </RootStack.Screen>

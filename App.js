@@ -2,7 +2,7 @@
  * @file Manages entire RN Expo app.
  * @author Emily Sturman <emily@sturman.org>
  */
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StatusBar,
   StyleSheet,
@@ -20,7 +20,6 @@ import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import thunk from "redux-thunk";
 import sandwichApp from "./redux/Reducers";
-import useLinking from "./navigation/useLinking";
 import StackNavigator from "./navigation/StackNavigator";
 import Colors from "./constants/Colors";
 import Layout from "./constants/Layout";
@@ -31,7 +30,7 @@ const { LogBox } = !Layout.web ? require("react-native") : { LogBox: null };
 // Initialize Sentry for error reporting/management
 Sentry.init({
   "dsn": "https://b94b0a4a89a6438591f3c5aa07dca44d@o327609.ingest.sentry.io/1838264",
-  "enableInExpoDevelopment": true,
+  "enableInExpoDevelopment": false,
   "debug": false
 });
 
@@ -57,9 +56,6 @@ const store = createStore(sandwichApp, applyMiddleware(thunk));
  */
 const App = ({ skipLoadingScreen }) => {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
-  const [initialNavigationState, setInitialNavigationState] = useState();
-  const containerRef = useRef();
-  const { getInitialState } = useLinking(containerRef);
 
   // Load any resources or data that we need prior to rendering the app
   useEffect(() => {
@@ -70,7 +66,6 @@ const App = ({ skipLoadingScreen }) => {
         console.warn(e);
       }
       try {
-        setInitialNavigationState(await getInitialState()); // Load our initial navigation state
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
@@ -102,7 +97,7 @@ const App = ({ skipLoadingScreen }) => {
         <Provider store={store}>
           <View style={styles.container}>
             {Layout.ios && <StatusBar barStyle={Colors.statusBar} />}
-            <StackNavigator containerRef={containerRef} initialState={initialNavigationState} />
+            <StackNavigator />
             <InfoModal />
             <Modal />
           </View>

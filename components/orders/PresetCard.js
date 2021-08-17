@@ -38,7 +38,7 @@ const SwipeActionRight = (progress, dragX) => {
   return (
     <Animated.View style={[styles.swipeActionRight, { transform: [{ translateX: slideInterpolation }]}]}>
       <AnimatedIonicons
-        name={"md-trash"}
+        name={"trash-outline"}
         size={Layout.fonts.icon}
         color={Colors.primaryText}
         style={{ transform: [{ scale: scaleInterpolation }]}}

@@ -18,8 +18,8 @@ const ORDER_PAGES = [
 
 const PreOrderScreen = ({ navigation }) => (
   <View style={styles.container}>
-    <Header title={"Order"} leftButton={{ name: "md-close", onPress: () => navigation.pop() }} />
-    <MultipleOptionsList pages={ORDER_PAGES} navigation={navigation} />
+    <Header title={"Order"} leftButton={{ name: "close", onPress: () => navigation.pop() }} includeInsets={false} />
+    <MultipleOptionsList pages={ORDER_PAGES} navigation={navigation} isModal />
   </View>
 );
 

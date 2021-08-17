@@ -3,8 +3,7 @@
     "name": "SimpleSubs",
     "description": "Order sandwiches easily up to two weeks in advance using this app",
     "slug": "simple-subs",
-    "sdkVersion": "39.0.0",
-    "version": "3.1.1",
+    "version": "4.0.0",
     "platforms": [
       "ios",
       "android",
@@ -29,7 +28,7 @@
     },
     "ios": {
       "bundleIdentifier": "org.lwhs.simplesubs",
-      "buildNumber": "2",
+      "buildNumber": "1",
       "appStoreUrl": "https://apps.apple.com/us/app/id1464274843",
       "supportsTablet": true,
       "isTabletOnly": false,
@@ -41,7 +40,7 @@
     },
     "android": {
       "package": "org.lwhs.simplesubs",
-      "versionCode": 11,
+      "versionCode": 12,
       "userInterfaceStyle": "automatic",
       "playStoreUrl": "https://play.google.com/store/apps/details?id=org.lwhs.simplesubs",
       "permissions": []

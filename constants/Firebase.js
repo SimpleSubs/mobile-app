@@ -2,7 +2,7 @@
  * @file Initializes and manages functions using Firebase API.
  * @author Emily Sturman <emily@sturman.org>
  */
-import * as firebase from "firebase/app";
+import firebase from "firebase/app";
 import firebaseConfig from "../firebase-config.json";
 import "firebase/firestore";
 import "firebase/auth";

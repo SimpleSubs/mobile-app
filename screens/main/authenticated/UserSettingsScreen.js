@@ -43,7 +43,7 @@ const UserSettingsScreen = ({ user, domain, userFields, watchUserData, editUserD
 
   return (
     <View style={styles.container}>
-      <Header title={"Profile Settings"} leftButton={{ name: "ios-arrow-back", onPress: () => navigation.pop() }} />
+      <Header title={"Profile Settings"} leftButton={{ name: "arrow-back", onPress: () => navigation.pop() }} />
       <InputsList
         data={userFields}
         state={state}

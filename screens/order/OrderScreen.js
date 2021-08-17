@@ -5,19 +5,20 @@
 import React from "react";
 import OrderInputsList from "../../components/orders/OrderInputsList";
 import { DateField } from "../../constants/RequiredFields";
-import { READABLE_FORMAT } from "../../constants/Date";
+import { toReadable } from "../../constants/Date";
 import { createOrder, deleteOrder, editOrder } from "../../redux/Actions";
 import { connect } from "react-redux";
+import { OrderScheduleTypes } from "../../constants/Schedule";
 
 /**
  * Renders main order screen to navigate to either sub-screen (custom or preset order).
  *
- * @param {Object|null}                    focusedOrder Currently focused order (null if new order is being created).
- * @param {Array}                          orderOptions Fields for order ingredients.
- * @param {function(Object,string)}        createOrder  Pushes new order to Firebase.
- * @param {function(Object,string,string)} editOrder    Pushes edits for existing order to Firebase.
- * @param {function(string)}               deleteOrder  Deletes existing order from Firebase.
- * @param {Object}                         navigation   Navigation prop passed by React Navigation.
+ * @param {Object|null}                            focusedOrder Currently focused order (null if new order is being created).
+ * @param {Object}                                 orderOptions Fields for order ingredients.
+ * @param {function(Object,string,boolean)}        createOrder  Pushes new order to Firebase.
+ * @param {function(Object,string,string,boolean)} editOrder    Pushes edits for existing order to Firebase.
+ * @param {function(string)}                       deleteOrder  Deletes existing order from Firebase.
+ * @param {Object}                                 navigation   Navigation prop passed by React Navigation.
  *
  * @return {React.ReactElement} Element to render.
  * @constructor
@@ -41,17 +42,19 @@ const OrderScreen = ({ focusedOrder, orderOptions, createOrder, editOrder, delet
 const mapStateToProps = ({ focusedOrder, orders, stateConstants }) => ({
   focusedOrder: focusedOrder ? {
     ...orders[focusedOrder],
-    date: orders[focusedOrder].date.format(READABLE_FORMAT)
+    date: !stateConstants.orderSchedule || stateConstants.orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM
+      ? orders[focusedOrder].date[0]
+      : toReadable(orders[focusedOrder].date)
   } : null,
-  orderOptions: [
-    DateField,
+  orderOptions: {
+    requireDate: true,
     ...stateConstants.orderOptions
-  ]
+  }
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  createOrder: (data, uid, domain) => createOrder(dispatch, data, uid, domain),
-  editOrder: (data, id, uid, domain) => editOrder(dispatch, data, id, uid, domain),
+  createOrder: (data, uid, domain, dynamicSchedule) => createOrder(dispatch, data, uid, domain, dynamicSchedule),
+  editOrder: (data, ids, uid, domain, dynamicSchedule) => editOrder(dispatch, data, ids, uid, domain, dynamicSchedule),
   deleteOrder: (id, domain) => deleteOrder(dispatch, id, domain),
 })
 

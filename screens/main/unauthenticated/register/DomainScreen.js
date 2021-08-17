@@ -37,7 +37,7 @@ const DomainScreen = ({ getUnauthData, navigation }) => {
   const registerToDomain = () => {
     getUnauthData(inputs.domainCode).then((success) => {
       if (success) {
-        navigation.navigate("Register")
+        navigation.navigate("Register User")
       }
     });
   };
@@ -48,11 +48,11 @@ const DomainScreen = ({ getUnauthData, navigation }) => {
   return (
     <InputsList
       style={styles.container}
-      contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
+      contentContainerStyle={{ paddingBottom: inset.bottom }}
       ListHeaderComponent={() => (
         <View style={styles.header}>
           <AnimatedTouchable style={styles.closeButton} onPress={() => navigation.navigate("Main", { screen: "Login" })} endSize={0.8}>
-            <Ionicons name={"md-close"} size={Layout.fonts.icon} color={Colors.primaryText} />
+            <Ionicons name={"close"} size={Layout.fonts.icon} color={Colors.primaryText} />
           </AnimatedTouchable>
           <Text style={styles.title}>Enter organization code</Text>
         </View>
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   closeButton: {
     position: "absolute",
     top: 0,
-    left: 0
+    left: -20
   },
   header: {
     alignItems: "flex-start",

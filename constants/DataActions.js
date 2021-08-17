@@ -2,11 +2,11 @@
  * @file Manages various pre-set actions for user/order data (such as changing password, getting date options, etc.)
  * @author Emily Sturman <emily@sturman.org>
  */
-import { ISO_FORMAT, toReadable, toISO } from "./Date";
+import { ISO_FORMAT, toReadable, toISO, toSimple } from "./Date";
 import inputModalProps from "../components/modals/InputModal";
 import { InputTypes, TextTypes } from "./Inputs";
 import moment from "moment";
-import Schedule from "./Schedule";
+import { getLunchSchedule, getScheduleGroups, OrderScheduleTypes } from "./Schedule";
 
 // Options for dynamic order actions (on order screen)
 export const DynamicOrderOptions = {
@@ -56,29 +56,40 @@ const isSchoolDay = (date, schedule) => {
  *
  * @param {Object<string, Object>} orders         Object containing all of user's orders.
  * @param {Object}                 [focusedOrder] Order that is currently being edited.
- * @param {moment.Moment}          cutoffTime     Time after which user may not place an order for today.
+ * @param {Object}                 orderSchedule  Contains data for ordering days.
+ * @param {Object}                 lunchSchedule  Contains data for lunch days.
  *
- * @return {string[]} Options for dates for orders in readable format.
+ * @return {{keys?: string[][], values: string[], useIndexValue: boolean}} Options to render dates for order.
  */
-export const getDateOptions = (orders, focusedOrder, cutoffTime) => {
-  const orderDates = Object.keys(orders).map((id) => orders[id].date.format(ISO_FORMAT));
-  let dateOptions = [];
-  let date = moment();
-  if (date.isAfter(cutoffTime)) {
-    date.add(1, "days");
+export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedule) => {
+  const allOptions = getLunchSchedule(orderSchedule, lunchSchedule);
+  if (orderSchedule.scheduleType !== OrderScheduleTypes.CUSTOM) {
+    const orderDates = Object.values(orders).map(({ date }) => date);
+    return {
+      // Exclude dates included in order dates and that order is not currently focused
+      values: allOptions.filter((date) => (
+        !orderDates.includes(date) || focusedOrder?.date === toReadable(date)
+      )).map((date) => toReadable(date)),
+      useIndexValue: false
+    };
   }
-  for (let i = 0; i < 14; i++) {
-    let isoDate = date.format(ISO_FORMAT);
-    // date must be a school day as determined by given schedule and there must be no other order on that date
-    if (
-      isSchoolDay(date, Schedule) &&
-      (!orderDates.includes(isoDate) || (focusedOrder && toISO(focusedOrder.date) === isoDate))
-    ) {
-      dateOptions.push(toReadable(isoDate));
-    }
-    date.add(1, "days");
+  const optionGroups = getScheduleGroups(allOptions, lunchSchedule.schedule);
+  const orderDates = Object.values(orders).map(({ date }) => date).reduce((prev, current) => [...prev, ...current], []);
+  let focusedDate = focusedOrder?.date;
+  let isStringDate = typeof focusedDate === "string";
+  // Exclude option groups where order dates includes a date within the group and that order is not currently focused
+  const filteredOptionGroups = optionGroups.filter((group, i) => (
+    !group.some((date) => orderDates.includes(date)) ||
+    (isStringDate ? focusedDate === group[0] : focusedDate === i)
+  ));
+  // TODO fixme this is a SUPER janky solution
+  if (isStringDate) {
+    focusedOrder.date = filteredOptionGroups.findIndex((group) => group[0] === focusedDate);
   }
-  return dateOptions;
+  const groupNames = filteredOptionGroups.map((group) => (
+    `${toSimple(group[0])} to ${toSimple(group[group.length - 1])}`
+  ));
+  return { keys: filteredOptionGroups, values: groupNames, useIndexValue: true };
 }
 
 /**

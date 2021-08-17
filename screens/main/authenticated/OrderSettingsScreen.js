@@ -45,8 +45,8 @@ const OrderSettingsScreen = ({ orderPresets, uid, domain, watchPresets, deletePr
     <View style={styles.container}>
       <Header
         title={"Order Presets"}
-        leftButton={{ name: "ios-arrow-back", onPress: () => navigation.pop() }}
-        rightButton={{ name: "md-add", onPress: () => navigation.navigate("Preset") }}
+        leftButton={{ name: "arrow-back", onPress: () => navigation.pop() }}
+        rightButton={{ name: "add", onPress: () => navigation.navigate("Preset") }}
       />
       <FlatList
         ListEmptyComponent={() => (
