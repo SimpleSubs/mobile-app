@@ -4,10 +4,22 @@
  */
 import "react-native-get-random-values";
 import Alert from "../constants/Alert";
-import { firestore, auth, authErrorMessage, firestoreErrorMessage, deleteFailedUser } from "../constants/Firebase";
+import {
+  firestore,
+  auth,
+  authErrorMessage,
+  firestoreErrorMessage,
+  deleteFailedUser,
+  getUser
+} from "../constants/Firebase";
 import moment from "moment";
-import { toISO, ISO_FORMAT } from "../constants/Date";
-import { OrderScheduleTypes, getLunchSchedule, getScheduleGroups } from "../constants/Schedule";
+import {toISO, ISO_FORMAT, parseISO} from "../constants/Date";
+import {
+  OrderScheduleTypes,
+  getLunchSchedule,
+  getScheduleGroups,
+  getCutoffDate, getValidOrderDates, isBeforeCutoff
+} from "../constants/Schedule";
 
 // All possible actions to edit state
 const Actions = {
@@ -369,7 +381,7 @@ export const editUserData = (dispatch, data, uid, domain) => {
   delete newData.password;
   delete newData.email;
   delete newData.domain;
-  myUserData(uid, domain)
+  return myUserData(uid, domain)
     .set(newData)
     .then(() => successAction("User data updated successfully", dispatch))
     .catch((error) => alertFirestoreError(dispatch, error));
@@ -377,9 +389,16 @@ export const editUserData = (dispatch, data, uid, domain) => {
 
 const createUserDomain = async (domain, uid, dispatch) => {
   try {
+    await firestore.runTransaction(async (t) => {
+      const docRef = firestore.collection("userDomains").doc(uid);
+      const doc = await t.get(docRef);
+      const domains = doc.data().domains || [doc.data().domain] || [];
+      const newDomains = [...domains, domain];
+      t.update(docRef, { domains: newDomains });
+    })
     await firestore.collection("userDomains").doc(uid).set({ domain });
   } catch (e) {
-    await deleteFailedUser(uid);
+    await deleteFailedUser(uid, domain);
     alertFirestoreError(dispatch, e);
     logOut(dispatch);
   }
@@ -397,18 +416,36 @@ const createUserDomain = async (domain, uid, dispatch) => {
  * @param {Object}   data     Profile information to push to Firebase.
  * @param {string}   domain   Domain key for user's domain.
  */
-export const createUser = (dispatch, email, password, data, domain) => {
-  dispatch(startLoading());
-  auth().createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      createUserDomain(domain, userCredential.user.uid, dispatch)
-        .then(() => editUserData(dispatch, data, userCredential.user.uid, domain))
-        .catch((error) => alertFirestoreError(dispatch, error))
-    }).catch((error) => {
-      alertAuthError(dispatch, error);
+export const createUser = async (dispatch, email, password, data, domain) => {
+  const getUserUid = async () => {
+    const existingUid = await getUser(email);
+    try {
+      if (existingUid) {
+        const domainData = (await firestore.collection("userDomains").doc(existingUid).get()).data();
+        const domains = domainData.domains || [domainData.domain] || [];
+        if (domains.includes(domain)) {
+          alertAuthError(dispatch, { code: "auth/email-already-in-use" });
+        }
+        await auth().signInWithEmailAndPassword(email, password);
+        return existingUid;
+      } else {
+        return await auth().createUserWithEmailAndPassword;
+      }
+    } catch (e) {
+      alertAuthError(dispatch, e);
       logOut(dispatch);
-      dispatch(stopLoading());
-    });
+    }
+  }
+
+  dispatch(startLoading());
+  let uid = await getUserUid();
+  if (!uid) return;
+  try {
+    await createUserDomain(domain, uid, dispatch);
+    await editUserData(dispatch, data, uid, domain);
+  } catch (e) {
+    alertFirestoreError(dispatch, e);
+  }
 }
 
 /**
@@ -470,34 +507,52 @@ export const setInfoMessage = (message) => ({
  */
 export const updateOrders = (querySnapshot, orderSchedule, lunchSchedule) => {
   const collectionData = {};
+  const cutoffDate = getCutoffDate(orderSchedule);
   querySnapshot.forEach((doc) => {
     let data = { ...doc.data(), key: doc.id };
     delete data.uid;
-    collectionData[doc.id] = data;
+    if (parseISO(data.date).isSameOrAfter(cutoffDate)) {
+      collectionData[doc.id] = data;
+    }
   })
   let orders = {};
   if (orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM && Object.keys(collectionData).length > 0) {
     let dates = querySnapshot.docs.map((doc) => moment(doc.data().date));
-    let scheduleGroups = getScheduleGroups(
+    const availableScheduleGroups = getValidOrderDates(
+      collectionData,
+      null,
+      orderSchedule,
+      lunchSchedule,
+      moment().format(ISO_FORMAT),
+      moment.max(dates).format(ISO_FORMAT)
+    );
+    const allScheduleGroups = getScheduleGroups(
       getLunchSchedule(
         orderSchedule,
         lunchSchedule,
         moment().format(ISO_FORMAT),
-        moment.max(dates).format(ISO_FORMAT),
-        true
+        moment.max(dates).format(ISO_FORMAT)
       ),
       lunchSchedule.schedule
     );
-    scheduleGroups.forEach((group, i) => {
-      const key = i - 1;
-      const relevantKeys = Object.keys(collectionData).filter((key) => group.includes(collectionData[key].date));
-      if (relevantKeys.length > 0) {
-        orders[key] = { date: group, key, keys: relevantKeys };
-        for (const id of relevantKeys) {
-          orders[key] = {
-            ...orders[key],
-            [collectionData[id].date]: collectionData[id]
-          };
+    let includesCutoff = availableScheduleGroups.length > 0 &&
+      !isBeforeCutoff(availableScheduleGroups[0], orderSchedule, lunchSchedule);
+    const collectionDataKeys = Object.keys(collectionData);
+    let index = includesCutoff ? -1 : 0;
+    allScheduleGroups.forEach((group, i) => {
+      // No orders will be on this day if it exists in availableScheduleGroups
+      if (availableScheduleGroups.some((availableGroup) => availableGroup[0] === group[0])) {
+        index++;
+      } else {
+        const relevantKeys = collectionDataKeys.filter((key) => group.includes(collectionData[key].date));
+        if (relevantKeys.length > 0) {
+          orders[i] = { date: group, key: i, index, keys: relevantKeys };
+          for (const id of relevantKeys) {
+            orders[i] = {
+              ...orders[i],
+              [collectionData[id].date]: collectionData[id]
+            };
+          }
         }
       }
     });
@@ -671,7 +726,9 @@ export const getUserDomain = async (uid, dispatch) => {
     logOut(dispatch);
     throw new Error("User did not have a domain");
   }
-  let domainId = myDomainDoc.data().domain;
+  let domainData = myDomainDoc.data();
+  // TODO: Allow user to select which domain they want to use
+  let domainId = domainData.domains ? domainData.domains[0] : domainData.domain;
   let domainDoc = await firestore.collection("domains").doc(domainId).get();
   dispatch(setDomain({ id: domainId, ...domainDoc.data() }));
   dispatch(stopLoading());
@@ -771,14 +828,19 @@ const getDynamicOrderOptions = async (domain) => {
 
 const getStateConstants = async (domain) => {
   let querySnapshot = await myAppData(domain).get();
-  let constants = {};
+  let constants = {
+    userFields: [],
+    orderOptions: {},
+    lunchSchedule: {},
+    orderSchedule: {}
+  };
   for (const doc of querySnapshot.docs) {
     switch (doc.id) {
       case "userFields":
         constants[doc.id] = Object.values(doc.data() || {});
         break;
       case "orderOptions":
-        const data = doc.data();
+        const data = doc.data() || {};
         if (data.dynamic) {
           constants[doc.id] = await getDynamicOrderOptions(domain);
         } else {
@@ -787,11 +849,14 @@ const getStateConstants = async (domain) => {
         break;
       case "lunchSchedule":
       case "orderSchedule":
-        constants[doc.id] = doc.data();
+        constants[doc.id] = doc.data() || {};
         break;
       default:
         break;
     }
+  }
+  if (constants.lunchSchedule.dependent) {
+
   }
   return constants;
 }

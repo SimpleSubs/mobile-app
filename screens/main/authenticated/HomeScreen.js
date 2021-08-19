@@ -7,8 +7,7 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
-  SectionList
+  FlatList
 } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +21,7 @@ import { connect } from "react-redux";
 import Alert from "../../../constants/Alert";
 import reportToSentry from "../../../constants/Sentry";
 import { toReadable, toSimple, parseISO } from "../../../constants/Date";
-import { OrderScheduleTypes } from "../../../constants/Schedule";
+import {getUserLunchSchedule, OrderScheduleTypes} from "../../../constants/Schedule";
 
 const STORAGE_KEY = "@order_options";
 
@@ -94,8 +93,9 @@ const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule
   };
 
   // Opens the order screen to edit an order.
-  const focusOrderNavigate = (id, hasTitle) => {
-    if (id < 0) {
+  const focusOrderNavigate = (id, hasTitle, index) => {
+    if (index && index < 0) {
+      Alert("Cannot edit order", "It is too late to edit this order.");
       return;
     }
     focusOrder(id);
@@ -139,13 +139,13 @@ const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule
       <FlatList
         ListEmptyComponent={() => <Text style={styles.emptyText}>No orders to display</Text>}
         data={orders}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(_, index) => index.toString()}
         renderItem={({ item }) =>
           <Card
             title={item.title}
             date={item.date}
             data={item.data}
-            onPress={() => focusOrderNavigate(item.key, !!item.title)}
+            onPress={() => focusOrderNavigate(item.key, !!item.title, item.index)}
             onDelete={() => deleteOrder(item.keys || item.key, domain)}
             {...item}
           />
@@ -176,10 +176,11 @@ const getOrdersArr = (orders, dynamicSchedule) => {
   }
   return Object.values(orders)
     .sort((orderA, orderB) => parseISO(orderA.date[0]).diff(orderB.date[0]))
-    .map(({ date, key, keys, ...orderGroups }) => ({
+    .map(({ date, key, keys, index, ...orderGroups }) => ({
       date: `${toSimple(date[0])} to ${toSimple(date[date.length - 1])}`,
       key,
       keys,
+      index,
       data: Object.values(orderGroups)
         .sort((orderA, orderB) => parseISO(orderA.date).diff(orderB.date))
         .map((order) => ({ ...order, date: toReadable(order.date) }))
@@ -191,7 +192,7 @@ const mapStateToProps = ({ orders, orderPresets, stateConstants, user, domain })
   orderPresets,
   dynamicMenu: stateConstants.orderOptions.dynamic,
   orderSchedule: stateConstants.orderSchedule,
-  lunchSchedule: stateConstants.lunchSchedule,
+  lunchSchedule: getUserLunchSchedule(stateConstants.lunchSchedule, user),
   uid: user?.uid,
   domain: domain.id
 });

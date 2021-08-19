@@ -108,7 +108,7 @@ const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
       swipeableRef.current.close();
     }
     onPress();
-  }
+  };
 
   const CardSection = ({ title, date, ingredients }) => (
     <>
@@ -116,7 +116,7 @@ const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
       {title && <Text style={styles.title}>{title}</Text>}
       <Text style={styles.ingredients} numberOfLines={title ? 1 : 2}>{getIngredientStr(ingredients)}</Text>
     </>
-  )
+  );
 
   return (
     <Swipeable

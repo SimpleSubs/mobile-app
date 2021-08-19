@@ -22,7 +22,7 @@ import { InputTypes } from "../../constants/Inputs";
 import { connect } from "react-redux";
 import alert from "../../constants/Alert";
 import { DynamicOrderOptions, getDateOptions } from "../../constants/DataActions";
-import {OrderScheduleTypes} from "../../constants/Schedule";
+import {getUserLunchSchedule, OrderScheduleTypes} from "../../constants/Schedule";
 import { DateField } from "../../constants/RequiredFields";
 
 /**
@@ -38,7 +38,10 @@ import { DateField } from "../../constants/RequiredFields";
  */
 const getDefault = (focusedOrder, orderOptions) => {
   if (focusedOrder) {
-    return focusedOrder;
+    return {
+      ...focusedOrder,
+      date: focusedOrder.index || focusedOrder.date
+    };
   }
   let newState = {};
   for (let option of orderOptions) {
@@ -62,7 +65,7 @@ const getDefault = (focusedOrder, orderOptions) => {
  *
  * @return {{keys?: string[]|string[][], values: string[], useIndexValue: boolean}} Options to render in picker/checkboxes.
  */
-const getDynamicOptions = (options, orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule) => {
+const getStaticOptions = (options, orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule) => {
   switch (options) {
     case DynamicOrderOptions.DATE_OPTIONS:
       return getDateOptions(orders, focusedOrder, lunchSchedule, orderSchedule);
@@ -74,6 +77,28 @@ const getDynamicOptions = (options, orders, focusedOrder, orderPresets, lunchSch
       };
     default:
       return { values: options, useIndexValue: false };
+  }
+};
+
+const getDynamicOptions = (dynamicOptions, options, orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule) => {
+  if (dynamicOptions) {
+    return {
+      options: dynamicOptions.map((option) => option ? {
+        values: Object.values(option),
+        useIndexValue: false
+      } : { // If the day is empty (should NEVER happen), return an array of no options
+        values: [],
+        useIndexValue: false
+      }),
+      // Indicates whether the options will be one array (false), or a 7-element array each containing options for a
+      // day of the week (true)
+      dynamicDay: true
+    };
+  } else {
+    return {
+      options: getStaticOptions(options, orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule),
+      dynamicDay: false
+    };
   }
 }
 
@@ -94,26 +119,33 @@ const isDynamic = (orderSchedule) => orderSchedule.scheduleType === OrderSchedul
  * @return {string[]} Array containing titles of invalid inputs
  */
 const validateState = (state, orderOptions, hasDynamicSchedule) => {
-  const validateFields = (subState, checkDate = true, checkOnlyDate = false, stateName = null) => {
+  const validateFields = (subState, checkDate = true, checkOnlyDate = false, stateName = null, dateIndex = null) => {
     const invalidInputs = [];
     const finalStateName =  stateName ? ` (${stateName})` : "";
-    for (const option of orderOptions) {
-      if ((!checkDate && option.key === "date") || (checkOnlyDate && option.key !== "date") || !option.required) {
+    for (const orderOption of orderOptions) {
+      if (
+        (!checkDate && orderOption.key === "date") ||
+        (checkOnlyDate && orderOption.key !== "date") ||
+        !orderOption.required
+      ) {
         continue;
       }
-      switch (option.type) {
+      switch (orderOption.type) {
         case InputTypes.CHECKBOX:
         case InputTypes.TEXT_INPUT:
-          if (subState[option.key].length === 0) {
-            invalidInputs.push(option.title + finalStateName);
+          if (subState[orderOption.key].length === 0) {
+            invalidInputs.push(orderOption.title + finalStateName);
           }
           break;
         case InputTypes.PICKER:
+          const options = orderOption.dynamicDay && dateIndex ? orderOption.options[dateIndex] : orderOption.options;
+          const indexIsValid = typeof subState[orderOption.key] === "number" && subState[orderOption.key] >= 0;
+          const nonIndexIsValid = options.values.includes(subState[orderOption.key]);
           if (
-            (option.options.useIndexValue && (typeof subState[option.key] !== "number" || subState[option.key] >= 0)) ||
-            (!option.options.useIndexValue && !option.options.values.includes(subState[option.key]))
+            (orderOption.options.useIndexValue && !indexIsValid) ||
+            (!orderOption.options.useIndexValue && !nonIndexIsValid)
           ) {
-            invalidInputs.push(option.title + finalStateName);
+            invalidInputs.push(orderOption.title + finalStateName);
           }
           break;
         default:
@@ -132,7 +164,10 @@ const validateState = (state, orderOptions, hasDynamicSchedule) => {
     for (const key of Object.keys(state)) {
       // If key isn't date field, then it is a date mapping to order substate
       if (key !== "date") {
-        invalidInputs = [...invalidInputs, ...validateFields(state[key], false, false, toSimple(key))]
+        invalidInputs = [
+          ...invalidInputs,
+          ...validateFields(state[key], false, false, toSimple(key), parseISO(key).day())
+        ];
       }
     }
     return invalidInputs;
@@ -263,24 +298,31 @@ const DeleteButton = ({ onPress, message }) => (
 );
 
 const getDynamicOrderOptions = (orderOptions, orderSchedule, orders, focusedData, orderPresets, lunchSchedule, state) => {
-  if (!orderOptions.requireDate) {
-    return orderOptions.orderOptions.map((orderOption) => ({
+  const optionsWithDynamic = (orderOptions) => (
+    orderOptions.map(({ dynamicOptions, ...orderOption }) => ({
       ...orderOption,
-      options: getDynamicOptions(orderOption.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
-    }));
+      ...getDynamicOptions(
+        dynamicOptions,
+        orderOption.options,
+        orders, focusedData,
+        orderPresets,
+        lunchSchedule,
+        orderSchedule
+      )
+    }))
+  );
+  if (!orderOptions.requireDate) {
+    return optionsWithDynamic(orderOptions.orderOptions, false);
   }
   const dateField = {
     ...DateField,
-    options: getDynamicOptions(DateField.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
+    options: getDateOptions(orders, focusedData, lunchSchedule, orderSchedule),
   };
   if (!isDynamic(orderSchedule)) {
     return [
       dateField,
-      ...orderOptions.orderOptions.map((orderOption) => ({
-        ...orderOption,
-        options: getDynamicOptions(orderOption.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
-      }))
-    ]
+      ...optionsWithDynamic(orderOptions.orderOptions, false)
+    ];
   }
   if ((!state.date && state.date !== 0) || typeof state.date !== "number") {
     return [dateField];
@@ -300,10 +342,7 @@ const getDynamicOrderOptions = (orderOptions, orderSchedule, orders, focusedData
   }
   return [
     dateField,
-    ...optionsToMap.map((orderOption) => ({
-      ...orderOption,
-      options: getDynamicOptions(orderOption.options, orders, focusedData, orderPresets, lunchSchedule, orderSchedule)
-    }))
+    ...optionsWithDynamic(optionsToMap)
   ];
 }
 
@@ -326,6 +365,7 @@ const getDisplayOrderFields = (orderOptions, orderSchedule, focusedData, state, 
       { data: [dateField], isNested: false },
       ...selectedDateGroup.map((date) => ({
         key: date,
+        dateIndex: parseISO(date).day(),
         title: toReadable(date),
         data: orderOptions,
         isNested: true
@@ -396,13 +436,21 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
       let presetKey = Object.keys(orderPresets).filter((id) => orderPresets[id].title === state.preset);
       newState = { ...orderPresets[presetKey], date: state.date };
     } else {
-      newState = resetPickerVals(state, dynamicOptions);
+      // Filter out possible "empty" order dates (such as if a date did not have any possible options)
+      const stateKeysWithContent = Object.keys(state).filter((key) =>
+        key !== "date" && Object.keys(state[key]).length > 0
+      );
+      let stateWithContent = {}
+      stateKeysWithContent.forEach((key) => stateWithContent[key] = state[key]);
+      newState = resetPickerVals(stateWithContent, dynamicOptions);
     }
     // Pushes to existing doc if editing, otherwise creates new doc
-    if (focusedData) {
-      editExisting(newState, focusedData.keys || [focusedData.key], uid, domain, hasDynamicSchedule);
-    } else {
-      createNew(newState, uid, domain, hasDynamicSchedule);
+    if (Object.keys(newState).length > 0) {
+      if (focusedData) {
+        editExisting(newState, focusedData.keys || [focusedData.key], uid, domain, hasDynamicSchedule);
+      } else {
+        createNew(newState, uid, domain, hasDynamicSchedule);
+      }
     }
     cancel();
   };
@@ -467,6 +515,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
         renderItem={({ item, section }) => (
           <OrderField
             {...item}
+            options={item.options && item.dynamicDay ? item.options[section.dateIndex] : item.options}
             focusedOrder={focusedData}
             value={section.isNested ? state[section.key][item.key] : state[item.key]}
             setValue={(value) => {
@@ -479,9 +528,9 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
           />
         )}
         stickySectionHeadersEnabled={false}
-        renderSectionHeader={({ section: { title, isNested }}) => (
-          isNested ?
-            <Text style={styles.sectionHeader}>{title}</Text> :
+        renderSectionHeader={({ section }) => (
+          section.isNested && section.data.length > 0 ?
+            <Text style={styles.sectionHeader}>{section.title}</Text> :
             null
         )}
       />
@@ -494,7 +543,7 @@ const mapStateToProps = ({ stateConstants, orderPresets, user, domain, orders })
   uid: user.uid,
   domain: domain.id,
   orders,
-  lunchSchedule: stateConstants.lunchSchedule,
+  lunchSchedule: getUserLunchSchedule(stateConstants.lunchSchedule, user),
   orderSchedule: stateConstants.orderSchedule
 });
 
