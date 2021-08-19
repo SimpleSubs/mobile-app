@@ -1,5 +1,5 @@
 import moment from "moment";
-import { ISO_FORMAT, parseISO } from "./Date";
+import {ISO_FORMAT, parseISO, toReadable} from "./Date";
 
 export const OrderScheduleTypes = {
   DAY_OF: "DAY_OF",
@@ -25,6 +25,38 @@ const getDateRange = (start, length, step = 1, exclude = []) => (
     .filter((date) => !exclude.includes(date.day()))
     .map((date) => date.format(ISO_FORMAT))
 );
+
+export const getCutoffDate = (orderSchedule) => {
+  let cutoffTime = orderSchedule.defaultTime;
+  let todayMoment = moment();
+  switch (orderSchedule.scheduleType) {
+    case OrderScheduleTypes.DAY_OF:
+      if (todayMoment.isBefore(moment(cutoffTime), "minute")) {
+        todayMoment.subtract(1, "day");
+      }
+      return todayMoment.format(ISO_FORMAT);
+    case OrderScheduleTypes.DAY_BEFORE:
+      if (todayMoment.isSameOrAfter(moment(cutoffTime), "minute")) {
+        todayMoment.add(1, "day");
+      }
+      return todayMoment.format(ISO_FORMAT);
+    case OrderScheduleTypes.CUSTOM:
+      const today = orderSchedule.schedule[moment().day()];
+      if (today !== "default") {
+        cutoffTime = today;
+      }
+      if (!cutoffTime) {
+        return getPrevScheduledDate(orderSchedule.schedule, orderSchedule.defaultTime, moment().format(ISO_FORMAT));
+      } else {
+        if (todayMoment.isBefore(moment(cutoffTime), "minute")) {
+          todayMoment.subtract(1, "day");
+        }
+        return todayMoment.format(ISO_FORMAT);
+      }
+    default:
+      return todayMoment.format(ISO_FORMAT);
+  }
+}
 
 /**
  * Gets the next available (non-null) date in schedule following the provided date.
@@ -98,9 +130,9 @@ const getPrevScheduledDate = (schedule, defaultTime = { hours: 23, minutes: 59 }
  *
  * @return {string[]} Array containing order dates in ISO format for the following two weeks.
  */
-const getCustomOrderSchedule = (defaultTime, schedule, start, end, includeCurrent) => {
+const getCustomOrderSchedule = (defaultTime, schedule, start, end) => {
   let orderCutoffs = [];
-  let currentDate = includeCurrent ? parseISO(getPrevScheduledDate(schedule, defaultTime, start)) : parseISO(start);
+  let currentDate = parseISO(getPrevScheduledDate(schedule, defaultTime, start));
   while (currentDate.isSameOrBefore(end, "day")) {
     let nextDate = getNextScheduledDate(schedule, defaultTime, currentDate.format(ISO_FORMAT));
     orderCutoffs.push(nextDate);
@@ -126,7 +158,7 @@ const getCustomOrderSchedule = (defaultTime, schedule, start, end, includeCurren
  *
  * @return {string[]} Array containing ISO dates for possible lunch order dates within the next two weeks.
  */
-export const getLunchSchedule = (orderSchedule, lunchSchedule, start = moment().format(ISO_FORMAT), end = moment().add(14, "days").format(ISO_FORMAT), includeCurrent = false) => {
+export const getLunchSchedule = (orderSchedule, lunchSchedule, start = moment().format(ISO_FORMAT), end = moment().add(14, "days").format(ISO_FORMAT)) => {
   let lunchDays = [];
   let beforeCutoff = moment().isBefore(orderSchedule.defaultTime, "minute");
   let excludedLunchDates = lunchSchedule.schedule.map((_, i) => i).filter((i) => !lunchSchedule.schedule[i]);
@@ -134,21 +166,15 @@ export const getLunchSchedule = (orderSchedule, lunchSchedule, start = moment().
     case OrderScheduleTypes.DAY_OF:
     case OrderScheduleTypes.DAY_BEFORE:
       let rangeStart = parseISO(start);
-      if (includeCurrent) {
+      if (beforeCutoff && orderSchedule.scheduleType === OrderScheduleTypes.DAY_OF) {
         rangeStart.subtract(1, "days");
-      }
-      if (
-        (!beforeCutoff && orderSchedule.scheduleType === OrderScheduleTypes.DAY_OF) ||
-        (beforeCutoff && orderSchedule.scheduleType === OrderScheduleTypes.DAY_BEFORE)
-      ) {
-        rangeStart.add(1, "days");
       } else if (orderSchedule.scheduleType === OrderScheduleTypes.DAY_BEFORE) {
         rangeStart.add(2, "days");
       }
       lunchDays = getDateRange(rangeStart, parseISO(end).diff(start, "days"), 1, excludedLunchDates);
       break;
     case OrderScheduleTypes.CUSTOM:
-      let orderDays = getCustomOrderSchedule(orderSchedule.defaultTime, orderSchedule.schedule, start, end, includeCurrent);
+      let orderDays = getCustomOrderSchedule(orderSchedule.defaultTime, orderSchedule.schedule, start, end);
       orderDays.forEach((date, i) => {
         const nextLunchDate = getNextScheduledDate(lunchSchedule.schedule, { hours: 11, minutes: 59 }, date);
         if (i === 0 || lunchDays[i - 1] !== nextLunchDate) {
@@ -186,4 +212,79 @@ export const getScheduleGroups = (dates, schedule) => {
   return scheduleGroups;
 };
 
-// export const getDateIndex = (date, orderSchedule, lunchSc)
+export const getValidOrderDates = (orders, focusedIndex, orderSchedule, lunchSchedule, start = moment().format(ISO_FORMAT), end = moment().add(14, "days").format(ISO_FORMAT)) => {
+  const allOptions = getLunchSchedule(orderSchedule, lunchSchedule, start, end);
+  let orderDates = Object.values(orders).map(({ date }) => date);
+  switch (orderSchedule.scheduleType) {
+    case OrderScheduleTypes.CUSTOM:
+      const optionGroups = getScheduleGroups(allOptions, lunchSchedule.schedule);
+      if (Array.isArray(orderDates[0])) {
+        orderDates = orderDates.reduce((prev, current) => [...prev, ...current], []);
+      }
+      // Exclude option groups where order dates includes a date within the group and that order is not currently focused
+      return optionGroups.filter((group, i) => (
+        !group.some((date) => orderDates.includes(date)) || focusedIndex === i - 1
+      ));
+    case OrderScheduleTypes.DAY_OF:
+    case OrderScheduleTypes.DAY_BEFORE:
+      return allOptions.filter((date) => !orderDates.includes(date) || focusedIndex === toReadable(date));
+    default:
+      return [];
+  }
+};
+
+export const isBeforeCutoff = (date, orderSchedule, lunchSchedule) => {
+  let cutoffMoment = moment(orderSchedule.defaultTime);
+  let dateMoment;
+  switch (orderSchedule.scheduleType) {
+    case OrderScheduleTypes.CUSTOM:
+      dateMoment = parseISO(date[0]);
+      let cutoffTime = orderSchedule.schedule[dateMoment.day()];
+      let printTime = lunchSchedule.schedule[dateMoment.day()];
+      let nextOrderDay = getNextScheduledDate(orderSchedule.schedule, orderSchedule.defaultTime);
+
+      if (cutoffTime === "default") {
+        cutoffTime = orderSchedule.defaultTime;
+      } else if (!cutoffTime) {
+        cutoffTime = { hours: 0, minutes: 0 };
+      }
+      if (printTime === "default") {
+        printTime = lunchSchedule.defaultTime;
+      } else if (!printTime) {
+        printTime = { hours: 11, minutes: 59 };
+      }
+
+      return dateMoment.isAfter(nextOrderDay, "day") || (
+        dateMoment.isSame(nextOrderDay, "day") &&
+        moment(cutoffTime).isBefore(moment(printTime), "minutes")
+      );
+    case OrderScheduleTypes.DAY_OF:
+      dateMoment = parseISO(date);
+      return dateMoment.isBefore(cutoffMoment, "minutes");
+    case OrderScheduleTypes.DAY_BEFORE:
+      dateMoment = parseISO(date);
+      cutoffMoment.subtract(1, "day");
+      return dateMoment.isBefore(cutoffMoment, "minutes");
+    default:
+      return true;
+  }
+}
+
+export const getUserLunchSchedule = (lunchSchedule, userData) => {
+  const userSchedule = lunchSchedule.schedule.map((daySchedule) => {
+    if (!daySchedule) {
+      return null;
+      // if validFields is null, then all fields apply
+    } else if (!lunchSchedule.dependent || !userData[lunchSchedule.dependent] || !daySchedule.validFields) {
+      return daySchedule.time;
+    } else if (daySchedule.validFields.includes(userData[lunchSchedule.dependent])) {
+      return daySchedule.time;
+    } else {
+      return null;
+    }
+  });
+  return {
+    ...lunchSchedule,
+    schedule: userSchedule
+  };
+}

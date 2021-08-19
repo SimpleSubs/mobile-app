@@ -35,7 +35,8 @@ const executeFunction = async (name, data = {}) => {
   }
 };
 
-export const deleteFailedUser = (uid) => executeFunction("deleteFailedUser", { uid });
+export const deleteFailedUser = (uid, domain) => executeFunction("deleteFailedUser", { uid, domain });
+export const getUser = (email) => executeFunction("getUser", { email });
 
 /**
  * Gets an error message for Firebase authentication.
