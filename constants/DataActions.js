@@ -6,7 +6,7 @@ import { ISO_FORMAT, toReadable, toISO, toSimple } from "./Date";
 import inputModalProps from "../components/modals/InputModal";
 import { InputTypes, TextTypes } from "./Inputs";
 import moment from "moment";
-import { getLunchSchedule, getScheduleGroups, OrderScheduleTypes } from "./Schedule";
+import {getLunchSchedule, getScheduleGroups, getValidOrderDates, isBeforeCutoff, OrderScheduleTypes} from "./Schedule";
 
 // Options for dynamic order actions (on order screen)
 export const DynamicOrderOptions = {
@@ -62,34 +62,29 @@ const isSchoolDay = (date, schedule) => {
  * @return {{keys?: string[][], values: string[], useIndexValue: boolean}} Options to render dates for order.
  */
 export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedule) => {
-  const allOptions = getLunchSchedule(orderSchedule, lunchSchedule);
-  if (orderSchedule.scheduleType !== OrderScheduleTypes.CUSTOM) {
-    const orderDates = Object.values(orders).map(({ date }) => date);
-    return {
-      // Exclude dates included in order dates and that order is not currently focused
-      values: allOptions.filter((date) => (
-        !orderDates.includes(date) || focusedOrder?.date === toReadable(date)
-      )).map((date) => toReadable(date)),
-      useIndexValue: false
-    };
+  const options = getValidOrderDates(orders, focusedOrder?.index, orderSchedule, lunchSchedule);
+  if (options.length > 0 && !isBeforeCutoff(options[0], orderSchedule, lunchSchedule)) {
+    options.shift();
   }
-  const optionGroups = getScheduleGroups(allOptions, lunchSchedule.schedule);
-  const orderDates = Object.values(orders).map(({ date }) => date).reduce((prev, current) => [...prev, ...current], []);
-  let focusedDate = focusedOrder?.date;
-  let isStringDate = typeof focusedDate === "string";
-  // Exclude option groups where order dates includes a date within the group and that order is not currently focused
-  const filteredOptionGroups = optionGroups.filter((group, i) => (
-    !group.some((date) => orderDates.includes(date)) ||
-    (isStringDate ? focusedDate === group[0] : focusedDate === i)
-  ));
-  // TODO fixme this is a SUPER janky solution
-  if (isStringDate) {
-    focusedOrder.date = filteredOptionGroups.findIndex((group) => group[0] === focusedDate);
+  switch (orderSchedule.scheduleType) {
+    case OrderScheduleTypes.DAY_OF:
+    case OrderScheduleTypes.DAY_BEFORE:
+      return {
+        values: options.map((date) => toReadable(date)),
+        useIndexValue: false
+      };
+    case OrderScheduleTypes.CUSTOM:
+      return {
+        keys: options,
+        values: options.map((group) => `${toSimple(group[0])} to ${toSimple(group[group.length - 1])}`),
+        useIndexValue: true
+      };
+    default:
+      return {
+        values: options,
+        useIndexValue: false
+      }
   }
-  const groupNames = filteredOptionGroups.map((group) => (
-    `${toSimple(group[0])} to ${toSimple(group[group.length - 1])}`
-  ));
-  return { keys: filteredOptionGroups, values: groupNames, useIndexValue: true };
 }
 
 /**
