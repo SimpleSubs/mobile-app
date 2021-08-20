@@ -389,12 +389,15 @@ export const editUserData = (dispatch, data, uid, domain) => {
 
 const createUserDomain = async (domain, uid, dispatch) => {
   try {
+    const docRef = firestore.collection("userDomains").doc(uid);
     await firestore.runTransaction(async (t) => {
-      const docRef = firestore.collection("userDomains").doc(uid);
       const doc = await t.get(docRef);
-      const domains = doc.data().domains || [doc.data().domain] || [];
+      let domains = [];
+      if (doc.exists) {
+        domains = doc.data().domains || [doc.data().domain] || [];
+      }
       const newDomains = [...domains, domain];
-      t.update(docRef, { domains: newDomains });
+      t.set(docRef, { domains: newDomains });
     })
     await firestore.collection("userDomains").doc(uid).set({ domain });
   } catch (e) {
@@ -417,34 +420,49 @@ const createUserDomain = async (domain, uid, dispatch) => {
  * @param {string}   domain   Domain key for user's domain.
  */
 export const createUser = async (dispatch, email, password, data, domain) => {
-  const getUserUid = async () => {
-    const existingUid = await getUser(email);
-    try {
-      if (existingUid) {
-        const domainData = (await firestore.collection("userDomains").doc(existingUid).get()).data();
-        const domains = domainData.domains || [domainData.domain] || [];
-        if (domains.includes(domain)) {
-          alertAuthError(dispatch, { code: "auth/email-already-in-use" });
-        }
-        await auth().signInWithEmailAndPassword(email, password);
-        return existingUid;
-      } else {
-        return await auth().createUserWithEmailAndPassword;
-      }
-    } catch (e) {
-      alertAuthError(dispatch, e);
-      logOut(dispatch);
-    }
-  }
-
   dispatch(startLoading());
-  let uid = await getUserUid();
-  if (!uid) return;
-  try {
-    await createUserDomain(domain, uid, dispatch);
-    await editUserData(dispatch, data, uid, domain);
-  } catch (e) {
+  let uid;
+  const catchFirestoreError = (e) => {
+    deleteFailedUser(uid, domain);
     alertFirestoreError(dispatch, e);
+    logOut(dispatch);
+  }
+  try {
+    const existingUid = await getUser(email);
+    if (existingUid) {
+      uid = existingUid;
+      const docRef = firestore.collection("userDomains").doc(existingUid);
+      try {
+        await firestore.runTransaction(async (t) => {
+          const doc = await t.get(docRef);
+          let domains = [];
+          if (doc.exists) {
+            domains = doc.data().domains || [doc.data().domain] || [];
+          }
+          if (domains.includes(domain)) {
+            throw { code: "auth/email-already-in-use" };
+          } else {
+            const newDomains = [...domains, domain];
+            t.set(docRef, { domains: newDomains });
+          }
+        })
+        await editUserData(dispatch, data, uid, domain);
+      } catch (e) {
+        catchFirestoreError(e)
+      }
+      await auth().signInWithEmailAndPassword(email, password);
+    } else {
+      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      uid = userCredential.user.uid;
+      await Promise.all([
+        firestore.collection("userDomains").doc(uid)
+          .set({ domains: [domain] }),
+        editUserData(dispatch, data, uid, domain)
+      ]).catch(catchFirestoreError)
+    }
+  } catch (e) {
+    alertAuthError(dispatch, e);
+    logOut(dispatch);
   }
 }
 
@@ -721,12 +739,12 @@ const setDomain = (domain) => ({
 export const getUserDomain = async (uid, dispatch) => {
   dispatch(startLoading());
   let myDomainDoc = await firestore.collection("userDomains").doc(uid).get();
-  if (!myDomainDoc.exists || !myDomainDoc.data().domain) {
+  const domainData = myDomainDoc.data();
+  if (!myDomainDoc.exists || (!domainData.domains && !domainData.domain)) {
     await deleteFailedUser(uid);
     logOut(dispatch);
     throw new Error("User did not have a domain");
   }
-  let domainData = myDomainDoc.data();
   // TODO: Allow user to select which domain they want to use
   let domainId = domainData.domains ? domainData.domains[0] : domainData.domain;
   let domainDoc = await firestore.collection("domains").doc(domainId).get();

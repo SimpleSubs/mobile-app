@@ -270,7 +270,7 @@ export const isBeforeCutoff = (date, orderSchedule, lunchSchedule) => {
   }
 }
 
-export const getUserLunchSchedule = (lunchSchedule, userData) => {
+export const getUserLunchSchedule = (lunchSchedule, userData = {}) => {
   const userSchedule = lunchSchedule.schedule.map((daySchedule) => {
     if (!daySchedule) {
       return null;
