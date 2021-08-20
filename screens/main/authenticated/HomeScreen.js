@@ -192,7 +192,7 @@ const mapStateToProps = ({ orders, orderPresets, stateConstants, user, domain })
   orderPresets,
   dynamicMenu: stateConstants.orderOptions.dynamic,
   orderSchedule: stateConstants.orderSchedule,
-  lunchSchedule: getUserLunchSchedule(stateConstants.lunchSchedule, user),
+  lunchSchedule: getUserLunchSchedule(stateConstants.lunchSchedule, user || {}),
   uid: user?.uid,
   domain: domain.id
 });
