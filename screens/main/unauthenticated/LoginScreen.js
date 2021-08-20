@@ -80,7 +80,7 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
         <View style={styles.header}>
           <Logo width={150} height={150} />
           <Text style={styles.title}>SimpleSubs</Text>
-          <Text style={styles.text}>An app for sandwich ordering at Lick-Wilmerding High School</Text>
+          <Text style={styles.text}>School lunches made easy</Text>
           <Text style={styles.text}>Built by Emily Sturman</Text>
           <Text style={styles.text}>Logo designed by Ronan Furuta</Text>
         </View>
