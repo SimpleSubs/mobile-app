@@ -431,15 +431,17 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
       return;
     }
     let newState;
+
     if (state.preset) {
       // Fills state with preset fields
       let presetKey = Object.keys(orderPresets).filter((id) => orderPresets[id].title === state.preset);
-      newState = { ...orderPresets[presetKey], date: state.date };
+      newState = {...orderPresets[presetKey], date: state.date};
     } else {
       // Filter out possible "empty" order dates (such as if a date did not have any possible options)
-      const stateKeysWithContent = Object.keys(state).filter((key) =>
-        key !== "date" && Object.keys(state[key]).length > 0
-      );
+      let stateKeysWithContent = Object.keys(state).filter((key) => Object.keys(state[key]).length > 0);
+      if (hasDynamicSchedule) {
+        stateKeysWithContent = stateKeysWithContent.filter((key) => key !== "date");
+      }
       let stateWithContent = {}
       stateKeysWithContent.forEach((key) => stateWithContent[key] = state[key]);
       newState = resetPickerVals(stateWithContent, dynamicOptions);
