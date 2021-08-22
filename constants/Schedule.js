@@ -223,7 +223,7 @@ export const getValidOrderDates = (orders, focusedIndex, orderSchedule, lunchSch
       }
       // Exclude option groups where order dates includes a date within the group and that order is not currently focused
       return optionGroups.filter((group, i) => (
-        !group.some((date) => orderDates.includes(date)) || focusedIndex === i - 1
+        !group.some((date) => orderDates.includes(date)) || focusedIndex === i
       ));
     case OrderScheduleTypes.DAY_OF:
     case OrderScheduleTypes.DAY_BEFORE:
