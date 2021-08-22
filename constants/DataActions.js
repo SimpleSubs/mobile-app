@@ -62,7 +62,12 @@ const isSchoolDay = (date, schedule) => {
  * @return {{keys?: string[][], values: string[], useIndexValue: boolean}} Options to render dates for order.
  */
 export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedule) => {
-  const options = getValidOrderDates(orders, focusedOrder?.index, orderSchedule, lunchSchedule);
+  const options = getValidOrderDates(
+    orders,
+    (focusedOrder?.index || focusedOrder?.index === 0) ? focusedOrder?.index : focusedOrder?.date,
+    orderSchedule,
+    lunchSchedule
+  );
   if (options.length > 0 && !isBeforeCutoff(options[0], orderSchedule, lunchSchedule)) {
     options.shift();
   }

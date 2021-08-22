@@ -40,7 +40,7 @@ const getDefault = (focusedOrder, orderOptions) => {
   if (focusedOrder) {
     return {
       ...focusedOrder,
-      date: focusedOrder.index || focusedOrder.date
+      date: (focusedOrder.index || focusedOrder.index === 0) ? focusedOrder.index : focusedOrder.date
     };
   }
   let newState = {};
@@ -304,7 +304,8 @@ const getDynamicOrderOptions = (orderOptions, orderSchedule, orders, focusedData
       ...getDynamicOptions(
         dynamicOptions,
         orderOption.options,
-        orders, focusedData,
+        orders,
+        focusedData,
         orderPresets,
         lunchSchedule,
         orderSchedule
