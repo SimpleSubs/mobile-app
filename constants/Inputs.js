@@ -28,7 +28,7 @@ export const InputTypes = {
  */
 export const valueIsValid = (userField, value) => {
   if (value === null || value === undefined) {
-    return false;
+    return !userField.required;
   }
   switch (userField.inputType) {
     case (InputTypes.TEXT_INPUT):
