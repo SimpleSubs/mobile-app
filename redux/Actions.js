@@ -177,9 +177,9 @@ export const editOrder = (dispatch, data, ids, uid, domain, dynamicSchedule) => 
       .map((date) => ({ ...data[date], date, uid }));
   }
   const batch = firestore.batch();
-  dataToPush.forEach((data, i) => {
-    const dataRef = allOrders(domain).doc(ids[i])
-    batch.set(dataRef, data)
+  dataToPush.forEach(({ key, ...data }, i) => {
+    const dataRef = allOrders(domain).doc(ids[i]);
+    batch.set(dataRef, data);
   });
   batch.commit()
     .then(() => successAction("Order updated successfully", dispatch))
