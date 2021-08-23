@@ -158,7 +158,7 @@ const getCustomOrderSchedule = (defaultTime, schedule, start, end) => {
  *
  * @return {string[]} Array containing ISO dates for possible lunch order dates within the next two weeks.
  */
-export const getLunchSchedule = (orderSchedule, lunchSchedule, start = moment().format(ISO_FORMAT), end = moment().add(14, "days").format(ISO_FORMAT)) => {
+export const getLunchSchedule = (orderSchedule, lunchSchedule, start, end) => {
   let lunchDays = [];
   let beforeCutoff = moment().isBefore(orderSchedule.defaultTime, "minute");
   let excludedLunchDates = lunchSchedule.schedule.map((_, i) => i).filter((i) => !lunchSchedule.schedule[i]);
@@ -169,7 +169,7 @@ export const getLunchSchedule = (orderSchedule, lunchSchedule, start = moment().
       if (beforeCutoff && orderSchedule.scheduleType === OrderScheduleTypes.DAY_OF) {
         rangeStart.subtract(1, "days");
       } else if (orderSchedule.scheduleType === OrderScheduleTypes.DAY_BEFORE) {
-        rangeStart.add(2, "days");
+        rangeStart.add(1, "days");
       }
       lunchDays = getDateRange(rangeStart, parseISO(end).diff(start, "days"), 1, excludedLunchDates);
       break;
