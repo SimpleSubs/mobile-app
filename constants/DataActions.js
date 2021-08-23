@@ -2,11 +2,11 @@
  * @file Manages various pre-set actions for user/order data (such as changing password, getting date options, etc.)
  * @author Emily Sturman <emily@sturman.org>
  */
-import { ISO_FORMAT, toReadable, toISO, toSimple } from "./Date";
+import {ISO_FORMAT, toReadable, toSimple} from "./Date";
 import inputModalProps from "../components/modals/InputModal";
 import { InputTypes, TextTypes } from "./Inputs";
+import { getValidOrderDates, isBeforeCutoff, OrderScheduleTypes } from "./Schedule";
 import moment from "moment";
-import {getLunchSchedule, getScheduleGroups, getValidOrderDates, isBeforeCutoff, OrderScheduleTypes} from "./Schedule";
 
 // Options for dynamic order actions (on order screen)
 export const DynamicOrderOptions = {
@@ -62,13 +62,20 @@ const isSchoolDay = (date, schedule) => {
  * @return {{keys?: string[][], values: string[], useIndexValue: boolean}} Options to render dates for order.
  */
 export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedule) => {
+  let end = orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM ? 21 : 14;
   const options = getValidOrderDates(
     orders,
     (focusedOrder?.index || focusedOrder?.index === 0) ? focusedOrder?.index : focusedOrder?.date,
     orderSchedule,
-    lunchSchedule
+    lunchSchedule,
+    moment().format(ISO_FORMAT),
+    moment().add(end, "days").format(ISO_FORMAT)
   );
-  if (options.length > 0 && !isBeforeCutoff(options[0], orderSchedule, lunchSchedule)) {
+  if (
+    orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM &&
+    options.length > 0 &&
+    !isBeforeCutoff(options[0], orderSchedule, lunchSchedule)
+  ) {
     options.shift();
   }
   switch (orderSchedule.scheduleType) {
