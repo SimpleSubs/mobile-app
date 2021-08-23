@@ -115,7 +115,7 @@ const ColumnLayout = ({ numColumns, items, ...props }) => {
  * @return {React.ReactElement} List of checkboxes.
  * @constructor
  */
-const Checkboxes = ({ selectedItems, itemsArr = [], setItems }) => (
+const Checkboxes = ({ selectedItems = [], itemsArr = [], setItems }) => (
   <View style={styles.container}>
     <ColumnLayout items={itemsArr} numColumns={2} selectedItems={selectedItems} setItems={setItems} />
   </View>

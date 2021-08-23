@@ -235,12 +235,14 @@ const isUniqueTitle = (title, prevTitle = "", orderPresets) => {
  *
  * @return {Object} State with reset picker values.
  */
-const resetPickerVals = (state, orderOptions) => {
+const resetOptionValues = (state, orderOptions) => {
   let newState = { ...state };
   for (let option of orderOptions) {
     if (option.type === InputTypes.PICKER && !option.dynamic && !option.required
       && !option.options.values.includes(state[option.key])) {
       newState[option.key] = "";
+    } else if (option.type === InputTypes.CHECKBOX && !newState[option.key]) {
+      newState[option.key] = [];
     }
   }
   return newState;
@@ -432,7 +434,6 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
       return;
     }
     let newState;
-
     if (state.preset) {
       // Fills state with preset fields
       let presetKey = Object.keys(orderPresets).filter((id) => orderPresets[id].title === state.preset);
@@ -445,7 +446,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
       }
       let stateWithContent = {}
       stateKeysWithContent.forEach((key) => stateWithContent[key] = state[key]);
-      newState = resetPickerVals(stateWithContent, dynamicOptions);
+      newState = resetOptionValues(stateWithContent, dynamicOptions);
     }
     // Pushes to existing doc if editing, otherwise creates new doc
     if (Object.keys(newState).length > 0) {
