@@ -825,7 +825,8 @@ export const getUnauthData = async (dispatch, code) => {
 };
 
 const getDynamicOrderOptions = async (domain) => {
-  const validWeeks = (new Array(3))
+  // Quick fix (changing to 5 to contain all possible future menus), change later once active is not an array
+  const validWeeks = (new Array(5))
     .fill(null)
     .map((_, i) => moment().day(i * 7).format(ISO_FORMAT));
   const querySnapshot = await myAppData(domain)
