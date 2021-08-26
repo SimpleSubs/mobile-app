@@ -72,6 +72,7 @@ export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedul
     moment().add(end, "days").format(ISO_FORMAT)
   );
   if (
+    orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM &&
     options.length > 0 &&
     !isBeforeCutoff(options[0], orderSchedule, lunchSchedule)
   ) {
