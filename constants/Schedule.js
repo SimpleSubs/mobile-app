@@ -259,11 +259,12 @@ export const isBeforeCutoff = (date, orderSchedule, lunchSchedule) => {
         moment(cutoffTime).isBefore(moment(printTime), "minutes")
       );
     case OrderScheduleTypes.DAY_OF:
-      dateMoment = parseISO(date);
-      return dateMoment.isBefore(cutoffMoment, "minutes");
     case OrderScheduleTypes.DAY_BEFORE:
       dateMoment = parseISO(date);
-      cutoffMoment.subtract(1, "day");
+      dateMoment.set({ hours: moment().hours(), minutes: moment().minutes() });
+      if (orderSchedule.scheduleType === OrderScheduleTypes.DAY_BEFORE) {
+        cutoffMoment.subtract(1, "day");
+      }
       return dateMoment.isBefore(cutoffMoment, "minutes");
     default:
       return true;
