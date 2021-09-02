@@ -2,11 +2,10 @@
  * @file Manages various pre-set actions for user/order data (such as changing password, getting date options, etc.)
  * @author Emily Sturman <emily@sturman.org>
  */
-import {ISO_FORMAT, toReadable, toSimple} from "./Date";
+import {groupToSimple, toReadable, toSimple} from "./Date";
 import inputModalProps from "../components/modals/InputModal";
 import { InputTypes, TextTypes } from "./Inputs";
 import { getValidOrderDates, isBeforeCutoff, OrderScheduleTypes } from "./Schedule";
-import moment from "moment";
 
 // Options for dynamic order actions (on order screen)
 export const DynamicOrderOptions = {
@@ -17,34 +16,6 @@ export const DynamicOrderOptions = {
 // Options for custom editing actions (on settings screen)
 export const EditActions = {
   CHANGE_PASSWORD: "CHANGE_PASSWORD"
-}
-
-/**
- * Gets the index of a given date on the provided school schedule.
- *
- * Calculates the difference between the schedule start date and
- * the provided date, then calculates the remainder when that is
- * divided by the schedule length (schedule repeats).
- *
- * @param {moment.Moment} date           Date to get the index of.
- * @param {string}        startDate      Start date of schedule.
- * @param {number}        scheduleLength Length of provided schedule.
- *
- * @return {number} The index of the date on the schedule.
- */
-const getScheduleIndex = (date, startDate, scheduleLength) => date.diff(startDate, "days") % scheduleLength;
-
-/**
- * Whether a given date is a school day (determined by given school schedule).
- *
- * @param {moment.Moment} date     The date in question.
- * @param {Object}        schedule An object representing a repeating school schedule.
- *
- * @return {boolean} Whether date is a school day.
- */
-const isSchoolDay = (date, schedule) => {
-  let scheduleIndex = getScheduleIndex(date, schedule.startDate, schedule.values.length);
-  return schedule.values[scheduleIndex];
 }
 
 /**
@@ -59,17 +30,14 @@ const isSchoolDay = (date, schedule) => {
  * @param {Object}                 orderSchedule  Contains data for ordering days.
  * @param {Object}                 lunchSchedule  Contains data for lunch days.
  *
- * @return {{keys?: string[][], values: string[], useIndexValue: boolean}} Options to render dates for order.
+ * @return {{options: string[], mapping: Object}} Options to render dates for order.
  */
 export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedule) => {
-  let end = orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM ? 21 : 14;
   const options = getValidOrderDates(
     orders,
-    (focusedOrder?.index || focusedOrder?.index === 0) ? focusedOrder?.index : focusedOrder?.date,
+    focusedOrder?.date,
     orderSchedule,
-    lunchSchedule,
-    moment().format(ISO_FORMAT),
-    moment().add(end, "days").format(ISO_FORMAT)
+    lunchSchedule
   );
   if (
     options.length > 0 &&
@@ -77,25 +45,32 @@ export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedul
   ) {
     options.shift();
   }
+  const mapping = {};
+  const values = [];
   switch (orderSchedule.scheduleType) {
     case OrderScheduleTypes.DAY_OF:
     case OrderScheduleTypes.DAY_BEFORE:
-      return {
-        values: options.map((date) => toReadable(date)),
-        useIndexValue: false
-      };
-    case OrderScheduleTypes.CUSTOM:
-      return {
-        keys: options,
-        values: options.map((group) => `${toSimple(group[0])} to ${toSimple(group[group.length - 1])}`),
-        useIndexValue: true
-      };
-    default:
-      return {
-        values: options,
-        useIndexValue: false
+      for (const date of options) {
+        const readableDate = toReadable(date);
+        mapping[readableDate] = date;
+        values.push(readableDate);
       }
+      break;
+    case OrderScheduleTypes.CUSTOM:
+      for (const group of options) {
+        const readableGroup = groupToSimple(group);
+        mapping[readableGroup] = group;
+        values.push(readableGroup);
+      }
+      break;
+    default:
+      for (const option of options) {
+        mapping[option] = option;
+        values.push(option);
+      }
+      break;
   }
+  return { options: values, mapping };
 }
 
 /**

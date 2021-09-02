@@ -135,7 +135,9 @@ const getCustomOrderSchedule = (defaultTime, schedule, start, end) => {
   let currentDate = parseISO(getPrevScheduledDate(schedule, defaultTime, start));
   while (currentDate.isSameOrBefore(end, "day")) {
     let nextDate = getNextScheduledDate(schedule, defaultTime, currentDate.format(ISO_FORMAT));
-    orderCutoffs.push(nextDate);
+    if (parseISO(nextDate).isSameOrBefore(end, "day")) {
+      orderCutoffs.push(nextDate);
+    }
     currentDate = parseISO(nextDate).add(1, "days");
   }
   return orderCutoffs.sort();
@@ -160,16 +162,23 @@ const getCustomOrderSchedule = (defaultTime, schedule, start, end) => {
  */
 export const getLunchSchedule = (orderSchedule, lunchSchedule, start, end) => {
   let lunchDays = [];
-  let beforeCutoff = moment().isBefore(orderSchedule.defaultTime, "minute");
+  let cutoffMoment;
+  let rangeStart;
   let excludedLunchDates = lunchSchedule.schedule.map((_, i) => i).filter((i) => !lunchSchedule.schedule[i]);
   switch (orderSchedule.scheduleType) {
     case OrderScheduleTypes.DAY_OF:
+      rangeStart = parseISO(start);
+      cutoffMoment = rangeStart.set({ ...orderSchedule.defaultTime });
+      if (moment().isSameOrAfter(cutoffMoment, "minutes")) {
+        rangeStart.add(1, "day");
+      }
+      lunchDays = getDateRange(rangeStart, parseISO(end).diff(start, "days"), 1, excludedLunchDates);
+      break;
     case OrderScheduleTypes.DAY_BEFORE:
-      let rangeStart = parseISO(start);
-      if (beforeCutoff && orderSchedule.scheduleType === OrderScheduleTypes.DAY_OF) {
-        rangeStart.subtract(1, "days");
-      } else if (orderSchedule.scheduleType === OrderScheduleTypes.DAY_BEFORE) {
-        rangeStart.add(1, "days");
+      rangeStart = parseISO(start).subtract(1, "day");
+      cutoffMoment = rangeStart.set({ ...orderSchedule.defaultTime });
+      if (moment().isSameOrAfter(cutoffMoment, "minutes")) {
+        rangeStart.add(1, "day");
       }
       lunchDays = getDateRange(rangeStart, parseISO(end).diff(start, "days"), 1, excludedLunchDates);
       break;
@@ -191,28 +200,31 @@ export const getLunchSchedule = (orderSchedule, lunchSchedule, start, end) => {
 /**
  * Generates 2D array of ISO dates representing order groups (for placing orders with dynamic order scheduling).
  *
- * @param {string[]}                                            dates    Array of ISO dates at the start of each lunch group (including an excluded ending date).
+ * @param {string[]}                                            dates    Array of ISO dates at the start of each lunch group.
  * @param {Array<{hours: number, minutes: number}|string|null>} schedule Schedule containing school/lunch days.
  *
- * @return {string[][]} 2D array of ISO dates that the length of `dates` - 1 (excludes last date on `dates`).
+ * @return {string[][]} 2D array of ISO dates that orders can be placed on.
  */
 export const getScheduleGroups = (dates, schedule) => {
   const scheduleGroups = [];
-  for (let i = 0; i < dates.length - 1; i++) {
+  for (const isoDate of dates) {
     const group = [];
-    const thisDate = parseISO(dates[i]);
-    while (thisDate.isBefore(parseISO(dates[i + 1]))) {
-      if (schedule[thisDate.day()]) {
-        group.push(thisDate.format(ISO_FORMAT));
+    const date = parseISO(isoDate).day(7);
+    if (date.day() !== 0) {
+      // Set start date to next Sunday if it's not already on this Sunday
+      date.day(7);
+    }
+    for (let i = 0; i < 7; i++) {
+      if (schedule[i]) {
+        group.push(moment(date).day(i).format(ISO_FORMAT));
       }
-      thisDate.add(1, "day");
     }
     scheduleGroups.push(group);
   }
   return scheduleGroups;
 };
 
-export const getValidOrderDates = (orders, focusedIndex, orderSchedule, lunchSchedule, start = moment().format(ISO_FORMAT), end = moment().add(14, "days").format(ISO_FORMAT)) => {
+export const getValidOrderDates = (orders, focusedOrder, orderSchedule, lunchSchedule, start = moment().format(ISO_FORMAT), end = moment().add(14, "days").format(ISO_FORMAT)) => {
   const allOptions = getLunchSchedule(orderSchedule, lunchSchedule, start, end);
   let orderDates = Object.values(orders).map(({ date }) => date);
   switch (orderSchedule.scheduleType) {
@@ -223,11 +235,11 @@ export const getValidOrderDates = (orders, focusedIndex, orderSchedule, lunchSch
       }
       // Exclude option groups where order dates includes a date within the group and that order is not currently focused
       return optionGroups.filter((group, i) => (
-        !group.some((date) => orderDates.includes(date)) || focusedIndex === i
+        !group.some((date) => orderDates.includes(date)) || (focusedOrder && group[0] === focusedOrder[0])
       ));
     case OrderScheduleTypes.DAY_OF:
     case OrderScheduleTypes.DAY_BEFORE:
-      return allOptions.filter((date) => !orderDates.includes(date) || focusedIndex === toReadable(date));
+      return allOptions.filter((date) => !orderDates.includes(date) || focusedOrder === date);
     default:
       return [];
   }

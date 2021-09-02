@@ -112,13 +112,12 @@ const SecondaryTouchableText = ({ type, selectedValue, style }) => {
  * @param {string|number}      [selectedValue=]       Currently selected value (for picker input).
  * @param {Function}           [changeValue=() => {}] Function to change selected value (for picker input).
  * @param {string[]}           [options=[]]           Options for selected value (for picker input).
- * @param {boolean}            [useIndexValue=false]  Whether picker value should refer to index or string value of options.
  * @param {React.ReactElement} children               Element to be rendered as content of dropdown.
  *
  * @return {React.ReactElement} Dropdown element.
  * @constructor
  */
-const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () => {}, options = [], useIndexValue = false, children }) => {
+const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () => {}, options = [], children }) => {
   const [expanded, changeExpanded] = useState(false);
   const [minHeight, setMinHeight] = useState(57.5);
   const [maxHeight, setMaxHeight] = useState(minHeight);
@@ -126,12 +125,8 @@ const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () =>
   const angleAnimated = useRef(new Animated.Value(0)).current;
 
   const onPressTouchable = () => {
-    if (type === InputTypes.PICKER && options.length > 0) {
-      if (useIndexValue && typeof selectedValue === "string") {
-        changeValue(0);
-      } else if (!useIndexValue && !options.includes(selectedValue)) {
-        changeValue(options[0]);
-      }
+    if (type === InputTypes.PICKER && options.length > 0 && !options.includes(selectedValue)) {
+      changeValue(options[0]);
     }
     toggleAnimation(expanded, changeExpanded, minHeight, maxHeight, setHeight, angleAnimated);
   };
@@ -149,7 +144,7 @@ const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () =>
         <Text style={styles.touchableText}>{title}</Text>
         <SecondaryTouchableText
           type={type}
-          selectedValue={useIndexValue && typeof selectedValue === "number" ? options[selectedValue] : selectedValue}
+          selectedValue={selectedValue}
           style={getTransformationStyle(angleAnimated)}
         />
       </TouchableOpacity>

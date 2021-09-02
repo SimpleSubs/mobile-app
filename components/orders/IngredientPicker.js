@@ -28,18 +28,16 @@ import { InputTypes } from "../../constants/Inputs";
  * @param {string[]} [options=[]]          Array containing all picker options.
  * @param {string}   selectedValue         Currently selected value in picker.
  * @param {Function} changeValue           Sets selectedValue.
- * @param {boolean}  [useIndexValue=false] Whether picker value should refer to index or string value of options.
  *
  * @return {React.ReactElement} Touchable and dropdown containing a picker.
  */
-const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue, useIndexValue = false }) => (
+const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue }) => (
   <AnimatedDropdown
     title={title}
     type={InputTypes.PICKER}
     selectedValue={selectedValue}
     changeValue={changeValue}
     options={options}
-    useIndexValue={useIndexValue}
   >
     {options.length > 0 ? (
       <Picker
@@ -48,7 +46,7 @@ const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue, u
         onValueChange={(itemValue) => changeValue(itemValue)}
       >
         {options.map((item, i) => (
-          <Picker.Item label={item} value={useIndexValue ? i : item} key={item} />
+          <Picker.Item label={item} value={item} key={item} />
         ))}
       </Picker>
     ) : <Text style={styles.noOptionsText}>There are no available options</Text>}
@@ -68,19 +66,17 @@ const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue, u
  * @param {string[]} [options=[]]          Array containing all picker options.
  * @param {string}   selectedValue         Currently selected value in picker.
  * @param {Function} changeValue           Sets selectedValue.
- * @param {boolean}  [useIndexValue=false] Whether picker value should refer to index or string value of options.
  *
  * @return {React.ReactElement} Touchable that opens a picker modal.
  * @constructor
  */
-const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], selectedValue, changeValue, useIndexValue = false }) => {
+const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], selectedValue, changeValue }) => {
   const myPicker = (
     <AndroidPicker
       closeModal={closeModal}
       selectedValue={selectedValue}
       onValueChange={changeValue}
       options={options}
-      useIndexValue={useIndexValue}
     />
   );
   return (
@@ -90,7 +86,7 @@ const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], se
     >
       <Text style={styles.touchableText}>{title}</Text>
       <Text style={styles.selectedItem} numberOfLines={1}>
-        {useIndexValue && typeof selectedValue === "number" ? options[selectedValue] : selectedValue}
+        {selectedValue}
       </Text>
     </TouchableOpacity>
   )

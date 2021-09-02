@@ -38,3 +38,5 @@ export const toReadable = (date) => parseISO(date).format(READABLE_FORMAT);
  * @return {string} Date in simple format (ex: 7/04).
  */
 export const toSimple = (date) => parseISO(date).format(SIMPLE_FORMAT);
+
+export const groupToSimple = (group) => `${toSimple(group[0])} to ${toSimple(group[group.length - 1])}`;
