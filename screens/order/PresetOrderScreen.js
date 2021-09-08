@@ -44,7 +44,7 @@ const mapStateToProps = ({ focusedOrder, orders, user }) => ({
   focusedOrder: focusedOrder ? {
     key: focusedOrder,
     preset: orders[focusedOrder].title,
-    date: toReadable(orders[focusedOrder].date)
+    date: orders[focusedOrder].date
   } : null,
   uid: user.uid
 });

@@ -40,12 +40,7 @@ const OrderScreen = ({ focusedOrder, orderOptions, createOrder, editOrder, delet
 };
 
 const mapStateToProps = ({ focusedOrder, orders, stateConstants }) => ({
-  focusedOrder: focusedOrder ? {
-    ...orders[focusedOrder],
-    date: !stateConstants.orderSchedule || stateConstants.orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM
-      ? orders[focusedOrder].date[0]
-      : toReadable(orders[focusedOrder].date)
-  } : null,
+  focusedOrder: focusedOrder ? orders[focusedOrder] : null,
   orderOptions: {
     requireDate: true,
     ...stateConstants.orderOptions

@@ -176,11 +176,11 @@ const getOrdersArr = (orders, dynamicSchedule) => {
   }
   return Object.values(orders)
     .sort((orderA, orderB) => parseISO(orderA.date[0]).diff(orderB.date[0]))
-    .map(({ date, key, keys, index, ...orderGroups }) => ({
+    .map(({ date, key, keys, multipleOrders, ...orderGroups }) => ({
       date: `${toSimple(date[0])} to ${toSimple(date[date.length - 1])}`,
       key,
       keys,
-      index,
+      multipleOrders,
       data: Object.values(orderGroups)
         .sort((orderA, orderB) => parseISO(orderA.date).diff(orderB.date))
         .map((order) => ({ ...order, date: toReadable(order.date) }))

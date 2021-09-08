@@ -62,12 +62,8 @@ const isValidText = (validateFunc, value, setError, fixValue, otherInputs = [], 
  * @return {boolean} Whether picker value is valid for submission.
  */
 const isValidPicker = (value, options, setError, required) => {
-  const valid = options.includes(value);
-  if (required && !valid) {
-    setError("Please select a value");
-  } else {
-    setError(NO_ERROR);
-  }
+  const valid = !required || options.includes(value);
+  setError(valid ? NO_ERROR : "Please select a value");
   return valid;
 }
 

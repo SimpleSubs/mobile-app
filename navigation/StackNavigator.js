@@ -20,6 +20,7 @@ import PreOrderScreen from "../screens/order/PreOrderScreen";
 import OrderScreen from "../screens/order/OrderScreen";
 import PresetOrderScreen from "../screens/order/PresetOrderScreen";
 import PresetScreen from "../screens/PresetScreen";
+import Colors from "../constants/Colors";
 
 // Primary stack to display (home screen, login screen, etc.)
 const MainStack = createStackNavigator();
@@ -100,7 +101,7 @@ const RegisterStackScreen = () => (
 const StackNavigator = ({ isSignedIn, watchAuthState }) => {
   useEffect(watchAuthState, []);
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={{ colors: { background: Colors.backgroundColor } }}>
       <RootStack.Navigator screenOptions={{ headerShown: false, presentation: "modal" }}>
         <RootStack.Screen name={"Main"}>
           {() => <MainStackScreen isSignedIn={isSignedIn} />}
