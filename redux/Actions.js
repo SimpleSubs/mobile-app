@@ -18,7 +18,7 @@ import {
   OrderScheduleTypes,
   getLunchSchedule,
   getScheduleGroups,
-  getCutoffDate, getValidOrderDates, isBeforeCutoff
+  getCutoffDate
 } from "../constants/Schedule";
 
 // All possible actions to edit state

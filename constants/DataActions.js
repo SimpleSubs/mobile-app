@@ -39,12 +39,6 @@ export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedul
     orderSchedule,
     lunchSchedule
   );
-  if (
-    options.length > 0 &&
-    !isBeforeCutoff(options[0], orderSchedule, lunchSchedule)
-  ) {
-    options.shift();
-  }
   const mapping = {};
   const values = [];
   switch (orderSchedule.scheduleType) {
