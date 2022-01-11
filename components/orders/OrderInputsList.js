@@ -237,7 +237,7 @@ const resetOptionValues = (state, orderOptions) => {
   let newState = { ...state };
   for (let option of orderOptions) {
     if (option.type === InputTypes.PICKER && !option.dynamic && !option.required
-      && !option.options.values.includes(state[option.key])) {
+      && !option.options.includes(state[option.key])) {
       newState[option.key] = "";
     } else if (option.type === InputTypes.CHECKBOX && !newState[option.key]) {
       newState[option.key] = [];
