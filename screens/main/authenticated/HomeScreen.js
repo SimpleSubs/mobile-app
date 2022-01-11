@@ -9,7 +9,6 @@ import {
   StyleSheet,
   FlatList
 } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnimatedTouchable from "../../../components/AnimatedTouchable";
 import Card from "../../../components/orders/Card";
@@ -22,36 +21,6 @@ import Alert from "../../../constants/Alert";
 import reportToSentry from "../../../constants/Sentry";
 import { toReadable, toSimple, parseISO } from "../../../constants/Date";
 import {getUserLunchSchedule, OrderScheduleTypes} from "../../../constants/Schedule";
-
-const STORAGE_KEY = "@order_options";
-
-/**
- * Stores current order presets (to reference when app is next opened).
- *
- * @param {Object[]} orderOptions Current order options (from Firebase).
- * @return {Promise<void>} Promise for function.
- */
-const storeData = async (orderOptions) => {
-  try {
-    const stringifiedOptions = JSON.stringify(orderOptions);
-    await AsyncStorage.setItem(STORAGE_KEY, stringifiedOptions);
-  } catch (e) {
-    reportToSentry(e);
-  }
-};
-
-/**
- * Fetches order options from previous session.
- * @return {Promise<Object[]>} Previous order options.
- */
-const getData = async () => {
-  try {
-    const stringifiedOptions = await AsyncStorage.getItem(STORAGE_KEY);
-    return stringifiedOptions ? JSON.parse(stringifiedOptions) : null;
-  } catch(e) {
-    reportToSentry(e);
-  }
-}
 
 /**
  * Renders app home screen.
