@@ -59,13 +59,13 @@ const getDefault = (focusedOrder, orderOptions) => {
  * @param {string|string[]}        options       Either a key representing dynamic order options or an array of options.
  * @param {Object<string, Object>} orders        All of the user's orders.
  * @param {Object|null}            focusedOrder  Object representing currently focused order (null if no object is focused).
- * @param {Object}                 orderPresets  Object containing all of the user's preset orders.
+ * @param {Object}                 orderPresets  Object containing all the user's preset orders.
  * @param {Object}                 orderSchedule Contains data for ordering days.
  * @param {Object}                 lunchSchedule Contains data for lunch days.
  *
  * @return {{options: string[], mapping: Object}} Options to render in picker/checkboxes.
  */
-const getStaticOptions = (options, orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule) => {
+const getStaticOptions = (options = [], orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule) => {
   const mapping = {};
   switch (options) {
     case DynamicOrderOptions.DATE_OPTIONS:
