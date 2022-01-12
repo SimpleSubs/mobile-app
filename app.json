@@ -86,6 +86,9 @@
         "wasm",
         "svg"
       ]
-    }
+    },
+    "plugins": [
+      "sentry-expo"
+    ]
   }
 }
