@@ -13,12 +13,12 @@ import {
   getUser
 } from "../constants/Firebase";
 import moment from "moment";
-import {toISO, ISO_FORMAT, parseISO} from "../constants/Date";
+import {toISO, ISO_FORMAT, parseISO, groupToSimple} from "../constants/Date";
 import {
   OrderScheduleTypes,
   getLunchSchedule,
   getScheduleGroups,
-  getCutoffDate, getValidOrderDates, isBeforeCutoff
+  getCutoffDate
 } from "../constants/Schedule";
 
 // All possible actions to edit state
@@ -536,14 +536,6 @@ export const updateOrders = (querySnapshot, orderSchedule, lunchSchedule) => {
   let orders = {};
   if (orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM && Object.keys(collectionData).length > 0) {
     let dates = querySnapshot.docs.map((doc) => moment(doc.data().date));
-    const availableScheduleGroups = getValidOrderDates(
-      collectionData,
-      null,
-      orderSchedule,
-      lunchSchedule,
-      moment().format(ISO_FORMAT),
-      moment.max(dates).format(ISO_FORMAT)
-    );
     const allScheduleGroups = getScheduleGroups(
       getLunchSchedule(
         orderSchedule,
@@ -553,24 +545,14 @@ export const updateOrders = (querySnapshot, orderSchedule, lunchSchedule) => {
       ),
       lunchSchedule.schedule
     );
-    let includesCutoff = availableScheduleGroups.length > 0 &&
-      !isBeforeCutoff(availableScheduleGroups[0], orderSchedule, lunchSchedule);
     const collectionDataKeys = Object.keys(collectionData);
-    let index = includesCutoff ? -1 : 0;
-    allScheduleGroups.forEach((group, i) => {
-      // No orders will be on this day if it exists in availableScheduleGroups
-      if (availableScheduleGroups.some((availableGroup) => availableGroup[0] === group[0])) {
-        index++;
-      } else {
-        const relevantKeys = collectionDataKeys.filter((key) => group.includes(collectionData[key].date));
-        if (relevantKeys.length > 0) {
-          orders[i] = { date: group, key: i, index, keys: relevantKeys };
-          for (const id of relevantKeys) {
-            orders[i] = {
-              ...orders[i],
-              [collectionData[id].date]: collectionData[id]
-            };
-          }
+    allScheduleGroups.forEach((group) => {
+      const relevantKeys = collectionDataKeys.filter((key) => group.includes(collectionData[key].date));
+      const key = group[0];
+      if (relevantKeys.length > 0) {
+        orders[key] = { date: group, multipleOrders: true, key, keys: relevantKeys };
+        for (const id of relevantKeys) {
+          orders[key][collectionData[id].date] = collectionData[id];
         }
       }
     });
@@ -842,7 +824,7 @@ const getDynamicOrderOptions = async (domain) => {
       allOrderOptions[date] = orderOptions;
     }
   });
-  return allOrderOptions
+  return allOrderOptions;
 }
 
 const getStateConstants = async (domain) => {
@@ -873,9 +855,6 @@ const getStateConstants = async (domain) => {
       default:
         break;
     }
-  }
-  if (constants.lunchSchedule.dependent) {
-
   }
   return constants;
 }

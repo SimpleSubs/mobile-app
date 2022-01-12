@@ -4,6 +4,7 @@
  */
 import { InputTypes, TextTypes } from "./Inputs";
 import { DynamicOrderOptions, EditActions } from "./DataActions";
+import ChangePasswordButton from "./ChangePasswordButton";
 
 // Text input to set title for preset
 export const TitleField = {
@@ -54,7 +55,7 @@ export const PasswordField = {
   inputType: InputTypes.TEXT_INPUT,
   textType: TextTypes.PASSWORD,
   mutable: true,
-  editAction: EditActions.CHANGE_PASSWORD
+  EditButton: ChangePasswordButton
 };
 
 export const NewPasswordField = {

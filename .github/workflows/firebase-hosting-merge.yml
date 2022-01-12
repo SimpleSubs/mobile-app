@@ -27,8 +27,13 @@ jobs:
         env:
           EXPO_APPLE_PASSWORD: '${{ secrets.EXPO_APPLE_PASSWORD }}'
           FASTLANE_SESSION: '${{ secrets.FASTLANE_SESSION }}'
+          SENTRY_AUTH_TOKEN: '${{ secrets.SENTRY_AUTH_TOKEN }}'
       - run: expo build:android -t app-bundle --no-wait
+        env:
+          SENTRY_AUTH_TOKEN: '${{ secrets.SENTRY_AUTH_TOKEN }}'
       - run: expo build:web
+        env:
+          SENTRY_AUTH_TOKEN: '${{ secrets.SENTRY_AUTH_TOKEN }}'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'

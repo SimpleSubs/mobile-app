@@ -10,51 +10,15 @@ import {
   Keyboard
 } from "react-native";
 import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
-import { Ionicons } from "@expo/vector-icons";
 import { ValidatedPicker, ValidatedTextInput } from "./ValidatedInputs";
-import AnimatedTouchable from "../AnimatedTouchable";
 import Layout from "../../constants/Layout";
 import Colors from "../../constants/Colors";
 import { TextTypes, InputPresets, InputTypes } from "../../constants/Inputs";
-import { EditActions, openChangePasswordModal } from "../../constants/DataActions";
 import { closeModal, openModal, setModalProps, changePassword } from "../../redux/Actions";
 import { connect } from "react-redux";
 
 // Placeholder for a non-editable password value
 const PASSWORD_PLACEHOLDER = "********";
-
-/**
- * Conditionally renders an edit button
- *
- * Renders create icon within a touchable based on a given edit action.
- *
- * @param {string|null} editAction     Key for an edit action to execute when the button is pressed.
- * @param {Function}    openModal      Opens the top-level modal.
- * @param {Function}    closeModal     Closes the top-level modal.
- * @param {Function}    setModalProps  Sets top-level modal props.
- * @param {Function}    changePassword Changes password in Firebase Auth.
- *
- * @return {React.ReactElement|null} Icon touchable to render.
- * @constructor
- */
-const EditButton = ({ editAction, openModal, closeModal, setModalProps, changePassword }) => {
-  let action;
-  switch (editAction) {
-    case (EditActions.CHANGE_PASSWORD):
-      const changePasswordAndClose = ({ oldPassword, newPassword }) => {
-        closeModal();
-        changePassword(oldPassword, newPassword);
-      }
-      action = () => openChangePasswordModal(openModal, setModalProps, changePasswordAndClose);
-      return (
-        <AnimatedTouchable endSize={0.8} onPress={action}>
-          <Ionicons name={"create-outline"} color={Colors.primaryText} size={Layout.fonts.icon} style={styles.editIcon}/>
-        </AnimatedTouchable>
-      );
-    default:
-      return null;
-  }
-}
 
 /**
  * Returns validated text input to render within inputs list.
@@ -68,7 +32,7 @@ const EditButton = ({ editAction, openModal, closeModal, setModalProps, changePa
  * @param {string}      item.textType    Type of text (such as "EMAIL"); see TextTypes for a full list.
  * @param {string}      item.key         Key for input (used to access value in state)
  * @param {boolean}     item.mutable     Whether input is mutable after creation.
- * @param {string|null} item.editAction  Key for an edit action to execute when edit button is pressed; null renders no button.
+ * @param {string|null} item.EditButton  Key for an edit action to execute when edit button is pressed; null renders no button.
  * @param {string}      item.title       Title of field to display when editing.
  * @param {boolean}     item.required    Whether the field is required.
  * @param {Object[]}    inputRefs        Array of refs to inputs in inputs list.
@@ -109,7 +73,7 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
       setRef={(ref, validate) => addRef(item.key, ref, index, validate, true)}
       contentContainerStyle={editing && styles.inputContentContainer}
       style={editing && (
-        item.editAction || !item.mutable
+        item.EditButton || !item.mutable
           ? styles.nonEditableInput
           : styles.editableTextInput
       )}
@@ -122,13 +86,14 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
         <Text style={styles.title}>{item.title}</Text>
         <View style={styles.textInputButtonContainer}>
           {thisInput}
-          <EditButton
-            editAction={item.editAction}
-            openModal={openModal}
-            closeModal={closeModal}
-            setModalProps={setModalProps}
-            changePassword={changePassword}
-          />
+          {item.EditButton && (
+            <item.EditButton
+              openModal={openModal}
+              closeModal={closeModal}
+              setModalProps={setModalProps}
+              changePassword={changePassword}
+            />
+          )}
         </View>
       </View>
     ) : thisInput
@@ -193,7 +158,7 @@ const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }
  * @param {boolean}     item.mutable       Whether input is mutable after creation.
  * @param {string}      [item.placeholder] Text input placeholder; only necessary if input is a text input.
  * @param {string}      [item.textType]    Type of text (such as "EMAIL"); see TextTypes for a full list.=; only necessary if input is a text input.
- * @param {string|null} [item.editAction]  Key for an edit action to execute when edit button is pressed; null renders no button; only necessary if input is a text input.
+ * @param {string|null} [item.EditButton]  Button component for a more complex editing action (such as changing a password); null renders no button; only necessary if input is a text input.
  * @param {string[]}    [item.options]     Options to display within picker; only necessary if input is a picker.
  * @param {string}      item.title         Title of field to display when editing.
  * @param {Object[]}    inputRefs          Array of refs to inputs in inputs list.
