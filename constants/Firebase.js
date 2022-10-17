@@ -28,7 +28,7 @@ const executeFunction = async (name, data = {}) => {
     body: JSON.stringify({ data })
   };
   try {
-    let response = await fetch("https://us-central1-sandwich-orders.cloudfunctions.net/" + name, requestOptions);
+    let response = await fetch("http://127.0.0.1:5001/sandwich-orders/us-central1/" + name, requestOptions);
     return (await response.json()).result;
   } catch (e) {
     throw new Error(e.message);
@@ -36,6 +36,7 @@ const executeFunction = async (name, data = {}) => {
 };
 
 export const deleteFailedUser = (uid, domain) => executeFunction("deleteFailedUser", { uid, domain });
+export const createOrder = (uid, domain, sandwich) => executeFunction("createOrder", { uid, domain, sandwich });
 export const getUser = (email) => executeFunction("getUser", { email });
 
 /**
