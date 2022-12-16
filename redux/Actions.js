@@ -10,8 +10,7 @@ import {
   authErrorMessage,
   firestoreErrorMessage,
   deleteFailedUser,
-  getUser,
-  createOrder as orderSandwich
+  getUser
 } from "../constants/Firebase";
 import moment from "moment";
 import {toISO, ISO_FORMAT, parseISO, groupToSimple} from "../constants/Date";
@@ -133,8 +132,6 @@ const successAction = (message, dispatch) => {
  * @param {boolean}  dynamicSchedule Whether order schedule is dynamic or static/daily.
  */
 export const createOrder = (dispatch, data, uid, domain, dynamicSchedule) => {
-  console.log(data)
-  console.log(uid)
   dispatch(startLoading());
   let dataToPush;
   if (!dynamicSchedule) {
@@ -144,22 +141,14 @@ export const createOrder = (dispatch, data, uid, domain, dynamicSchedule) => {
       .filter((key) => key !== "date")
       .map((date) => ({ ...data[date], date, uid }));
   }
-
-  orderSandwich(uid, domain, dataToPush[0])
-    .then(success => {
-      if (success) return successAction("Order created successfully", dispatch)
-      else return successAction("Order failed: The daily sandwich order limit has been reached", dispatch)
-    })
+  const batch = firestore.batch();
+  dataToPush.forEach((data) => {
+    const dataRef = allOrders(domain).doc()
+    batch.set(dataRef, data)
+  });
+  batch.commit()
+    .then(() => successAction("Order created successfully", dispatch))
     .catch((error) => alertFirestoreError(dispatch, error));
-
-  // const batch = firestore.batch();
-  // dataToPush.forEach((data) => {
-  //   const dataRef = allOrders(domain).doc()
-  //   batch.set(dataRef, data)
-  // });
-  // batch.commit()
-  //   .then(() => successAction("Order created successfully", dispatch))
-  //   .catch((error) => alertFirestoreError(dispatch, error));
 };
 
 // TODO FIXME
