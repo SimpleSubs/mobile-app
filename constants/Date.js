@@ -1,7 +1,3 @@
-/**
- * @file Manages formatting/parsing dates using Moment.js.
- * @author Emily Sturman <emily@sturman.org>
- */
 import moment from "moment";
 
 // Format that date is stored in Firestore; ex: 2020-07-04
@@ -12,30 +8,22 @@ export const READABLE_FORMAT = "dddd, MMMM Do";
 export const SIMPLE_FORMAT = "M/DD";
 
 /**
- * Converts ISO date to Moment.js date.
- * @param {string} date Date in ISO format (ex: 2020-07-04).
- * @return {moment.Moment} Date in as a Moment.js object.
+ * Converts ISO date to Moment.js date
  */
 export const parseISO = (date) => moment(date, ISO_FORMAT);
 
 /**
- * Converts readable date to ISO date.
- * @param {string} date Date in readable format (ex: Saturday, July 4th).
- * @return {string} Date in ISO format (ex: 2020-07-04).
+ * Converts readable date to ISO date
  */
 export const toISO = (date) => moment(date, READABLE_FORMAT).format(ISO_FORMAT);
 
 /**
- * Converts ISO date to readable date.
- * @param {string} date Date in ISO format (ex: 2020-07-04).
- * @return {string} Date in readable format (ex: Saturday, July 4th).
+ * Converts ISO date to readable date
  */
 export const toReadable = (date) => parseISO(date).format(READABLE_FORMAT);
 
 /**
- * Converts ISO date to simple date.
- * @param {string} date Date in ISO format (ex: 2020-07-04).
- * @return {string} Date in simple format (ex: 7/04).
+ * Converts ISO date to simple date
  */
 export const toSimple = (date) => parseISO(date).format(SIMPLE_FORMAT);
 

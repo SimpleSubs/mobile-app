@@ -1,48 +1,26 @@
-/**
- * @file Manages user settings screen
- * @author Emily Sturman <emily@sturman.org>
- */
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet
-} from "react-native";
+import { View } from "react-native";
 import InputsList from "../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../components/userFields/SubmitButton";
 import Header from "../../../components/Header";
 import { connect } from "react-redux";
 import { watchUserData, editUserData } from "../../../redux/Actions";
 import { DomainNameField, EmailField, PasswordField } from "../../../constants/RequiredFields";
-import Colors from "../../../constants/Colors";
+import createStyleSheet from "../../../constants/Colors";
 
-/**
- * Renders user setting screen.
- *
- * Renders inputs list (FlatList of ValidatedInputs) displaying user fields and
- * containing user data.
- *
- * @param {Object}                           user          Object containing user data.
- * @param {Object}                           domain        Domain data for user's domain.
- * @param {Object[]}                         userFields    Array containing input fields to contain data.
- * @param {function(string, string)}         watchUserData Listener for changes in user data.
- * @param {function(Object, string, string)} editUserData  Pushes edited data to Firebase.
- * @param {Object}                           navigation    Navigation prop passed by React Navigation.
- *
- * @return {React.ReactElement} Element to display.
- * @constructor
- */
 const UserSettingsScreen = ({ user, domain, userFields, watchUserData, editUserData, navigation }) => {
   const [state, setInputs] = useState({ ...user, domain: domain.name });
+  const themedStyles = createStyleSheet(styles);
 
   const submitData = () => editUserData(state, user.uid, domain.id);
-  const UpdateButton = (props) => <SubmitButton {...props} title={"Update"} style={styles.updateButton} />
+  const UpdateButton = (props) => <SubmitButton {...props} title={"Update"} style={themedStyles.updateButton} />
 
   // Listens for changes in user data when on this page
   useEffect(() => watchUserData(user.uid, domain.id), []);
   useEffect(() => setInputs({ ...user, domain: domain.name }), [user]);
 
   return (
-    <View style={styles.container}>
+    <View style={themedStyles.container}>
       <Header title={"Profile Settings"} leftButton={{ name: "arrow-back", onPress: () => navigation.pop() }} />
       <InputsList
         data={userFields}
@@ -51,7 +29,7 @@ const UserSettingsScreen = ({ user, domain, userFields, watchUserData, editUserD
         onSubmit={submitData}
         editing
         SubmitButton={UpdateButton}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={themedStyles.contentContainer}
       />
     </View>
   )
@@ -70,7 +48,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserSettingsScreen);
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.scrollViewBackground,
     flex: 1

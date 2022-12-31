@@ -1,12 +1,7 @@
-/**
- * @file Manages login screen (main screen for unauthenticated users).
- * @author Emily Sturman <emily@sturman.org>
- */
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   BackHandler
 } from "react-native";
@@ -15,7 +10,7 @@ import inputModalProps from "../../../components/modals/InputModal";
 import InputsList from "../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../components/userFields/SubmitButton";
 import Layout from "../../../constants/Layout";
-import Colors from "../../../constants/Colors";
+import createStyleSheet from "../../../constants/Colors";
 import { EmailField, PasswordField } from "../../../constants/RequiredFields";
 import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../../redux/Actions";
 import { connect } from "react-redux";
@@ -24,22 +19,10 @@ import Logo from "../../../assets/images/icon.svg";
 // Fields required for login
 const LOGIN_FIELDS = [EmailField, PasswordField];
 
-/**
- * Renders login screen.
- *
- * @param {function(string, string)} logIn               Function that signs user into their account.
- * @param {function(Object)}         openModal           Function that opens top-level model with provided props.
- * @param {function()}               closeModal          Function that closes top-level modal.
- * @param {function(Object)}         setModalProps       Sets props for top-level modal.
- * @param {function(string)}         resetPasswordAction Sends password reset email to user.
- * @param {Object}                   navigation          Navigation object (passed from React Navigation).
- *
- * @return {React.ReactElement} Element to render login screen.
- * @constructor
- */
 const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswordAction, navigation }) => {
-  const inset = useSafeAreaInsets();
   const [inputs, setInputs] = useState({ email: "", password: "" });
+  const themedStyles = createStyleSheet(styles);
+  const inset = useSafeAreaInsets();
 
   // Logs in using component state.
   const logInState = () => logIn(inputs.email, inputs.password);
@@ -77,25 +60,25 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
   return (
     <InputsList
       ListHeaderComponent={() => (
-        <View style={styles.header}>
+        <View style={themedStyles.header}>
           <Logo width={150} height={150} />
-          <Text style={styles.title}>SimpleSubs</Text>
-          <Text style={styles.text}>School lunches made easy</Text>
-          <Text style={styles.text}>Built by Emily Sturman</Text>
-          <Text style={styles.text}>Logo designed by Ronan Furuta</Text>
+          <Text style={themedStyles.title}>SimpleSubs</Text>
+          <Text style={themedStyles.text}>School lunches made easy</Text>
+          <Text style={themedStyles.text}>Built by Emily Sturman</Text>
+          <Text style={themedStyles.text}>Logo designed by Ronan Furuta</Text>
         </View>
       )}
       ListFooterComponent={() => (
-        <View style={styles.otherTouchables}>
-          <TouchableOpacity style={styles.linkTouchable} onPress={openForgotPasswordModal} activeOpacity={0.5}>
-            <Text style={styles.linkTouchableText}>I forgot my password!</Text>
+        <View style={themedStyles.otherTouchables}>
+          <TouchableOpacity style={themedStyles.linkTouchable} onPress={openForgotPasswordModal} activeOpacity={0.5}>
+            <Text style={themedStyles.linkTouchableText}>I forgot my password!</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.linkTouchable}
+            style={themedStyles.linkTouchable}
             onPress={() => navigation.navigate("Register", { screen: "Domain" })}
             activeOpacity={0.5}
           >
-            <Text style={styles.linkTouchableText}>Don't have an account? Click here to create one.</Text>
+            <Text style={themedStyles.linkTouchableText}>Don't have an account? Click here to create one.</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -105,7 +88,7 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
       SubmitButton={LoginButton}
       onSubmit={logInState}
       contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
-      style={styles.container}
+      style={themedStyles.container}
     />
   )
 };
@@ -120,7 +103,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(null, mapDispatchToProps)(LoginScreen);
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     flex: 1

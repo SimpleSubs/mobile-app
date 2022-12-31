@@ -2,7 +2,6 @@ import React, { useRef } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Animated,
   TouchableOpacity
 } from "react-native";
@@ -10,22 +9,11 @@ import Swipeable from "react-native-gesture-handler/Swipeable";
 import { Ionicons } from "@expo/vector-icons";
 import { getIngredientStr } from "./Card";
 import Layout from "../../constants/Layout";
-import Colors from "../../constants/Colors";
+import createStyleSheet, { getColors } from "../../constants/Colors";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
-/**
- * Returns icon rendered on card swipe to the right.
- *
- * Renders red banner that slides with card and trash icon that scales with swipe.
- *
- * @param {Animated.AnimatedInterpolation} progress How far the card has been dragged (1 = all the way, 0 = not at all).
- * @param {Animated.AnimatedInterpolation} dragX    How far the card has been dragged (pixels).
- *
- * @return {React.Element} Banner to be rendered on card swipe.
- * @constructor
- */
-const SwipeActionRight = (progress, dragX) => {
+const SwipeActionRight = ({ progress, dragX, themedStyles }) => {
   const slideInterpolation = dragX.interpolate({
     inputRange: [-10, 0],
     outputRange: [Layout.window.width - 10, Layout.window.width]
@@ -36,30 +24,19 @@ const SwipeActionRight = (progress, dragX) => {
     extrapolate: "clamp"
   })
   return (
-    <Animated.View style={[styles.swipeActionRight, { transform: [{ translateX: slideInterpolation }]}]}>
+    <Animated.View style={[themedStyles.swipeActionRight, { transform: [{ translateX: slideInterpolation }]}]}>
       <AnimatedIonicons
         name={"trash-outline"}
         size={Layout.fonts.icon}
-        color={Colors.primaryText}
+        color={getColors().color}
         style={{ transform: [{ scale: scaleInterpolation }]}}
       />
-      <Text style={styles.swipeText}>Delete preset</Text>
+      <Text style={themedStyles.swipeText}>Delete preset</Text>
     </Animated.View>
   );
 };
 
-/**
- * Returns icon rendered on card swipe to the left.
- *
- * Renders green banner that slides with card and create icon that scales with swipe.
- *
- * @param {Animated.AnimatedInterpolation} progress How far the card has been dragged (1 = all the way, 0 = not at all).
- * @param {Animated.AnimatedInterpolation} dragX    How far the card has been dragged (pixels).
- *
- * @return {React.Element} Banner to be rendered on card swipe.
- * @constructor
- */
-const SwipeActionLeft = (progress, dragX) => {
+const SwipeActionLeft = ({ progress, dragX, themedStyles }) => {
   const slideInterpolation = dragX.interpolate({
     inputRange: [0, 10],
     outputRange: [-Layout.window.width, -Layout.window.width + 10]
@@ -70,14 +47,14 @@ const SwipeActionLeft = (progress, dragX) => {
     extrapolate: "clamp"
   })
   return (
-    <Animated.View style={[styles.swipeActionLeft, { transform: [{ translateX: slideInterpolation }]}]}>
+    <Animated.View style={[themedStyles.swipeActionLeft, { transform: [{ translateX: slideInterpolation }]}]}>
       <AnimatedIonicons
         name={"md-create"}
         size={Layout.fonts.icon}
-        color={Colors.primaryText}
+        color={getColors().primaryText}
         style={{ transform: [{ scale: scaleInterpolation }]}}
       />
-      <Text style={styles.swipeText}>Edit preset</Text>
+      <Text style={themedStyles.swipeText}>Edit preset</Text>
     </Animated.View>
   );
 };
@@ -98,6 +75,8 @@ const SwipeActionLeft = (progress, dragX) => {
  */
 const PresetCard = ({ title, onPress, onDelete, ...ingredients }) => {
   const swipeableRef = useRef();
+  const themedStyles = createStyleSheet(styles);
+  
   const focusAndClose = () => {
     if (swipeableRef.current) {
       swipeableRef.current.close();
@@ -107,15 +86,19 @@ const PresetCard = ({ title, onPress, onDelete, ...ingredients }) => {
   return (
     <Swipeable
       ref={(ref) => swipeableRef.current = ref}
-      renderRightActions={SwipeActionRight}
-      renderLeftActions={SwipeActionLeft}
+      renderRightActions={(progress, dragX) => (
+        <SwipeActionRight progress={progress} dragX={dragX} themedStyles={themedStyles} />
+      )}
+      renderLeftActions={(progress, dragX) => (
+        <SwipeActionLeft progress={progress} dragX={dragX} themedStyles={themedStyles} />
+      )}
       onSwipeableRightOpen={onDelete}
       onSwipeableLeftOpen={focusAndClose}
     >
       <TouchableOpacity onPress={onPress}>
-        <View style={styles.cardContainer}>
-          {title && <Text style={styles.title}>{title}</Text>}
-          <Text style={styles.ingredients} numberOfLines={2}>{getIngredientStr(ingredients)}</Text>
+        <View style={themedStyles.cardContainer}>
+          {title && <Text style={themedStyles.title}>{title}</Text>}
+          <Text style={themedStyles.ingredients} numberOfLines={2}>{getIngredientStr(ingredients)}</Text>
         </View>
       </TouchableOpacity>
     </Swipeable>
@@ -124,7 +107,7 @@ const PresetCard = ({ title, onPress, onDelete, ...ingredients }) => {
 
 export default PresetCard;
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   cardContainer: {
     backgroundColor: Colors.cardColor,
     paddingVertical: 30,

@@ -1,11 +1,6 @@
-/**
- * @file Creates full page for order/preset screens.
- * @author Emily Sturman <emily@sturman.org>
- */
 import React, { useState, useEffect } from "react";
 import {
   View,
-  StyleSheet,
   Text,
   TouchableOpacity
 } from "react-native";
@@ -15,27 +10,16 @@ import { Ionicons } from "@expo/vector-icons";
 import AnimatedTouchable from "../AnimatedTouchable";
 import OrderField from "./OrderField";
 import moment from "moment";
-import Colors from "../../constants/Colors";
+import createStyleSheet, { getColors } from "../../constants/Colors";
 import Layout from "../../constants/Layout";
-import {groupToSimple, ISO_FORMAT, parseISO, READABLE_FORMAT, toReadable, toSimple} from "../../constants/Date";
+import { groupToSimple, ISO_FORMAT, parseISO, READABLE_FORMAT, toReadable, toSimple } from "../../constants/Date";
 import { InputTypes } from "../../constants/Inputs";
 import { connect } from "react-redux";
 import alert from "../../constants/Alert";
 import { DynamicOrderOptions, getDateOptions } from "../../constants/DataActions";
-import {getUserLunchSchedule, OrderScheduleTypes} from "../../constants/Schedule";
+import { getUserLunchSchedule, OrderScheduleTypes } from "../../constants/Schedule";
 import { DateField } from "../../constants/RequiredFields";
 
-/**
- * Gets default state.
- *
- * Returns focused order if an order is focused, otherwise returns default values
- * for all order options.
- *
- * @param {Object|null} focusedOrder Order currently being edited (null if it is a new order).
- * @param {Object[]}    orderOptions Array of order options.
- *
- * @return {Object} Initial, pre-edited order state.
- */
 const getDefault = (focusedOrder, orderOptions) => {
   if (focusedOrder) {
     return {
@@ -50,21 +34,6 @@ const getDefault = (focusedOrder, orderOptions) => {
   return newState;
 };
 
-/**
- * Computes options if they are dynamic.
- *
- * Uses preset dynamic order options to get options; if options are constant,
- * then the function returns those options.
- *
- * @param {string|string[]}        options       Either a key representing dynamic order options or an array of options.
- * @param {Object<string, Object>} orders        All of the user's orders.
- * @param {Object|null}            focusedOrder  Object representing currently focused order (null if no object is focused).
- * @param {Object}                 orderPresets  Object containing all the user's preset orders.
- * @param {Object}                 orderSchedule Contains data for ordering days.
- * @param {Object}                 lunchSchedule Contains data for lunch days.
- *
- * @return {{options: string[], mapping: Object}} Options to render in picker/checkboxes.
- */
 const getStaticOptions = (options = [], orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule) => {
   const mapping = {};
   switch (options) {
@@ -107,20 +76,6 @@ const getDynamicOptions = (dynamicOptions, options, orders, focusedOrder, orderP
 
 const isDynamic = (orderSchedule) => orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM;
 
-/**
- * Checks if state is valid.
- *
- * Ensures that all required inputs are filled out: required inputs that
- * are checkboxes must have at least one value selected, required text inputs
- * must contain a value, and required pickers must have a selected value
- * within options (instead of, say, "Please select").
- *
- * @param {Object}   state              Current selected values in order.
- * @param {Object[]} orderOptions       Array of order options.
- * @param {boolean}  hasDynamicSchedule Whether order schedule is dynamic or simple (daily).
- *
- * @return {string[]} Array containing titles of invalid inputs
- */
 const validateState = (state, orderOptions, hasDynamicSchedule) => {
   const validateFields = (subState, checkDate = true, checkOnlyDate = false, stateName = null, dateIndex = null) => {
     const invalidInputs = [];
@@ -172,18 +127,6 @@ const validateState = (state, orderOptions, hasDynamicSchedule) => {
   }
 };
 
-/**
- * Checks if order is placed today after cutoff time.
- *
- * Important for the specific edge case where a user starts an order before
- * the cutoff time, places the order for today, and finishes the order after
- * the cutoff time.
- *
- * @param {string}        readableDate String version of order date in readable format ("dddd, MMMM Do")
- * @param {moment.Moment} cutoffTime   Time after which orders may not be placed for that day.
- *
- * @return {boolean} Whether order is placed after cutoff time (true if invalid).
- */
 const isAfterCutoff = (readableDate, cutoffTime) => {
   const date = moment(readableDate, READABLE_FORMAT);
   const now = moment();
@@ -198,18 +141,6 @@ const isAfterCutoff = (readableDate, cutoffTime) => {
   return false;
 };
 
-/**
- * Checks if order preset title is unique.
- *
- * All presets must have a unique title; this function compares the current preset's
- * title to all of the other presets.
- *
- * @param {string}              title        Title of current preset.
- * @param {string}              [prevTitle=] Key for current preset (empty string if preset is new).
- * @param {Object<key, Object>} orderPresets Object containing all of the user's order presets.
- *
- * @return {boolean} Whether title is unique (true if valid).
- */
 const isUniqueTitle = (title, prevTitle = "", orderPresets) => {
   let otherWithTitle = Object.keys(orderPresets).filter((id) => orderPresets[id].title === title).length > 0;
   if (prevTitle !== title && otherWithTitle) {
@@ -222,17 +153,6 @@ const isUniqueTitle = (title, prevTitle = "", orderPresets) => {
   return true;
 }
 
-/**
- * Resets picker values if no selection has been made.
- *
- * Sets picker values to empty strings if no selection was made and the default value
- * is not in options for order (e.g. "Please select").
- *
- * @param {Object}   state        Current state of order.
- * @param {Object[]} orderOptions All order fields/options.
- *
- * @return {Object} State with reset picker values.
- */
 const resetOptionValues = (state, orderOptions) => {
   let newState = { ...state };
   for (let option of orderOptions) {
@@ -246,54 +166,31 @@ const resetOptionValues = (state, orderOptions) => {
   return newState;
 }
 
-/**
- * Renders cancel/done buttons in top right of screen.
- *
- * Renders buttons reading "cancel" and "done" if device is large, otherwise renders
- * ex/check icons.
- *
- * @param {Function} cancelOnPress Function to cancel order.
- * @param {Function} doneOnPress   Function to finish/push order.
- *
- * @return {React.ReactElement} View containing buttons to cancel and finish order.
- * @constructor
- */
-const CancelDoneButtons = ({ cancelOnPress, doneOnPress }) => (
-  <View style={styles.cancelDoneButtonsContainer}>
+const CancelDoneButtons = ({ cancelOnPress, doneOnPress, themedStyles }) => (
+  <View style={themedStyles.cancelDoneButtonsContainer}>
     <TouchableOpacity
-      style={Layout.isSmallDevice ? styles.cancelButtonMobile : styles.cancelButton}
+      style={Layout.isSmallDevice ? themedStyles.cancelButtonMobile : themedStyles.cancelButton}
       onPress={cancelOnPress}
     >
       {Layout.isSmallDevice ?
-        <Ionicons name={"close"} color={Colors.primaryText} size={50} /> :
-        <Text style={styles.cancelButtonText}>Cancel</Text>}
+        <Ionicons name={"close"} color={getColors().primaryText} size={50} /> :
+        <Text style={themedStyles.cancelButtonText}>Cancel</Text>}
     </TouchableOpacity>
     <AnimatedTouchable
-      style={Layout.isSmallDevice ? styles.doneButtonMobile : styles.doneButton}
+      style={Layout.isSmallDevice ? themedStyles.doneButtonMobile : themedStyles.doneButton}
       endSize={0.9}
       onPress={doneOnPress}
     >
       {Layout.isSmallDevice ?
-        <Ionicons name={"checkbox"} color={Colors.accentColor} size={50} /> :
-        <Text style={styles.doneButtonText}>Done</Text>}
+        <Ionicons name={"checkbox"} color={getColors().accentColor} size={50} /> :
+        <Text style={themedStyles.doneButtonText}>Done</Text>}
     </AnimatedTouchable>
   </View>
 );
 
-/**
- * Renders button to delete order/preset.
- *
- * Button is only rendered if order or preset is being edited.
- *
- * @param {Function} onPress Function to delete order/preset.
- * @param {string}   message Message to display in button.
- *
- * @return {React.ReactElement} Button to delete order/preset.
- * @constructor
- */
-const DeleteButton = ({ onPress, message }) => (
-  <TouchableOpacity style={styles.deleteButton} onPress={onPress}>
-    <Text style={styles.deleteButtonText}>{message}</Text>
+const DeleteButton = ({ onPress, message, themedStyles }) => (
+  <TouchableOpacity style={themedStyles.deleteButton} onPress={onPress}>
+    <Text style={themedStyles.deleteButtonText}>{message}</Text>
   </TouchableOpacity>
 );
 
@@ -378,32 +275,13 @@ const getDisplayOrderFields = (orderOptions, orderSchedule, focusedData, state, 
 }
 
 /**
- * Renders a screen that displays order-type fields.
- *
- * Can be used either for orders or user presets.
- *
- * @param {string}                 title          String to display in header.
- * @param {Object|null}            focusedData    Data that user is editing (null if order/preset is being created).
- * @param {Object}                 orderOptions   Order/preset fields.
- * @param {function}               cancel         Function to cancel order.
- * @param {function}               createNew      Function to create order/preset.
- * @param {function}               editExisting   Function to push edits to order/preset.
- * @param {function}               deleteExisting Function to delete order/preset.
- * @param {string}                 uid            Unique user ID (from Firebase Auth).
- * @param {string}                 domain         Domain key for user's domain.
- * @param {string}                 deleteMessage  Message to be displayed on delete button.
- * @param {Object<string, Object>} orderPresets   All of the user's order presets.
- * @param {Object<string, Object>} orders          Object containing all of user's orders.
- * @param {Object}                 orderSchedule   Contains data for ordering days.
- * @param {Object}                 lunchSchedule   Contains data for lunch days.
- *
- * @return {React.ReactElement} Screen element displaying order or preset fields.
- * @constructor
+ * Displays order-type fields
  */
 const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, editExisting, deleteExisting, uid, domain, deleteMessage, orderPresets, orders, lunchSchedule, orderSchedule }) => {
   const [dynamicOptions, setDynamicOptions] = useState([]);
   const [state, setFullState] = useState(getDefault(focusedData, dynamicOptions));
   const [displayOptions, setDisplayOptions] = useState([]);
+  const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
   const submit = () => {
@@ -493,10 +371,10 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
 
   // May need to reinsert insets for Android (depends on how modal renders)
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>{title}</Text>
-        <CancelDoneButtons cancelOnPress={cancel} doneOnPress={submit} />
+    <View style={themedStyles.container}>
+      <View style={themedStyles.header}>
+        <Text style={themedStyles.headerText}>{title}</Text>
+        <CancelDoneButtons cancelOnPress={cancel} doneOnPress={submit} themedStyles={themedStyles} />
       </View>
       <KeyboardAwareSectionList
         keyboardOpeningTime={0}
@@ -504,7 +382,9 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
         alwaysBounceVertical={false}
         keyboardDismissMode={Layout.ios ? "interactive" : "on-drag"}
         contentContainerStyle={{ paddingBottom: inset.bottom + 100 }}
-        ListFooterComponent={focusedData && <DeleteButton onPress={deleteAndNavigate} message={deleteMessage} />}
+        ListFooterComponent={focusedData && (
+          <DeleteButton onPress={deleteAndNavigate} message={deleteMessage} themedStyles={themedStyles} />
+        )}
         sections={displayOptions}
         renderItem={({ item, section }) => (
           <OrderField
@@ -524,7 +404,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
         stickySectionHeadersEnabled={false}
         renderSectionHeader={({ section }) => (
           section.isNested && section.data.length > 0 ?
-            <Text style={styles.sectionHeader}>{section.title}</Text> :
+            <Text style={themedStyles.sectionHeader}>{section.title}</Text> :
             null
         )}
       />
@@ -543,7 +423,7 @@ const mapStateToProps = ({ stateConstants, orderPresets, user, domain, orders })
 
 export default connect(mapStateToProps, null)(OrderInputsList);
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     flex: 1

@@ -1,35 +1,16 @@
-/**
- * @file Manages loading screen (buffer between auth states that fetches necessary data).
- * @author Emily Sturman <emily@sturman.org>
- */
 import React, { useEffect, useRef } from "react";
 import {
   View,
-  StyleSheet,
   ActivityIndicator
 } from "react-native";
 import { getAuthData, logOut } from "../../redux/Actions";
 import { connect } from "react-redux";
-import Colors from "../../constants/Colors";
+import createStyleSheet, { getColors } from "../../constants/Colors";
 import { allValid } from "../../constants/Inputs";
 
-/**
- * Renders app loading screen.
- *
- * Renders an activity indicator (loading symbol) and fetches app data based
- * on whether user is authorized (signed in).
- *
- * @param {bool}       isLoggedIn       Whether user is logged in.
- * @param {bool}       hasAuthenticated Whether app has gotten initial auth state.
- * @param {function()} getAuthData      Gets data for when user is signed in.
- * @param {function()} logOut           Signs user out.
- * @param {Object}     navigation       Navigation object (passed from React Navigation).
- *
- * @return {React.ReactElement} Element to render loading screen.
- * @constructor
- */
 const LoadingScreen = ({ isLoggedIn, hasAuthenticated, getAuthData, logOut, navigation }) => {
   const prevAuthRef = useRef();
+  const themedStyles = createStyleSheet(styles);
 
   // Gets different state constants depending on whether user is logged in.
   useEffect(() => {
@@ -53,8 +34,8 @@ const LoadingScreen = ({ isLoggedIn, hasAuthenticated, getAuthData, logOut, navi
   }, [isLoggedIn, hasAuthenticated]);
 
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size={"large"} color={Colors.loadingIndicator} />
+    <View style={themedStyles.container}>
+      <ActivityIndicator size={"large"} color={getColors().loadingIndicator} />
     </View>
   );
 };
@@ -73,7 +54,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoadingScreen);
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     alignItems: "center",

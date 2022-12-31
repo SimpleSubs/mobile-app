@@ -1,7 +1,3 @@
-/**
- * @file Manages fields to display in orders that may not be changed by admin.
- * @author Emily Sturman <emily@sturman.org>
- */
 import { InputTypes, TextTypes } from "./Inputs";
 import { DynamicOrderOptions, EditActions } from "./DataActions";
 import ChangePasswordButton from "./ChangePasswordButton";

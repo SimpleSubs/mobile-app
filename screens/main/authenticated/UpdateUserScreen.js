@@ -1,46 +1,27 @@
-/**
- * @file Manages screen to update user profile.
- * @author Emily Sturman <emily@sturman.org>
- */
 import React, { useState, useEffect } from "react";
 import {
   View,
-  StyleSheet, Text
+  Text
 } from "react-native";
 import InputsList from "../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../components/userFields/SubmitButton";
 import { connect } from "react-redux";
 import { editUserData, logOut } from "../../../redux/Actions";
-import Colors from "../../../constants/Colors";
+import createStyleSheet from "../../../constants/Colors";
 import { valueIsValid } from "../../../constants/Inputs";
 import Layout from "../../../constants/Layout";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-/**
- * Renders screen to update user info.
- *
- * Renders inputs list (FlatList of ValidatedInputs) displaying invalid user fields
- * so that user must update user fields when changed from backend.
- *
- * @param {Object}                           user          Object containing user data.
- * @param {string}                           domain        Domain key for user's domain.
- * @param {Object[]}                         userFields    Array containing all invalid input fields.
- * @param {function(Object, string, string)} editUserData  Pushes edited data to Firebase.
- * @param {function()}                       logOut        Function to log user out of account
- * @param {Object}                           navigation    Navigation prop passed by React Navigation.
- *
- * @return {React.ReactElement} Element to display.
- * @constructor
- */
 const UpdateUserScreen = ({ user, domain, userFields, editUserData, logOut, navigation }) => {
   const [state, setInputs] = useState(user);
+  const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
   const submitData = () => {
     editUserData(state, user.uid, domain);
     navigation.replace("Home");
   };
-  const UpdateButton = (props) => <SubmitButton {...props} title={"Update"} style={styles.updateButton} />
+  const UpdateButton = (props) => <SubmitButton {...props} title={"Update"} style={themedStyles.updateButton} />
 
   useEffect(() => navigation.addListener("beforeRemove", (e) => {
     if (e.data.action.type === "POP") {
@@ -50,12 +31,12 @@ const UpdateUserScreen = ({ user, domain, userFields, editUserData, logOut, navi
 
   return (
     <InputsList
-      style={styles.container}
+      style={themedStyles.container}
       contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
       ListHeaderComponent={() => (
-        <View style={styles.header}>
-          <Text style={styles.title}>Update profile settings</Text>
-          <Text style={styles.text}>
+        <View style={themedStyles.header}>
+          <Text style={themedStyles.title}>Update profile settings</Text>
+          <Text style={themedStyles.text}>
             Profile parameters have been changed since you last used the app. Please update the following fields.
           </Text>
         </View>
@@ -83,7 +64,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(mapStateToProps, mapDispatchToProps)(UpdateUserScreen);
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     flex: 1

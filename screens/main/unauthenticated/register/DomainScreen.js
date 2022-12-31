@@ -1,12 +1,7 @@
-/**
- * @file Manages screen to sign into domain
- * @author Emily Sturman <emily@sturman.org>
- */
 import React, { useState } from "react";
 import {
   View,
-  Text,
-  StyleSheet
+  Text
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,23 +9,14 @@ import InputsList from "../../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../../components/userFields/SubmitButton";
 import AnimatedTouchable from "../../../../components/AnimatedTouchable";
 import Layout from "../../../../constants/Layout";
-import Colors from "../../../../constants/Colors";
+import createStyleSheet, { getColors } from "../../../../constants/Colors";
 import { DomainCodeField } from "../../../../constants/RequiredFields";
 import { getUnauthData } from "../../../../redux/Actions";
 import { connect } from "react-redux";
 
-/**
- * Renders screen to sign into domain/organization (to get profile options for register
- * screen).
- *
- * @param {function(string)} getUnauthData   Gets data required for registering user.
- * @param {Object}           navigation      Navigation object passed by React Navigation.
- *
- * @return {React.ReactElement} Element to display.
- * @constructor
- */
 const DomainScreen = ({ getUnauthData, navigation }) => {
   const [inputs, setInputs] = useState({ domainCode: "" });
+  const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
   // Passes state to createUser action
@@ -47,14 +33,18 @@ const DomainScreen = ({ getUnauthData, navigation }) => {
 
   return (
     <InputsList
-      style={styles.container}
+      style={themedStyles.container}
       contentContainerStyle={{ paddingBottom: inset.bottom }}
       ListHeaderComponent={() => (
-        <View style={styles.header}>
-          <AnimatedTouchable style={styles.closeButton} onPress={() => navigation.navigate("Main", { screen: "Login" })} endSize={0.8}>
-            <Ionicons name={"close"} size={Layout.fonts.icon} color={Colors.primaryText} />
+        <View style={themedStyles.header}>
+          <AnimatedTouchable
+            style={themedStyles.closeButton}
+            onPress={() => navigation.navigate("Main", { screen: "Login" })}
+            endSize={0.8}
+          >
+            <Ionicons name={"close"} size={Layout.fonts.icon} color={getColors().primaryText} />
           </AnimatedTouchable>
-          <Text style={styles.title}>Enter organization code</Text>
+          <Text style={themedStyles.title}>Enter organization code</Text>
         </View>
       )}
       SubmitButton={ContinueButton}
@@ -72,7 +62,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(null, mapDispatchToProps)(DomainScreen);
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     flex: 1

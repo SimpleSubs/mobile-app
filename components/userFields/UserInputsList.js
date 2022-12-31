@@ -1,10 +1,5 @@
-/**
- * @file Creates form for user data (register, settings screens, etc.).
- * @author Emily Sturman <emily@sturman.org>
- */
 import React, { useState } from "react";
 import {
-  StyleSheet,
   Text,
   View,
   Keyboard
@@ -12,7 +7,7 @@ import {
 import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 import { ValidatedPicker, ValidatedTextInput } from "./ValidatedInputs";
 import Layout from "../../constants/Layout";
-import Colors from "../../constants/Colors";
+import createStyleSheet, { getColors } from "../../constants/Colors";
 import { TextTypes, InputPresets, InputTypes } from "../../constants/Inputs";
 import { closeModal, openModal, setModalProps, changePassword } from "../../redux/Actions";
 import { connect } from "react-redux";
@@ -20,41 +15,12 @@ import { connect } from "react-redux";
 // Placeholder for a non-editable password value
 const PASSWORD_PLACEHOLDER = "********";
 
-/**
- * Returns validated text input to render within inputs list.
- *
- * Input may contain title field and edit button.
- *
- * @param {boolean}     editing          Whether user is editing data or creating new data.
- * @param {string}      [value=]         Current value for text input.
- * @param {Object}      item             Object containing data for input.
- * @param {string}      item.placeholder Text input placeholder.
- * @param {string}      item.textType    Type of text (such as "EMAIL"); see TextTypes for a full list.
- * @param {string}      item.key         Key for input (used to access value in state)
- * @param {boolean}     item.mutable     Whether input is mutable after creation.
- * @param {string|null} item.EditButton  Key for an edit action to execute when edit button is pressed; null renders no button.
- * @param {string}      item.title       Title of field to display when editing.
- * @param {boolean}     item.required    Whether the field is required.
- * @param {Object[]}    inputRefs        Array of refs to inputs in inputs list.
- * @param {Function}    addRef           Adds a ref to inputRefs.
- * @param {Function}    submit           Submits data.
- * @param {number}      index            Index of input (starts at 0)
- * @param {Object}      state            Current values of inputs.
- * @param {Function}    setState         Sets values of inputs (only sets specified values; others remain the same).
- * @param {Function}    openModal        Opens top-level modal.
- * @param {Function}    closeModal       Closes top-level modal.
- * @param {Function}    setModalProps    Sets props for top-level modal.
- * @param {Function}    changePassword   Changes password using Firebase Auth.
- *
- * @return {React.ReactElement} Validated text input to render in inputs list.
- * @constructor
- */
-const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit, index, state, setState, openModal, closeModal, setModalProps, changePassword }) => {
+const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit, index, state, setState, openModal, closeModal, setModalProps, changePassword, themedStyles }) => {
   const thisInput = (
     <ValidatedTextInput
       placeholder={item.placeholder}
       required={item.required}
-      placeholderTextColor={Colors.textInputText}
+      placeholderTextColor={getColors().textInputText}
       returnKeyType={inputRefs.length > index + 1 ? "next" : "go"}
       value={editing && item.textType === TextTypes.PASSWORD ? PASSWORD_PLACEHOLDER : value}
       fixValue={InputPresets[item.textType].fixValue}
@@ -71,20 +37,20 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
       editable={editing && item.mutable && item.textType !== TextTypes.PASSWORD}
       otherInputs={item.key === "confirmPassword" ? [state.password || ""] : []}
       setRef={(ref, validate) => addRef(item.key, ref, index, validate, true)}
-      contentContainerStyle={editing && styles.inputContentContainer}
+      contentContainerStyle={editing && themedStyles.inputContentContainer}
       style={editing && (
         item.EditButton || !item.mutable
-          ? styles.nonEditableInput
-          : styles.editableTextInput
+          ? themedStyles.nonEditableInput
+          : themedStyles.editableTextInput
       )}
       {...InputPresets[item.textType]}
     />
   );
   return (
     editing ? (
-      <View style={styles.fieldContainer}>
-        <Text style={styles.title}>{item.title}</Text>
-        <View style={styles.textInputButtonContainer}>
+      <View style={themedStyles.fieldContainer}>
+        <Text style={themedStyles.title}>{item.title}</Text>
+        <View style={themedStyles.textInputButtonContainer}>
           {thisInput}
           {item.EditButton && (
             <item.EditButton
@@ -100,27 +66,7 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
   );
 }
 
-/**
- * Returns validated picker touchable to render within inputs list.
- *
- * Picker may contain title field.
- *
- * @param {boolean}  editing       Whether user is editing data or creating new data.
- * @param {string}   value         Current value for picker.
- * @param {Object}   item          Object containing data for input.
- * @param {string[]} item.options  Options to display within picker.
- * @param {string}   item.key      Key for input (used to access value in state)
- * @param {boolean}  item.mutable  Whether input is mutable after creation.
- * @param {string}   item.title    Title of field to display when editing.
- * @param {boolean}  item.required Whether the field is required.
- * @param {Function} addRef        Adds a ref to inputRefs.
- * @param {number}   index         Index of input (starts at 0)
- * @param {Function} setState      Sets values of inputs (only sets specified values; others remain the same).
- *
- * @return {React.ReactElement} Validated picker touchable to render in inputs list.
- * @constructor
- */
-const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }) => {
+const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index, themedStyles }) => {
   const thisPicker = (
     <ValidatedPicker
       setRef={(ref, validate) => addRef(item.key, ref, index, validate, false)}
@@ -129,53 +75,27 @@ const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }
       options={item.options}
       required={item.required}
       style={editing && !item.mutable
-        ? { ...styles.editableTextInput, ...styles.nonEditableInput }
-        : (editing ? styles.editableTextInput : {})
+        ? { ...themedStyles.editableTextInput, ...themedStyles.nonEditableInput }
+        : (editing ? themedStyles.editableTextInput : {})
       }
-      contentContainerStyle={editing && styles.inputContentContainer}
+      contentContainerStyle={editing && themedStyles.inputContentContainer}
       disabled={editing && !item.mutable}
     />
   );
   return (
     editing ? (
-      <View style={styles.fieldContainer}>
-        <Text style={styles.title}>{item.title}</Text>
-        <View style={styles.textInputButtonContainer}>{thisPicker}</View>
+      <View style={themedStyles.fieldContainer}>
+        <Text style={themedStyles.title}>{item.title}</Text>
+        <View style={themedStyles.textInputButtonContainer}>{thisPicker}</View>
       </View>
     ) : thisPicker
   );
 }
 
 /**
- * Returns validated input to render within inputs list.
- *
- * Input may contain title field and edit button.
- *
- * @param {boolean}     editing            Whether user is editing data or creating new data.
- * @param {Object}      item               Object containing data for input.
- * @param {string}      item.inputType     Type of input to render (e.g. "PICKER").
- * @param {string}      item.key           Key for input (used to access value in state)
- * @param {boolean}     item.mutable       Whether input is mutable after creation.
- * @param {string}      [item.placeholder] Text input placeholder; only necessary if input is a text input.
- * @param {string}      [item.textType]    Type of text (such as "EMAIL"); see TextTypes for a full list.=; only necessary if input is a text input.
- * @param {string|null} [item.EditButton]  Button component for a more complex editing action (such as changing a password); null renders no button; only necessary if input is a text input.
- * @param {string[]}    [item.options]     Options to display within picker; only necessary if input is a picker.
- * @param {string}      item.title         Title of field to display when editing.
- * @param {Object[]}    inputRefs          Array of refs to inputs in inputs list.
- * @param {Function}    addRef             Adds a ref to inputRefs.
- * @param {Function}    submit             Submits data.
- * @param {number}      index              Index of input (starts at 0)
- * @param {Object}      state              Current values of inputs.
- * @param {Function}    setState           Sets values of inputs (only sets specified values; others remain the same).
- * @param {Function}    openModal          Opens top-level modal.
- * @param {Function}    closeModal         Closes top-level modal.
- * @param {Function}    setModalProps      Sets props for top-level modal.
- * @param {Function}    changePassword     Changes password using Firebase Auth.
- *
- * @return {React.ReactElement|null} Validated input to render in inputs list; null if input type is invalid.
- * @constructor
+ * Validated input to render within inputs list
  */
-const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setState, openModal, closeModal, setModalProps, changePassword }) => {
+const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setState, openModal, closeModal, setModalProps, changePassword, themedStyles }) => {
   switch (item.inputType) {
     case InputTypes.TEXT_INPUT:
       return (
@@ -193,6 +113,7 @@ const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setStat
           closeModal={closeModal}
           setModalProps={setModalProps}
           changePassword={changePassword}
+          themedStyles={themedStyles}
         />
       );
     case InputTypes.PICKER:
@@ -204,6 +125,7 @@ const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setStat
           setState={setState}
           addRef={addRef}
           index={index}
+          themedStyles={themedStyles}
         />
       );
     default:
@@ -212,35 +134,12 @@ const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setStat
 };
 
 /**
- * Returns a list that renders various validated inputs
- * to create and edit user data.
- *
- * Renders a touchable that opens a picker modal for
- * picker inputs and a text input with validation for
- * text inputs; can also display titles of fields if
- * editing data.
- *
- * @param {Object[]}                      data                                Array containing data to render each input.
- * @param {Object}                        state                               Current values of inputs.
- * @param {Function}                      setInputs                           Function to set the full state of inputs.
- * @param {Function}                      onSubmit                            Function to submit data once validated.
- * @param {Function}                      openModal                           Function to open top-level modal.
- * @param {Function}                      closeModal                          Function to close top-level modal.
- * @param {Function}                      setModalProps                       Function to set top-level modal props.
- * @param {boolean}                       editing                             Whether user is editing data or creating new data.
- * @param {Function}                      changePassword                      Changes password using Firebase Auth.
- * @param {boolean}                       loading                             Whether app is currently loading.
- * @param {React.Component|function:null} [SubmitButton=function:null]        Button to submit data (will be passed onPress and loading props)
- * @param {React.Component|function:null} [ListFooterComponent=function:null] Component to render beneath inputs list but above submit button
- * @param {Object}                        [ListFooterComponentStyle={}]       Style object to be applied to view containing submit button and ListFooterComponent
- * @param {Object}                        props                               Any other props to pass to FlatList.
- *
- * @return {React.ReactElement} Flat list containing validated inputs and submit button.
- * @constructor
+ * A list that renders various validated inputs to create and edit user data.
  */
-const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModal, setModalProps, editing, changePassword, loading, SubmitButton = () => null, ListFooterComponent = () => null, ListFooterComponentStyle = {}, ...props }) => {
+const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModal, setModalProps, editing, changePassword, loading, SubmitButton = () => null, ListFooterComponent = () => null, ListFooterComponentStyle = {}, contentContainerStyle = {}, ...props }) => {
   const [inputRefs, setInputRefs] = useState([]);
 
+  const themedStyles = createStyleSheet(styles);
   const setState = (newState) => setInputs((prevState) => ({ ...prevState, ...newState }));
 
   const addRef = (key, newRef, index, validate, canFocus) => {
@@ -273,8 +172,12 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
   }
 
   const submit = () => {
-    // Valid if 1. user is in editing mode and a. field is immutable (therefore user cannot change it) or b. field has
-    // a specific edit action (e.g. "CHANGE_PASSWORD") OR if 2. validation of field returns true.
+    // Valid if
+    //    1. user is in editing mode and
+    //      a. field is immutable (therefore user cannot change it) or
+    //      b. field has a specific edit action (e.g. "CHANGE_PASSWORD")
+    //    OR if
+    //    2. validation of field returns true
     let valid = inputRefs.map(({ key, validate }, index) => (
       (editing && (!data[index].mutable || data[index].editAction)) ||
       validate(state[key] || "")
@@ -292,16 +195,16 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
       extraScrollHeight={50}
       alwaysBounceVertical={false}
       keyboardDismissMode={Layout.ios ? "interactive" : "on-drag"}
-      contentContainerStyle={[styles.contentContainer, props.contentContainerStyle || {}]}
+      contentContainerStyle={[themedStyles.contentContainer, contentContainerStyle]}
       data={data}
       extraData={[state, inputRefs]}
       ListFooterComponent={() => (
-        <View style={[styles.footer, ListFooterComponentStyle]}>
+        <View style={[themedStyles.footer, ListFooterComponentStyle]}>
           <ListFooterComponent />
           <SubmitButton onPress={submit} loading={loading} />
         </View>
       )}
-      ListFooterComponentStyle={styles.footerContainer}
+      ListFooterComponentStyle={themedStyles.footerContainer}
       renderItem={({ item, index }) => (
         <Input
           editing={editing}
@@ -316,6 +219,7 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
           closeModal={closeModal}
           setModalProps={setModalProps}
           changePassword={changePassword}
+          themedStyles={themedStyles}
         />
       )}
     />
@@ -324,7 +228,7 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
 
 const mapStateToProps = ({ loading }) => ({
   loading
-})
+});
 
 const mapDispatchToProps = (dispatch) => ({
   openModal: (props) => dispatch(openModal(props)),
@@ -335,7 +239,7 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserInputsList);
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   contentContainer: {
     alignItems: "stretch",
     paddingHorizontal: 50

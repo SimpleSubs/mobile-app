@@ -1,7 +1,3 @@
-/**
- * @file Manages app navigation.
- * @author Emily Sturman <emily@sturman.org>
- */
 import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -20,7 +16,7 @@ import PreOrderScreen from "../screens/order/PreOrderScreen";
 import OrderScreen from "../screens/order/OrderScreen";
 import PresetOrderScreen from "../screens/order/PresetOrderScreen";
 import PresetScreen from "../screens/PresetScreen";
-import Colors from "../constants/Colors";
+import { getColors } from "../constants/Colors";
 
 // Primary stack to display (home screen, login screen, etc.)
 const MainStack = createStackNavigator();
@@ -31,17 +27,6 @@ const RegisterStack = createStackNavigator();
 // Stack containing both stacks above, plus preset screen
 const RootStack = createStackNavigator();
 
-/**
- * Renders screens for main stack.
- *
- * Returns screens based on whether user is authenticated; login/register
- * if not, home/settings/etc. if so.
- *
- * @param {boolean} isSignedIn Whether user is authenticated.
- *
- * @return {React.ReactElement} Stack screens.
- * @constructor
- */
 const MainStackScreen = ({ isSignedIn }) => (
   <MainStack.Navigator screenOptions={{ headerShown: false }}>
     <MainStack.Screen name={"Loading"} component={LoadingScreen} options={{ gestureEnabled: false }} />
@@ -61,15 +46,6 @@ const MainStackScreen = ({ isSignedIn }) => (
   </MainStack.Navigator>
 );
 
-/**
- * Renders screens for order stack.
- *
- * Renders pre-order screen (i.e. screen that comes before order screens),
- * plus options for order screens.
- *
- * @return {React.ReactElement} Stack screens.
- * @constructor
- */
 const OrderStackScreen = () => (
   <OrderStack.Navigator screenOptions={{ headerShown: false }}>
     <MainStack.Screen name={"Preorder"} component={PreOrderScreen} />
@@ -85,23 +61,10 @@ const RegisterStackScreen = () => (
   </RegisterStack.Navigator>
 )
 
-/**
- * Renders screens for root stack and main app navigator.
- *
- * Renders main stack, order stack, and preset screen.
- * Sub-stacks animate as standard screens, while the root
- * stack animates as fullscreen modals.
- *
- * @param {boolean} isSignedIn Whether user is authenticated.
- * @param {function()} watchAuthState Listener for changes in user authentication.
- *
- * @return {React.ReactElement} Navigation container with root stack.
- * @constructor
- */
 const StackNavigator = ({ isSignedIn, watchAuthState }) => {
   useEffect(watchAuthState, []);
   return (
-    <NavigationContainer theme={{ colors: { background: Colors.backgroundColor } }}>
+    <NavigationContainer theme={{ colors: { background: getColors().backgroundColor } }}>
       <RootStack.Navigator screenOptions={{ headerShown: false, presentation: "modal" }}>
         <RootStack.Screen name={"Main"}>
           {() => <MainStackScreen isSignedIn={isSignedIn} />}

@@ -1,34 +1,15 @@
-/**
- * @file Creates a field to display on order/preset screens.
- * @author Emily Sturman <emily@sturman.org>
- */
 import React from "react";
-import { TextInput, StyleSheet } from "react-native";
+import { TextInput } from "react-native";
 import IngredientPicker from "./IngredientPicker";
 import AnimatedDropdown from "./AnimatedDropdown";
 import Checkboxes from "./Checkboxes";
 import { connect } from "react-redux";
-import Colors from "../../constants/Colors";
+import createStyleSheet, { getColors } from "../../constants/Colors";
 import Layout from "../../constants/Layout";
 import { InputTypes } from "../../constants/Inputs";
 
-/**
- * Renders an order field.
- *
- * Returns an animated touchable with a corresponding form of input (usually a dropdown).
- *
- * @param {string}          title             Title to be displayed in touchable.
- * @param {string}          type              Input type (e.g. "PICKER").
- * @param {string[]}        [options]         An array of options for checkbox and picker fields.
- * @param {string|string[]} value             Current value of input; either a string (for pickers and text inputs) or an array of strings (for checkboxes).
- * @param {string}          [placeholder]     Placeholder value for text input.
- * @param {Function}        setValue          Sets currently selected value(s).
- * @param {boolean}         [multiline=false] Whether input is multiline (for text input).
- *
- * @return {React.ReactElement|null} Order field (animated touchable with form of input).
- * @constructor
- */
 const OrderField = ({ title, type, options, value, placeholder, setValue, multiline = false }) => {
+  const themedStyles = createStyleSheet(styles);
   switch (type) {
     case InputTypes.PICKER:
       return (
@@ -49,9 +30,9 @@ const OrderField = ({ title, type, options, value, placeholder, setValue, multil
       return (
         <AnimatedDropdown title={title} type={type}>
           <TextInput
-            style={[styles.textInput, multiline && styles.multilineInput]}
+            style={[themedStyles.textInput, multiline && themedStyles.multilineInput]}
             placeholder={placeholder}
-            placeholderTextColor={Colors.textInputText}
+            placeholderTextColor={getColors().textInputText}
             value={value}
             onChangeText={setValue}
             multiline={multiline}
@@ -72,7 +53,7 @@ const mapStateToProps = ({ orders, orderPresets, stateConstants }) => ({
 
 export default connect(mapStateToProps, null)(OrderField);
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   textInput: {
     fontFamily: "josefin-sans",
     backgroundColor: Colors.textInputColor,

@@ -1,80 +1,62 @@
-/**
- * @file Creates header component for screens in main stack.
- * @author Emily Sturman <emily@sturman.org>
- */
 import React from "react";
 import {
   Text,
-  View,
-  StyleSheet
+  View
 } from "react-native";
 import AnimatedTouchable from "./AnimatedTouchable";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "../constants/Colors";
 import Layout from "../constants/Layout";
+import createStyleSheet, { getColors } from "../constants/Colors";
 
-/**
- * "Blank" icon to render in place of a visible button/icon.
- *
- * Renders a button that is the same color as the header background
- * (for spacing purposes).
- *
- * @return {React.ReactElement} Blank icon to render.
- * @constructor
- */
-const Spacer = () => (
+const Spacer = ({ themedStyles }) => (
   <Ionicons
-    style={styles.navigateButtons}
+    style={themedStyles.navigateButtons}
     name={"square-outline"}
-    color={Colors.backgroundColor}
+    color={getColors().backgroundColor}
     size={Layout.fonts.icon}
   />
 )
 
 /**
- * Renders standard header for pages in main stack.
- *
- * @param {string}                                             title           Title of page (to render in header).
- * @param {Object}                                             [style={}]      Style object to apply to header.
- * @param {{name: string, style: Object, onPress: function()}} [rightButton]   Data for icon button to be rendered to the right of the title.
- * @param {{name: string, style: Object, onPress: function()}} [leftButton]    Data for icon button to be rendered to the left of the title.
- * @param {boolean}                                            [includeInsets] Whether vertical inset should be included in header (usually excluded for modal).
- * @param {React.ReactElement}                                      [children]    Other elements to render within header (such as place order button on home screen).
- *
- * @return {React.ReactElement} Header element.
- * @constructor
+ * Standard header for pages in main stack
  */
-const Header = ({ title, style = {}, rightButton, leftButton, includeInsets = true, children }) => (
-  <View style={[styles.header, { paddingTop: styles.header.paddingVertical + (includeInsets ? useSafeAreaInsets().top : 0) }, style]}>
-    {leftButton ? (
-      <AnimatedTouchable style={styles.navigateButtons} endSize={0.8} onPress={leftButton.onPress}>
-        <Ionicons
-          name={leftButton.name}
-          color={Colors.primaryText}
-          size={Layout.fonts.icon}
-          style={leftButton.style}
-        />
-      </AnimatedTouchable>
-    ) : <Spacer />}
-    <Text style={styles.headerText}>{title}</Text>
-    {rightButton ? (
-      <AnimatedTouchable style={styles.navigateButtons} endSize={0.8} onPress={rightButton.onPress}>
-        <Ionicons
-          name={rightButton.name}
-          color={Colors.primaryText}
-          size={Layout.fonts.icon}
-          style={rightButton.style}
-        />
-      </AnimatedTouchable>
-    ) : <Spacer />}
-    {children}
-  </View>
-);
+const Header = ({ title, style = {}, rightButton, leftButton, includeInsets = true, children }) => {
+  const themedStyles = createStyleSheet(styles);
+  const colors = getColors();
+  return (
+    <View
+      style={[themedStyles.header, {paddingTop: themedStyles.header.paddingVertical + (includeInsets ? useSafeAreaInsets().top : 0)}, style]}>
+      {leftButton ? (
+        <AnimatedTouchable style={themedStyles.navigateButtons} endSize={0.8} onPress={leftButton.onPress}>
+          <Ionicons
+            name={leftButton.name}
+            color={colors.primaryText}
+            size={Layout.fonts.icon}
+            style={leftButton.style}
+          />
+        </AnimatedTouchable>
+      ) : <Spacer themedStyles={themedStyles} />}
+      <Text style={themedStyles.headerText}>{title}</Text>
+      {rightButton ? (
+        <AnimatedTouchable style={themedStyles.navigateButtons} endSize={0.8} onPress={rightButton.onPress}>
+          <Ionicons
+            name={rightButton.name}
+            color={colors.primaryText}
+            size={Layout.fonts.icon}
+            style={rightButton.style}
+          />
+        </AnimatedTouchable>
+      ) : <Spacer themedStyles={themedStyles} />}
+      {children}
+    </View>
+  )
+};
 
 export default Header;
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   header: {
     paddingVertical: 10,
     backgroundColor: Colors.backgroundColor,
