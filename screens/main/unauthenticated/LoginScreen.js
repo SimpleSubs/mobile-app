@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Logo from "../../../assets/images/icon.svg";
 import { clearOperation, setKey } from "../../../redux/features/display/modalOperationsSlice";
 import uuid from "react-native-uuid";
+import TopIconButton from "../../../components/TopIconButton";
 
 // Fields required for login
 const LOGIN_FIELDS = [EmailField, PasswordField];
@@ -70,11 +71,10 @@ const LoginScreen = ({ navigation }) => {
     <InputsList
       ListHeaderComponent={() => (
         <View style={themedStyles.header}>
+          <TopIconButton iconName={"at-outline"} style={themedStyles.creditsButton} onPress={() => navigation.navigate("Credits")} />
           <Logo width={150} height={150} />
           <Text style={themedStyles.title}>SimpleSubs</Text>
           <Text style={themedStyles.text}>School lunches made easy</Text>
-          <Text style={themedStyles.text}>Built by Emily Sturman</Text>
-          <Text style={themedStyles.text}>Logo designed by Ronan Furuta</Text>
         </View>
       )}
       ListFooterComponent={() => (
@@ -108,6 +108,13 @@ const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     flex: 1
+  },
+  logo: {
+    height: 150,
+    width: 150
+  },
+  creditsButton: {
+    right: -20
   },
   header: {
     alignItems: "center",

@@ -8,12 +8,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import InputsList from "../../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../../components/userFields/SubmitButton";
 import Layout from "../../../../constants/Layout";
-import createStyleSheet, { getColors } from "../../../../constants/Colors";
+import createStyleSheet from "../../../../constants/Colors";
 import { EmailField, NewPasswordField, ConfirmPasswordField } from "../../../../constants/RequiredFields";
 import { createUser } from "../../../../redux/Thunks";
 import { useDispatch, useSelector } from "react-redux";
-import AnimatedTouchable from "../../../../components/AnimatedTouchable";
-import { Ionicons } from "@expo/vector-icons";
+import TopIconButton from "../../../../components/TopIconButton";
 
 const REGISTER_FIELDS = [EmailField, NewPasswordField, ConfirmPasswordField];
 
@@ -52,9 +51,7 @@ const RegisterScreen = ({ navigation }) => {
       contentContainerStyle={{ paddingBottom: inset.bottom }}
       ListHeaderComponent={() => (
         <View style={themedStyles.header}>
-          <AnimatedTouchable style={themedStyles.closeButton} onPress={() => navigation.pop()} endSize={0.8}>
-            <Ionicons name={"arrow-back"} size={Layout.fonts.icon} color={getColors().primaryText} />
-          </AnimatedTouchable>
+          <TopIconButton iconName={"arrow-back"} style={themedStyles.closeButton} onPress={() => navigation.pop()} />
           <Text style={themedStyles.title}>Join the {domain.name} Organization</Text>
         </View>
       )}
@@ -80,8 +77,6 @@ const styles = (Colors) => ({
     flex: 1
   },
   closeButton: {
-    position: "absolute",
-    top: 0,
     left: -20
   },
   header: {

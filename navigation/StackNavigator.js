@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { watchAuthState } from "../redux/Thunks";
 import LoadingScreen from "../screens/main/LoadingScreen";
 import LoginScreen from "../screens/main/unauthenticated/LoginScreen";
+import CreditsScreen from "../screens/main/unauthenticated/CreditsScreen";
 import RegisterScreen from "../screens/main/unauthenticated/register/RegisterScreen";
 import DomainScreen from "../screens/main/unauthenticated/register/DomainScreen";
 import UpdateUserScreen from "../screens/main/authenticated/UpdateUserScreen";
@@ -33,6 +34,7 @@ const MainStackScreen = ({ isSignedIn }) => (
     {!isSignedIn ? (
       <>
         <MainStack.Screen name={"Login"} component={LoginScreen} options={{ gestureEnabled: false }} />
+        <MainStack.Screen name={"Credits"} component={CreditsScreen} />
       </>
     ) : (
       <>
