@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import {
   TouchableOpacity,
   Animated
@@ -32,7 +32,7 @@ const pressAnimation = (animated, toValue) => {
  * Touchable with custom scaling animation
  */
 const AnimatedTouchable = ({ children, style = {}, endOpacity = 0.8, endSize = 0.95, onPress }) => {
-  const animated = useRef(new Animated.Value(0)).current;
+  const animated = React.useRef(new Animated.Value(0)).current;
   return (
     <AnimatedTouchableOpacity
       onPress={onPress}

@@ -1,23 +1,27 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import {
   Animated,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
-import ModalTypes from "../../constants/ModalTypes";
+import InputModal from "./InputModal";
+import ModalTypes, { ModalAnimationTypes } from "../../constants/ModalTypes";
 import Layout from "../../constants/Layout";
 import createStyleSheet from "../../constants/Colors";
-import { closeModal } from "../../redux/Actions";
-import { connect } from "react-redux";
+import { setReturnValue } from "../../redux/features/display/modalOperationsSlice";
+import { closeModal } from "../../redux/features/display/modalSlice";
+import { useDispatch, useSelector } from "react-redux";
+import Picker from "../Picker";
 
-const getModalStyle = (type, springAnimated, timingAnimated) => {
-  switch (type) {
-    case ModalTypes.CENTER_SPRING_MODAL:
+const getModalStyle = (animationType, springAnimated, timingAnimated) => {
+  switch (animationType) {
+    case ModalAnimationTypes.CENTER_SPRING_MODAL:
       const scaleInterpolation = springAnimated.interpolate({
         inputRange: [0, 1],
         outputRange: [0.9, 1]
       });
       return { transform: [{ scale: scaleInterpolation }], opacity: timingAnimated };
-    case ModalTypes.SLIDE_UP_MODAL:
+    case ModalAnimationTypes.SLIDE_UP_MODAL:
       const positionInterpolation = timingAnimated.interpolate({
         inputRange: [0, 1],
         outputRange: [Layout.window.height, 0]
@@ -36,10 +40,10 @@ const getBackgroundStyle = (animated) => {
   return { backgroundColor: opacityInterpolation }
 };
 
-const toggleAnimation = (open, timingAnimated, springAnimated, onClose, type) => {
+const toggleAnimation = (open, timingAnimated, springAnimated, onClose, animationType) => {
   const startValue = open ? 0 : 1;
   const endValue = open ? 1 : 0;
-  const closeHandler = (targetType) => (type === targetType && !open) ? onClose : () => {};
+  const closeHandler = (targetType) => (animationType === targetType && !open) ? onClose : () => {};
   timingAnimated.setValue(startValue);
   springAnimated.setValue(startValue);
   Animated.spring(springAnimated, {
@@ -48,45 +52,65 @@ const toggleAnimation = (open, timingAnimated, springAnimated, onClose, type) =>
     restDisplacementThreshold: 0.7,
     toValue: endValue,
     useNativeDriver: false
-  }).start(closeHandler(ModalTypes.CENTER_SPRING_MODAL));
+  }).start(closeHandler(ModalAnimationTypes.CENTER_SPRING_MODAL));
   Animated.timing(timingAnimated, {
     duration: 100,
     toValue: endValue,
     useNativeDriver: false
-  }).start(closeHandler(ModalTypes.SLIDE_UP_MODAL));
+  }).start(closeHandler(ModalAnimationTypes.SLIDE_UP_MODAL));
 }
 
+const ChildComponent = ({ type, ...props }) => {
+  const dispatch = useDispatch();
+  switch (type) {
+    case ModalTypes.INPUT_MODAL:
+      return <InputModal {...props} />
+    case ModalTypes.PICKER_MODAL:
+      return (
+        <View style={props.contentContainerStyle}>
+          <Picker onValueChange={(value) => dispatch(setReturnValue(value))} {...props} />
+        </View>
+      );
+    default:
+      return null;
+  }
+};
+
 /**
- * Modal that springs from center of screen and fades in on open.
+ * Modal overlaid over entire app
  */
-const Modal = ({ children, type = ModalTypes.CENTER_SPRING_MODAL, closeModal, style = {}, open = false, onClose = () => {} }) => {
-  const springAnimated = useRef(new Animated.Value(0)).current;
-  const timingAnimated = useRef(new Animated.Value(0)).current;
+const Modal = () => {
+  const {
+    type,
+    animationType = ModalAnimationTypes.CENTER_SPRING_MODAL,
+    style = {},
+    open = false,
+    props = {},
+    onClose = () => {}
+  } = useSelector(({ modal }) => modal);
+  const dispatch = useDispatch();
+
+  const springAnimated = React.useRef(new Animated.Value(0)).current;
+  const timingAnimated = React.useRef(new Animated.Value(0)).current;
   const themedStyles = createStyleSheet(styles);
 
-  useEffect(() => toggleAnimation(open, timingAnimated, springAnimated, onClose, type), [open]);
+  React.useEffect(() => toggleAnimation(open, timingAnimated, springAnimated, onClose, animationType), [open]);
 
   return (
-    <TouchableWithoutFeedback onPress={closeModal}>
+    <TouchableWithoutFeedback onPress={() => dispatch(closeModal())}>
       <Animated.View
         pointerEvents={open ? "auto": "none"}
         style={[themedStyles.background, getBackgroundStyle(timingAnimated)]}
       >
-        <Animated.View style={[style, getModalStyle(type, springAnimated, timingAnimated)]}>
-          {children}
+        <Animated.View style={[style, getModalStyle(animationType, springAnimated, timingAnimated)]}>
+          <ChildComponent type={type} {...props} />
         </Animated.View>
       </Animated.View>
     </TouchableWithoutFeedback>
   )
 };
 
-const mapStateToProps = ({ modal }) => modal;
-
-const mapDispatchToProps = (dispatch) => ({
-  closeModal: () => dispatch(closeModal())
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(Modal);
+export default Modal;
 
 const styles = () => ({
   background: {

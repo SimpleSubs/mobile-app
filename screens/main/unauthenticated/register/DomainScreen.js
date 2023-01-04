@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text
@@ -11,17 +11,18 @@ import AnimatedTouchable from "../../../../components/AnimatedTouchable";
 import Layout from "../../../../constants/Layout";
 import createStyleSheet, { getColors } from "../../../../constants/Colors";
 import { DomainCodeField } from "../../../../constants/RequiredFields";
-import { getUnauthData } from "../../../../redux/Actions";
-import { connect } from "react-redux";
+import { getUnauthData } from "../../../../redux/Thunks";
+import { useDispatch } from "react-redux";
 
-const DomainScreen = ({ getUnauthData, navigation }) => {
-  const [inputs, setInputs] = useState({ domainCode: "" });
+const DomainScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+  const [inputs, setInputs] = React.useState({ domainCode: "" });
   const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
   // Passes state to createUser action
   const registerToDomain = () => {
-    getUnauthData(inputs.domainCode).then((success) => {
+    dispatch(getUnauthData(inputs.domainCode)).then((success) => {
       if (success) {
         navigation.navigate("Register User")
       }
@@ -56,11 +57,7 @@ const DomainScreen = ({ getUnauthData, navigation }) => {
   );
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  getUnauthData: (code) => getUnauthData(dispatch, code)
-});
-
-export default connect(null, mapDispatchToProps)(DomainScreen);
+export default DomainScreen;
 
 const styles = (Colors) => ({
   container: {

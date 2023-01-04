@@ -45,7 +45,7 @@ export const getCutoffDate = (orderSchedule) => {
     default:
       return todayMoment.format(ISO_FORMAT);
   }
-}
+};
 
 const getNextScheduledDate = (schedule, defaultTime = { hours: 23, minutes: 59 }, date = moment().format(ISO_FORMAT)) => {
   const currentDate = parseISO(date);
@@ -88,7 +88,7 @@ const getPrevScheduledDate = (schedule, defaultTime = { hours: 23, minutes: 59 }
     iterCount++;
   }
   return currentDate.format(ISO_FORMAT);
-}
+};
 
 const getCustomOrderSchedule = (defaultTime, schedule, start, end) => {
   let orderCutoffs = [];
@@ -101,7 +101,7 @@ const getCustomOrderSchedule = (defaultTime, schedule, start, end) => {
     currentDate = parseISO(nextDate).add(1, "days");
   }
   return orderCutoffs.sort();
-}
+};
 
 export const getLunchSchedule = (orderSchedule, lunchSchedule, start, end) => {
   let lunchDays = [];
@@ -215,7 +215,7 @@ export const isBeforeCutoff = (date, orderSchedule, lunchSchedule) => {
     default:
       return true;
   }
-}
+};
 
 export const getUserLunchSchedule = (lunchSchedule, userData = {}) => {
   const userSchedule = lunchSchedule.schedule.map((daySchedule) => {
@@ -234,4 +234,6 @@ export const getUserLunchSchedule = (lunchSchedule, userData = {}) => {
     ...lunchSchedule,
     schedule: userSchedule
   };
-}
+};
+
+export const isDynamic = ({ scheduleType }) => scheduleType === OrderScheduleTypes.CUSTOM;

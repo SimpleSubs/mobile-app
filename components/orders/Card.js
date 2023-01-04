@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -32,7 +32,8 @@ export const getIngredientStr = (ingredients) => {
   return ingredientStr.charAt(0).toUpperCase() + ingredientStr.slice(1).toLowerCase();
 }
 
-const SwipeAction = ({ progress, icon, alignRight, themedStyles }) => {
+const SwipeAction = ({ progress, icon, alignRight }) => {
+  const themedStyles = createStyleSheet(styles);
   const scaleInterpolation = progress.interpolate({
     inputRange: [0, 0.15],
     outputRange: [0.5, 1],
@@ -51,7 +52,7 @@ const SwipeAction = ({ progress, icon, alignRight, themedStyles }) => {
 }
 
 const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
-  const swipeableRef = useRef();
+  const swipeableRef = React.useRef();
   const themedStyles = createStyleSheet(styles);
 
   const focusAndClose = () => {
@@ -75,10 +76,10 @@ const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
       leftThreshold={50}
       rightThreshold={50}
       renderLeftActions={(progress) => (
-        <SwipeAction progress={progress} icon={"create-outline"} themedStyles={themedStyles} />
+        <SwipeAction progress={progress} icon={"create-outline"} />
       )}
       renderRightActions={(progress) => (
-        <SwipeAction progress={progress} icon={"trash-outline"} alignRight themedStyles={themedStyles} />
+        <SwipeAction progress={progress} icon={"trash-outline"} alignRight />
       )}
       onSwipeableLeftOpen={focusAndClose}
       onSwipeableRightOpen={onDelete}

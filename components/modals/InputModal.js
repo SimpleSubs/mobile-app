@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Text,
   View
@@ -7,21 +7,27 @@ import InputsList from "../userFields/UserInputsList";
 import SubmitButton from "../userFields/SubmitButton";
 import createStyleSheet from "../../constants/Colors";
 import Layout from "../../constants/Layout";
-import ModalTypes from "../../constants/ModalTypes";
+import { setModalProps } from "../../redux/features/display/modalSlice";
+import { setReturnValue } from "../../redux/features/display/modalOperationsSlice";
+import { useDispatch, useSelector } from "react-redux";
+import ModalTypes, { ModalAnimationTypes } from "../../constants/ModalTypes";
 
 /**
  * Modal containing validated inputs and submit button.
  */
-const InputModalContent = ({ inputData, setModalProps, title, buttonTitle, onSubmit }) => {
-  const [state, setState] = useState({});
+const InputModal = ({ inputData, title, buttonTitle }) => {
+  const { key } = useSelector(({ modalOperations }) => modalOperations);
+  const dispatch = useDispatch();
+  const [state, setState] = React.useState({});
   const themedStyles = createStyleSheet(styles);
-  const Submit = (props) => <SubmitButton {...props} title={buttonTitle} />;
-  const onClose = () => setState({});
 
-  useEffect(() => {
-    setModalProps({ onClose });
-    return () => setModalProps({ onClose: () => {} });
-  }, []);
+  const onSubmit = (state) => dispatch(setReturnValue(state));
+
+  React.useEffect(() => {
+    if (!key && Object.keys(state).length > 0) {
+      setState({});
+    }
+  }, [key]);
 
   return (
     <>
@@ -31,7 +37,7 @@ const InputModalContent = ({ inputData, setModalProps, title, buttonTitle, onSub
         state={state}
         setInputs={setState}
         ListHeaderComponent={() => <Text style={themedStyles.title}>{title}</Text>}
-        SubmitButton={Submit}
+        SubmitButton={(props) => <SubmitButton {...props} title={buttonTitle} />}
         onSubmit={onSubmit}
         style={themedStyles.container}
         contentContainerStyle={themedStyles.contentContainer}
@@ -42,20 +48,13 @@ const InputModalContent = ({ inputData, setModalProps, title, buttonTitle, onSub
   )
 };
 
-const inputModalProps = (title, inputData, buttonTitle, onSubmit, setModalProps) => ({
-  type: ModalTypes.CENTER_SPRING_MODAL,
-  children: (
-    <InputModalContent
-      inputData={inputData}
-      title={title}
-      buttonTitle={buttonTitle}
-      onSubmit={onSubmit}
-      setModalProps={setModalProps}
-    />
-  )
+export const inputModalProps = ({ title, inputData, buttonTitle }) => ({
+  type: ModalTypes.INPUT_MODAL,
+  animationType: ModalAnimationTypes.CENTER_SPRING_MODAL,
+  props: { title, inputData, buttonTitle }
 });
 
-export default inputModalProps;
+export default InputModal;
 
 const styles = (Colors) => ({
   container: {

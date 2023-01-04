@@ -1,45 +1,40 @@
 import React from "react";
-import { createPreset, editPreset, deletePreset, unfocusPreset } from "../redux/Actions";
-import { connect } from "react-redux";
+import { createPreset, editPreset, deletePreset } from "../redux/Thunks";
+import { unfocusPreset } from "../redux/features/orders/focusedPresetSlice";
+import { useSelector, useDispatch } from "react-redux";
 import OrderInputsList from "../components/orders/OrderInputsList";
 import { TitleField } from "../constants/RequiredFields";
 
-const PresetScreen = ({ focusedPreset, orderOptions, unfocusPreset, createPreset, editPreset, deletePreset, navigation }) => {
+const PresetScreen = ({ navigation }) => {
+  const focusedPreset = useSelector(({ focusedPreset, orderPresets }) => (
+    focusedPreset && orderPresets[focusedPreset]
+  ));
+  const orderOptions = useSelector(({ stateConstants }) => ({
+    ...stateConstants.orderOptions,
+    orderOptions: [
+      TitleField,
+      ...stateConstants.orderOptions.orderOptions
+    ]
+  }));
+  const dispatch = useDispatch();
+
   const cancelPreset = () => {
-    unfocusPreset();
+    dispatch(unfocusPreset());
     navigation.navigate("Order Settings");
   };
+
   return (
     <OrderInputsList
       title={focusedPreset ? "Edit Preset" : "Create Preset"}
       focusedData={focusedPreset}
       orderOptions={orderOptions}
       cancel={cancelPreset}
-      createNew={createPreset}
-      editExisting={editPreset}
-      deleteExisting={deletePreset}
+      createNew={(data, dynamicSchedule) => dispatch(createPreset(data, dynamicSchedule))}
+      editExisting={(data, ids) => dispatch(editPreset(data, ids[0]))}
+      deleteExisting={(id) => dispatch(deletePreset(id))}
       deleteMessage={"Delete Preset"}
     />
   );
 };
 
-const mapStateToProps = ({ focusedPreset, orderPresets, stateConstants }) => ({
-  focusedPreset: focusedPreset ? orderPresets[focusedPreset] : null,
-  orderPresets,
-  orderOptions: {
-    ...stateConstants.orderOptions,
-    orderOptions: [
-      TitleField,
-      ...stateConstants.orderOptions.orderOptions
-    ]
-  }
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  unfocusPreset: () => dispatch(unfocusPreset()),
-  createPreset: (data, uid, domain) => createPreset(dispatch, data, uid, domain),
-  editPreset: (data, id, uid, domain) => editPreset(dispatch, data, id[0], uid, domain),
-  deletePreset: (id, domain, uid) => deletePreset(dispatch, id, uid, domain)
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(PresetScreen);
+export default PresetScreen;

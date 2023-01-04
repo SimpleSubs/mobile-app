@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,22 +7,25 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Header from "../../../components/Header";
 import PresetCard from "../../../components/orders/PresetCard";
-import { connect } from "react-redux";
-import { watchPresets, deletePreset, focusPreset } from "../../../redux/Actions";
+import { useSelector, useDispatch } from "react-redux";
+import { focusPreset } from "../../../redux/features/orders/focusedPresetSlice";
+import { watchPresets, deletePreset } from "../../../redux/Thunks";
 import createStyleSheet from "../../../constants/Colors";
 import Layout from "../../../constants/Layout";
 
-const OrderSettingsScreen = ({ orderPresets, uid, domain, watchPresets, deletePreset, focusPreset, navigation }) => {
+const OrderSettingsScreen = ({ navigation }) => {
+  const orderPresets = useSelector(({ orderPresets }) => Object.values(orderPresets));
+  const dispatch = useDispatch();
   const themedStyles = createStyleSheet(styles);
   
   // Focuses an existing order preset and navigates to preset screen.
   const focusPresetNavigate = (id) => {
-    focusPreset(id);
+    dispatch(focusPreset(id));
     navigation.navigate("Preset");
   }
 
   // Creates listener for user's presets.
-  useEffect(() => watchPresets(uid, domain), []);
+  React.useEffect(watchPresets, []);
 
   return (
     <View style={themedStyles.container}>
@@ -43,7 +46,7 @@ const OrderSettingsScreen = ({ orderPresets, uid, domain, watchPresets, deletePr
           <PresetCard
             title={item.title}
             onPress={() => focusPresetNavigate(item.key)}
-            onDelete={() => deletePreset(item.key, uid, domain)}
+            onDelete={() => dispatch(deletePreset(item.key))}
             {...item}
           />
         )}
@@ -54,19 +57,7 @@ const OrderSettingsScreen = ({ orderPresets, uid, domain, watchPresets, deletePr
   )
 };
 
-const mapStateToProps = ({ user, orderPresets, domain }) => ({
-  uid: user.uid,
-  orderPresets: Object.values(orderPresets),
-  domain: domain.id
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  watchPresets: (uid, domain) => watchPresets(dispatch, uid, domain),
-  deletePreset: (id, uid, domain) => deletePreset(dispatch, id, uid, domain),
-  focusPreset: (id) => dispatch(focusPreset(id))
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(OrderSettingsScreen);
+export default OrderSettingsScreen;
 
 const styles = (Colors) => ({
   container: {

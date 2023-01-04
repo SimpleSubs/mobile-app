@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Text,
   View,
@@ -9,13 +9,13 @@ import { ValidatedPicker, ValidatedTextInput } from "./ValidatedInputs";
 import Layout from "../../constants/Layout";
 import createStyleSheet, { getColors } from "../../constants/Colors";
 import { TextTypes, InputPresets, InputTypes } from "../../constants/Inputs";
-import { closeModal, openModal, setModalProps, changePassword } from "../../redux/Actions";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
 // Placeholder for a non-editable password value
 const PASSWORD_PLACEHOLDER = "********";
 
-const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit, index, state, setState, openModal, closeModal, setModalProps, changePassword, themedStyles }) => {
+const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit, index, state, setState }) => {
+  const themedStyles = createStyleSheet(styles);
   const thisInput = (
     <ValidatedTextInput
       placeholder={item.placeholder}
@@ -52,22 +52,16 @@ const CustomTextInput = ({ editing, value = "", item, inputRefs, addRef, submit,
         <Text style={themedStyles.title}>{item.title}</Text>
         <View style={themedStyles.textInputButtonContainer}>
           {thisInput}
-          {item.EditButton && (
-            <item.EditButton
-              openModal={openModal}
-              closeModal={closeModal}
-              setModalProps={setModalProps}
-              changePassword={changePassword}
-            />
-          )}
+          {item.EditButton && <item.EditButton />}
         </View>
       </View>
     ) : thisInput
   );
 }
 
-const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index, themedStyles }) => {
-  const thisPicker = (
+const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index }) => {
+  const themedStyles = createStyleSheet(styles);
+  const picker = (
     <ValidatedPicker
       setRef={(ref, validate) => addRef(item.key, ref, index, validate, false)}
       value={value}
@@ -81,21 +75,19 @@ const CustomPickerTouchable = ({ editing, value, item, setState, addRef, index, 
       contentContainerStyle={editing && themedStyles.inputContentContainer}
       disabled={editing && !item.mutable}
     />
-  );
-  return (
-    editing ? (
-      <View style={themedStyles.fieldContainer}>
-        <Text style={themedStyles.title}>{item.title}</Text>
-        <View style={themedStyles.textInputButtonContainer}>{thisPicker}</View>
-      </View>
-    ) : thisPicker
-  );
+  )
+  return editing ? (
+    <View style={themedStyles.fieldContainer}>
+      <Text style={themedStyles.title}>{item.title}</Text>
+      <View style={themedStyles.textInputButtonContainer}>{picker}</View>
+    </View>
+  ) : picker;
 }
 
 /**
  * Validated input to render within inputs list
  */
-const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setState, openModal, closeModal, setModalProps, changePassword, themedStyles }) => {
+const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setState }) => {
   switch (item.inputType) {
     case InputTypes.TEXT_INPUT:
       return (
@@ -109,11 +101,6 @@ const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setStat
           index={index}
           state={state}
           setState={setState}
-          openModal={openModal}
-          closeModal={closeModal}
-          setModalProps={setModalProps}
-          changePassword={changePassword}
-          themedStyles={themedStyles}
         />
       );
     case InputTypes.PICKER:
@@ -125,7 +112,6 @@ const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setStat
           setState={setState}
           addRef={addRef}
           index={index}
-          themedStyles={themedStyles}
         />
       );
     default:
@@ -136,10 +122,11 @@ const Input = ({ editing, item, index, inputRefs, addRef, submit, state, setStat
 /**
  * A list that renders various validated inputs to create and edit user data.
  */
-const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModal, setModalProps, editing, changePassword, loading, SubmitButton = () => null, ListFooterComponent = () => null, ListFooterComponentStyle = {}, contentContainerStyle = {}, ...props }) => {
-  const [inputRefs, setInputRefs] = useState([]);
-
+const UserInputsList = ({ data, state, setInputs, onSubmit, editing, SubmitButton = () => null, ListFooterComponent = () => null, ListFooterComponentStyle = {}, contentContainerStyle = {}, ...props }) => {
+  const loading = useSelector(({ loading }) => loading.value);
+  const [inputRefs, setInputRefs] = React.useState([]);
   const themedStyles = createStyleSheet(styles);
+
   const setState = (newState) => setInputs((prevState) => ({ ...prevState, ...newState }));
 
   const addRef = (key, newRef, index, validate, canFocus) => {
@@ -215,29 +202,13 @@ const UserInputsList = ({ data, state, setInputs, onSubmit, openModal, closeModa
           submit={submit}
           state={state}
           setState={setState}
-          openModal={openModal}
-          closeModal={closeModal}
-          setModalProps={setModalProps}
-          changePassword={changePassword}
-          themedStyles={themedStyles}
         />
       )}
     />
   )
 };
 
-const mapStateToProps = ({ loading }) => ({
-  loading
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  openModal: (props) => dispatch(openModal(props)),
-  closeModal: () => dispatch(closeModal()),
-  setModalProps: (props) => dispatch(setModalProps(props)),
-  changePassword: (oldPassword, newPassword) => changePassword(dispatch, oldPassword, newPassword)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(UserInputsList);
+export default UserInputsList;
 
 const styles = (Colors) => ({
   contentContainer: {

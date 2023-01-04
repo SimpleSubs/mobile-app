@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -9,285 +9,76 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AnimatedTouchable from "../AnimatedTouchable";
 import OrderField from "./OrderField";
-import moment from "moment";
 import createStyleSheet, { getColors } from "../../constants/Colors";
 import Layout from "../../constants/Layout";
-import { groupToSimple, ISO_FORMAT, parseISO, READABLE_FORMAT, toReadable, toSimple } from "../../constants/Date";
-import { InputTypes } from "../../constants/Inputs";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import alert from "../../constants/Alert";
-import { DynamicOrderOptions, getDateOptions } from "../../constants/DataActions";
-import { getUserLunchSchedule, OrderScheduleTypes } from "../../constants/Schedule";
-import { DateField } from "../../constants/RequiredFields";
+import { getUserLunchSchedule, isDynamic } from "../../constants/Schedule";
+import {
+  getDefault,
+  validateOrderState,
+  isUniqueTitle,
+  resetOptionValues,
+  getAllOrderOptions,
+  getDisplayOrderFields
+} from "../../constants/OrdersAndOptions";
 
-const getDefault = (focusedOrder, orderOptions) => {
-  if (focusedOrder) {
-    return {
-      ...focusedOrder,
-      date: focusedOrder.multipleOrders ? groupToSimple(focusedOrder.date) : toReadable(focusedOrder.date)
-    };
-  }
-  let newState = {};
-  for (let option of orderOptions) {
-    newState[option.key] = option.defaultValue;
-  }
-  return newState;
+const CancelDoneButtons = ({ cancelOnPress, doneOnPress }) => {
+  const themedStyles = createStyleSheet(styles);
+  return (
+    <View style={themedStyles.cancelDoneButtonsContainer}>
+      <TouchableOpacity
+        style={Layout.isSmallDevice ? themedStyles.cancelButtonMobile : themedStyles.cancelButton}
+        onPress={cancelOnPress}
+      >
+        {Layout.isSmallDevice ?
+          <Ionicons name={"close"} color={getColors().primaryText} size={50}/> :
+          <Text style={themedStyles.cancelButtonText}>Cancel</Text>}
+      </TouchableOpacity>
+      <AnimatedTouchable
+        style={Layout.isSmallDevice ? themedStyles.doneButtonMobile : themedStyles.doneButton}
+        endSize={0.9}
+        onPress={doneOnPress}
+      >
+        {Layout.isSmallDevice ?
+          <Ionicons name={"checkbox"} color={getColors().accentColor} size={50}/> :
+          <Text style={themedStyles.doneButtonText}>Done</Text>}
+      </AnimatedTouchable>
+    </View>
+  )
 };
 
-const getStaticOptions = (options = [], orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule) => {
-  const mapping = {};
-  switch (options) {
-    case DynamicOrderOptions.DATE_OPTIONS:
-      return getDateOptions(orders, focusedOrder, lunchSchedule, orderSchedule);
-    case DynamicOrderOptions.PRESET_OPTIONS:
-      const values = [];
-      for (const { title } of Object.values(orderPresets)) {
-        mapping[title] = title;
-        values.push(title);
-      }
-      return {
-        options: values,
-        mapping
-      };
-    default:
-      for (const option of options) {
-        mapping[option] = option;
-      }
-      return { options, mapping };
-  }
-};
-
-const getDynamicOptions = (dynamicOptions, options, orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule) => {
-  if (dynamicOptions) {
-    return {
-      // If the day is empty (should NEVER happen), return an array of no options
-      options: dynamicOptions.map((option) => option ? Object.values(option) : []),
-      // Indicates whether the options will be one array (false), or a 7-element array each containing options for a
-      // day of the week (true)
-      dynamicDay: true
-    };
-  } else {
-    return {
-      ...getStaticOptions(options, orders, focusedOrder, orderPresets, lunchSchedule, orderSchedule),
-      dynamicDay: false
-    };
-  }
-}
-
-const isDynamic = (orderSchedule) => orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM;
-
-const validateState = (state, orderOptions, hasDynamicSchedule) => {
-  const validateFields = (subState, checkDate = true, checkOnlyDate = false, stateName = null, dateIndex = null) => {
-    const invalidInputs = [];
-    const finalStateName =  stateName ? ` (${stateName})` : "";
-    for (const orderOption of orderOptions) {
-      if (
-        (!checkDate && orderOption.key === "date") ||
-        (checkOnlyDate && orderOption.key !== "date") ||
-        !orderOption.required
-      ) {
-        continue;
-      }
-      switch (orderOption.type) {
-        case InputTypes.CHECKBOX:
-        case InputTypes.TEXT_INPUT:
-          if (subState[orderOption.key].length === 0) {
-            invalidInputs.push(orderOption.title + finalStateName);
-          }
-          break;
-        case InputTypes.PICKER:
-          const options = orderOption.dynamicDay && dateIndex ? orderOption.options[dateIndex] : orderOption.options;
-          if (!options.includes(subState[orderOption.key])) {
-            invalidInputs.push(orderOption.title + finalStateName);
-          }
-          break;
-        default:
-          break;
-      }
-    }
-    return invalidInputs;
-  }
-  if (!hasDynamicSchedule) {
-    return validateFields(state);
-  } else {
-    let invalidInputs = validateFields({ date: state.date }, true, true);
-    if (invalidInputs.length > 0) {
-      return invalidInputs;
-    }
-    for (const key of Object.keys(state)) {
-      // If key isn't date field, then it is a date mapping to order substate
-      if (key !== "date") {
-        invalidInputs = [
-          ...invalidInputs,
-          ...validateFields(state[key], false, false, toSimple(key), parseISO(key).day())
-        ];
-      }
-    }
-    return invalidInputs;
-  }
-};
-
-const isAfterCutoff = (readableDate, cutoffTime) => {
-  const date = moment(readableDate, READABLE_FORMAT);
-  const now = moment();
-  if (now.isAfter(cutoffTime) && date.isSameOrBefore(now)) {
-    alert(
-      "Invalid date",
-      "The date you have selected is no longer valid. This could mean that the order cutoff has passed " +
-      "since you began your order. Please try again later."
-    );
-    return true;
-  }
-  return false;
-};
-
-const isUniqueTitle = (title, prevTitle = "", orderPresets) => {
-  let otherWithTitle = Object.keys(orderPresets).filter((id) => orderPresets[id].title === title).length > 0;
-  if (prevTitle !== title && otherWithTitle) {
-    alert(
-      "Invalid title",
-      "The current title is already in use. Please choose a unique title."
-    );
-    return false;
-  }
-  return true;
-}
-
-const resetOptionValues = (state, orderOptions) => {
-  let newState = { ...state };
-  for (let option of orderOptions) {
-    if (option.type === InputTypes.PICKER && !option.dynamic && !option.required
-      && !option.options.includes(state[option.key])) {
-      newState[option.key] = "";
-    } else if (option.type === InputTypes.CHECKBOX && !newState[option.key]) {
-      newState[option.key] = [];
-    }
-  }
-  return newState;
-}
-
-const CancelDoneButtons = ({ cancelOnPress, doneOnPress, themedStyles }) => (
-  <View style={themedStyles.cancelDoneButtonsContainer}>
-    <TouchableOpacity
-      style={Layout.isSmallDevice ? themedStyles.cancelButtonMobile : themedStyles.cancelButton}
-      onPress={cancelOnPress}
-    >
-      {Layout.isSmallDevice ?
-        <Ionicons name={"close"} color={getColors().primaryText} size={50} /> :
-        <Text style={themedStyles.cancelButtonText}>Cancel</Text>}
+const DeleteButton = ({ onPress, message }) => {
+  const themedStyles = createStyleSheet(styles);
+  return (
+    <TouchableOpacity style={themedStyles.deleteButton} onPress={onPress}>
+      <Text style={themedStyles.deleteButtonText}>{message}</Text>
     </TouchableOpacity>
-    <AnimatedTouchable
-      style={Layout.isSmallDevice ? themedStyles.doneButtonMobile : themedStyles.doneButton}
-      endSize={0.9}
-      onPress={doneOnPress}
-    >
-      {Layout.isSmallDevice ?
-        <Ionicons name={"checkbox"} color={getColors().accentColor} size={50} /> :
-        <Text style={themedStyles.doneButtonText}>Done</Text>}
-    </AnimatedTouchable>
-  </View>
-);
-
-const DeleteButton = ({ onPress, message, themedStyles }) => (
-  <TouchableOpacity style={themedStyles.deleteButton} onPress={onPress}>
-    <Text style={themedStyles.deleteButtonText}>{message}</Text>
-  </TouchableOpacity>
-);
-
-const getDynamicOrderOptions = (orderOptions, orderSchedule, orders, focusedData, orderPresets, lunchSchedule, state) => {
-  const optionsWithDynamic = (orderOptions) => (
-    orderOptions.map(({ dynamicOptions, ...orderOption }) => ({
-      ...orderOption,
-      ...getDynamicOptions(
-        dynamicOptions,
-        orderOption.options,
-        orders,
-        focusedData,
-        orderPresets,
-        lunchSchedule,
-        orderSchedule
-      )
-    }))
-  );
-  if (!orderOptions.requireDate) {
-    return optionsWithDynamic(orderOptions.orderOptions, false);
-  }
-  const dateField = {
-    ...DateField,
-    ...getDateOptions(orders, focusedData, lunchSchedule, orderSchedule)
-  };
-  if (!isDynamic(orderSchedule)) {
-    return [
-      dateField,
-      ...optionsWithDynamic(orderOptions.orderOptions, false)
-    ];
-  }
-  if (!state.date || !dateField.options.includes(state.date)) {
-    return [dateField];
-  }
-  let optionsToMap;
-  if (!orderOptions.dynamic) {
-    optionsToMap = orderOptions.orderOptions;
-  } else {
-    const dateOptions = dateField.options;
-    if (dateField.options.includes(state.date)) {
-      const selectedDate = dateField.mapping[state.date][0];
-      const sunday = parseISO(selectedDate).day(0).format(ISO_FORMAT);
-      optionsToMap = orderOptions[sunday] || [];
-    } else {
-      optionsToMap = [];
-    }
-  }
-  return [
-    dateField,
-    ...optionsWithDynamic(optionsToMap)
-  ];
-}
-
-const getDisplayOrderFields = (orderOptions, orderSchedule, focusedData, state, setFullState) => {
-  const dateIndex = orderOptions.findIndex(({ key }) => key === "date");
-  if (!isDynamic(orderSchedule) || dateIndex === -1) {
-    setFullState({ ...getDefault(focusedData, orderOptions), ...state });
-    return [{ data: orderOptions, isNested: false }];
-  } else if (!state.date || !orderOptions[dateIndex].options.includes(state.date)) {
-    setFullState({ date: orderOptions[dateIndex].defaultValue, ...state });
-    return [{ data: [orderOptions[dateIndex]], isNested: false }];
-  } else {
-    const dateField = orderOptions.splice(dateIndex, 1)[0];
-    const selectedDateGroup = dateField.mapping[state.date] || [];
-    let newState = {};
-    selectedDateGroup.forEach((date) => {
-      const existsInState = state[date] && Object.keys(state[date]).length > 0;
-      newState[date] = existsInState ? state[date] : getDefault(focusedData && focusedData[date], orderOptions);
-    });
-    setFullState({ date: state.date, ...newState });
-    return [
-      { data: [dateField], isNested: false },
-      ...selectedDateGroup.map((date) => ({
-        key: date,
-        dateIndex: parseISO(date).day(),
-        title: toReadable(date),
-        data: orderOptions,
-        isNested: true
-      }))
-    ];
-  }
-}
+  )
+};
 
 /**
  * Displays order-type fields
  */
-const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, editExisting, deleteExisting, uid, domain, deleteMessage, orderPresets, orders, lunchSchedule, orderSchedule }) => {
-  const [dynamicOptions, setDynamicOptions] = useState([]);
-  const [state, setFullState] = useState(getDefault(focusedData, dynamicOptions));
-  const [displayOptions, setDisplayOptions] = useState([]);
+const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, editExisting, deleteExisting, deleteMessage }) => {
+  const orderPresets = useSelector(({ orderPresets }) => orderPresets);
+  const orders = useSelector(({ orders }) => orders);
+  const lunchSchedule = useSelector(({ stateConstants, user }) => (
+    getUserLunchSchedule(stateConstants.lunchSchedule, user)
+  ));
+  const orderSchedule = useSelector(({ stateConstants }) => stateConstants.orderSchedule);
+
+  const [dynamicOptions, setDynamicOptions] = React.useState([]);
+  const [state, setFullState] = React.useState(getDefault(focusedData, dynamicOptions));
+  const [displayOptions, setDisplayOptions] = React.useState([]);
+
   const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
   const submit = () => {
     // Ensure all required fields are filled out
     const hasDynamicSchedule = isDynamic(orderSchedule);
-    const invalidInputs = validateState(state, dynamicOptions, hasDynamicSchedule);
+    const invalidInputs = validateOrderState(state, dynamicOptions, hasDynamicSchedule);
     if (invalidInputs.length > 0) {
       alert(
         "Fill out required fields",
@@ -319,9 +110,9 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
     // Pushes to existing doc if editing, otherwise creates new doc
     if (Object.keys(newState).length > 0) {
       if (focusedData) {
-        editExisting(newState, focusedData.keys || [focusedData.key], uid, domain, hasDynamicSchedule);
+        editExisting(newState, focusedData.keys || [focusedData.key]);
       } else {
-        createNew(newState, uid, domain, hasDynamicSchedule);
+        createNew(newState);
       }
     }
     cancel();
@@ -329,7 +120,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
 
   const deleteAndNavigate = () => {
     if (focusedData) {
-      deleteExisting(focusedData.keys || focusedData.key, domain, uid);
+      deleteExisting(focusedData.keys || focusedData.key);
     }
     cancel();
   }
@@ -348,8 +139,8 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
     }
   };
 
-  useEffect(() => {
-    const newOptions = getDynamicOrderOptions(
+  React.useEffect(() => {
+    const newOptions = getAllOrderOptions(
       orderOptions,
       orderSchedule,
       orders,
@@ -367,14 +158,14 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
     );
     setDynamicOptions(newOptions);
     setDisplayOptions(newDisplayOptions);
-  }, [orderOptions, orderSchedule, orders, focusedData, orderPresets, lunchSchedule, state.date]);
+  }, [orderOptions, orderSchedule, orders, focusedData, orderPresets, state.date]);
 
   // May need to reinsert insets for Android (depends on how modal renders)
   return (
     <View style={themedStyles.container}>
       <View style={themedStyles.header}>
         <Text style={themedStyles.headerText}>{title}</Text>
-        <CancelDoneButtons cancelOnPress={cancel} doneOnPress={submit} themedStyles={themedStyles} />
+        <CancelDoneButtons cancelOnPress={cancel} doneOnPress={submit} />
       </View>
       <KeyboardAwareSectionList
         keyboardOpeningTime={0}
@@ -383,7 +174,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
         keyboardDismissMode={Layout.ios ? "interactive" : "on-drag"}
         contentContainerStyle={{ paddingBottom: inset.bottom + 100 }}
         ListFooterComponent={focusedData && (
-          <DeleteButton onPress={deleteAndNavigate} message={deleteMessage} themedStyles={themedStyles} />
+          <DeleteButton onPress={deleteAndNavigate} message={deleteMessage} />
         )}
         sections={displayOptions}
         renderItem={({ item, section }) => (
@@ -412,16 +203,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
   )
 };
 
-const mapStateToProps = ({ stateConstants, orderPresets, user, domain, orders }) => ({
-  orderPresets,
-  uid: user.uid,
-  domain: domain.id,
-  orders,
-  lunchSchedule: getUserLunchSchedule(stateConstants.lunchSchedule, user),
-  orderSchedule: stateConstants.orderSchedule
-});
-
-export default connect(mapStateToProps, null)(OrderInputsList);
+export default OrderInputsList;
 
 const styles = (Colors) => ({
   container: {

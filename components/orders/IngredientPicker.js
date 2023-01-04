@@ -5,12 +5,14 @@ import {
 } from "react-native";
 import { Picker } from '@react-native-community/picker';
 import AnimatedDropdown from "./AnimatedDropdown";
-import AndroidPicker, { getPickerProps } from "../Picker";
-import { connect } from "react-redux";
-import { openModal, closeModal } from "../../redux/Actions";
+import { getPickerProps } from "../Picker";
+import { useDispatch, useSelector } from "react-redux";
+import { openModal } from "../../redux/features/display/modalSlice";
 import Layout from "../../constants/Layout";
 import { InputTypes } from "../../constants/Inputs";
 import createStyleSheet from "../../constants/Colors";
+import { setKey } from "../../redux/features/display/modalOperationsSlice";
+import uuid from "react-native-uuid";
 
 const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue }) => {
   const themedStyles = createStyleSheet(styles);
@@ -37,21 +39,27 @@ const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue })
   )
 };
 
-const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], selectedValue, changeValue }) => {
+const AndroidPickerTouchable = ({ title, options = [], selectedValue, changeValue }) => {
+  const { key, returnValue } = useSelector(({ modalOperations }) => modalOperations);
+  const dispatch = useDispatch();
+  const [modalId, setModalId] = React.useState();
   const themedStyles = createStyleSheet(styles);
-  const myPicker = (
-    <AndroidPicker
-      closeModal={closeModal}
-      selectedValue={selectedValue}
-      onValueChange={changeValue}
-      options={options}
-    />
-  );
+
+  const openPicker = () => {
+    dispatch(setKey(modalId));
+    dispatch(openModal(getPickerProps({ selectedValue, options })));
+  };
+
+  React.useEffect(() => {
+    if (key === modalId && returnValue) {
+      changeValue(returnValue);
+    }
+  }, [returnValue, modalId]);
+
+  React.useEffect(() => setModalId(uuid.v4()), []);
+
   return (
-    <TouchableOpacity
-      style={themedStyles.touchable}
-      onPress={() => openModal(getPickerProps(myPicker))}
-    >
+    <TouchableOpacity style={themedStyles.touchable} onPress={openPicker}>
       <Text style={themedStyles.touchableText}>{title}</Text>
       <Text style={themedStyles.selectedItem} numberOfLines={1}>
         {selectedValue}
@@ -60,12 +68,7 @@ const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], se
   )
 }
 
-const mapDispatchToProps = (dispatch) => ({
-  openModal: (props) => dispatch(openModal(props)),
-  closeModal: () => dispatch(closeModal())
-})
-
-export default Layout.ios ? iOSPickerTouchable : connect(null, mapDispatchToProps)(AndroidPickerTouchable);
+export default Layout.ios ? iOSPickerTouchable : AndroidPickerTouchable;
 
 const styles = (Colors) => ({
   pickerItem: {

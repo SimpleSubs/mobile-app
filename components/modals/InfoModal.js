@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React from "react";
 import {
   Animated,
   Text,
@@ -6,8 +6,9 @@ import {
 } from "react-native";
 import Layout from "../../constants/Layout";
 import createStyleSheet, { getColors } from "../../constants/Colors";
-import { setInfoMessage } from "../../redux/Actions";
-import { connect } from "react-redux";
+import { setInfoMessage } from "../../redux/features/display/infoMessageSlice";
+import { CLOSED_INFO_MODAL } from "../../redux/features/display/infoMessageSlice";
+import { useSelector, useDispatch } from "react-redux";
 
 // Constants for horizontal/vertical margin
 const MARGIN_HORIZONTAL = 10;
@@ -15,7 +16,6 @@ const MARGIN_VERTICAL = 40;
 // Time in seconds until modal automatically closes
 const CLOSE_MODAL_TIMEOUT = 10;
 // String that represents a closed modal
-export const CLOSED_INFO_MODAL = "    ";
 
 const TouchableAnimated = Animated.createAnimatedComponent(TouchableHighlight);
 
@@ -42,14 +42,19 @@ const toggleAnimation = (open, animated, displayMessage) => {
 /**
  * Overlaid popup to display important info
  */
-const InfoModal = ({ infoMessage, closeModal }) => {
-  const [displayedMessage, displayMessage] = useState(infoMessage);
-  const animated = useRef(new Animated.Value(0)).current;
-  const timeoutRef = useRef(null);
+const InfoModal = () => {
+  const infoMessage = useSelector(({ infoMessage }) => infoMessage.value);
+  const dispatch = useDispatch();
+
+  const [displayedMessage, displayMessage] = React.useState(infoMessage);
+  const animated = React.useRef(new Animated.Value(0)).current;
+  const timeoutRef = React.useRef(null);
   const themedStyles = createStyleSheet(styles);
 
+  const closeModal = () => dispatch(setInfoMessage(CLOSED_INFO_MODAL));
+
   // Closes info modal after 10 seconds if new message does not appear
-  useEffect(() => {
+  React.useEffect(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -75,15 +80,7 @@ const InfoModal = ({ infoMessage, closeModal }) => {
   }
 };
 
-const mapStateToProps = ({ infoMessage }) => ({
-  infoMessage
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  closeModal: () => dispatch(setInfoMessage(CLOSED_INFO_MODAL))
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(InfoModal);
+export default InfoModal;
 
 const styles = (Colors) => ({
   container: {

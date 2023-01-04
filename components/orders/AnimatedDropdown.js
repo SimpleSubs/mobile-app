@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import {
   View,
   TouchableOpacity,
@@ -41,7 +41,8 @@ const toggleAnimation = (expanded, changeExpanded, minHeight, maxHeight, setHeig
   changeExpanded(!expanded);
 };
 
-const SecondaryTouchableText = ({ type, selectedValue, style, themedStyles }) => {
+const SecondaryTouchableText = ({ type, selectedValue, style }) => {
+  const themedStyles = createStyleSheet(styles);
   switch (type) {
     case InputTypes.PICKER:
       return <Text style={themedStyles.selectedItem} numberOfLines={1}>{selectedValue}</Text>;
@@ -66,11 +67,11 @@ const SecondaryTouchableText = ({ type, selectedValue, style, themedStyles }) =>
  * Renders touchable and animated dropdown.
  */
 const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () => {}, options = [], children }) => {
-  const [expanded, changeExpanded] = useState(false);
-  const [minHeight, setMinHeight] = useState(57.5);
-  const [maxHeight, setMaxHeight] = useState(minHeight);
-  const [height, setHeight] = useState();
-  const angleAnimated = useRef(new Animated.Value(0)).current;
+  const [expanded, changeExpanded] = React.useState(false);
+  const [minHeight, setMinHeight] = React.useState(57.5);
+  const [maxHeight, setMaxHeight] = React.useState(minHeight);
+  const [height, setHeight] = React.useState();
+  const angleAnimated = React.useRef(new Animated.Value(0)).current;
 
   const themedStyles = createStyleSheet(styles);
 
@@ -96,7 +97,6 @@ const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () =>
           type={type}
           selectedValue={selectedValue}
           style={getTransformationStyle(angleAnimated)}
-          themedStyles={themedStyles}
         />
       </TouchableOpacity>
       <View onLayout={({ nativeEvent }) => setMaxHeight(nativeEvent.layout.height)}>

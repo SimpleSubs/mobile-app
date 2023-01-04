@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -10,15 +10,21 @@ import SubmitButton from "../../../../components/userFields/SubmitButton";
 import Layout from "../../../../constants/Layout";
 import createStyleSheet, { getColors } from "../../../../constants/Colors";
 import { EmailField, NewPasswordField, ConfirmPasswordField } from "../../../../constants/RequiredFields";
-import { createUser } from "../../../../redux/Actions";
-import { connect } from "react-redux";
+import { createUser } from "../../../../redux/Thunks";
+import { useDispatch, useSelector } from "react-redux";
 import AnimatedTouchable from "../../../../components/AnimatedTouchable";
 import { Ionicons } from "@expo/vector-icons";
 
 const REGISTER_FIELDS = [EmailField, NewPasswordField, ConfirmPasswordField];
 
-const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) => {
-  const [inputs, setInputs] = useState({});
+const RegisterScreen = ({ navigation }) => {
+  const domain = useSelector(({ domain }) => domain);
+  const registerUserFields = useSelector(({ stateConstants }) => (
+    stateConstants.userFields && [...REGISTER_FIELDS, ...stateConstants.userFields]
+  ));
+  const dispatch = useDispatch();
+
+  const [inputs, setInputs] = React.useState({});
   const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
@@ -28,13 +34,13 @@ const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) 
     for (let field of REGISTER_FIELDS) {
       delete data[field.key];
     }
-    createUser(inputs.email, inputs.password, data, domain.id);
+    dispatch(createUser(inputs.email, inputs.password, data));
   };
 
   // Button to submit form and register user
   const RegisterButton = (props) => <SubmitButton {...props} title={"Register"} />;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!registerUserFields) {
       navigation.navigate("Loading");
     }
@@ -66,16 +72,7 @@ const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) 
   );
 };
 
-const mapStateToProps = ({ stateConstants, domain }) => ({
-  registerUserFields: stateConstants.userFields ? [...REGISTER_FIELDS, ...stateConstants.userFields] : null,
-  domain
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  createUser: (email, password, data, domain) => createUser(dispatch, email, password, data, domain)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(RegisterScreen);
+export default RegisterScreen;
 
 const styles = (Colors) => ({
   container: {

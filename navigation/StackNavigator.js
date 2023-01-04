@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { connect } from "react-redux";
-import { watchAuthState } from "../redux/Actions";
+import { useSelector } from "react-redux";
+import { watchAuthState } from "../redux/Thunks";
 import LoadingScreen from "../screens/main/LoadingScreen";
 import LoginScreen from "../screens/main/unauthenticated/LoginScreen";
 import RegisterScreen from "../screens/main/unauthenticated/register/RegisterScreen";
@@ -59,10 +59,11 @@ const RegisterStackScreen = () => (
     <RegisterStack.Screen name={"Domain"} component={DomainScreen} />
     <RegisterStack.Screen name={"Register User"} component={RegisterScreen} />
   </RegisterStack.Navigator>
-)
+);
 
-const StackNavigator = ({ isSignedIn, watchAuthState }) => {
-  useEffect(watchAuthState, []);
+const StackNavigator = () => {
+  const isSignedIn = useSelector(({ user }) => !!user);
+  React.useEffect(watchAuthState, []);
   return (
     <NavigationContainer theme={{ colors: { background: getColors().backgroundColor } }}>
       <RootStack.Navigator screenOptions={{ headerShown: false, presentation: "modal" }}>
@@ -75,14 +76,6 @@ const StackNavigator = ({ isSignedIn, watchAuthState }) => {
       </RootStack.Navigator>
     </NavigationContainer>
   );
-}
+};
 
-const mapStateToProps = ({ user }) => ({
-  isSignedIn: !!user
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  watchAuthState: () => watchAuthState(dispatch)
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(StackNavigator);
+export default StackNavigator;

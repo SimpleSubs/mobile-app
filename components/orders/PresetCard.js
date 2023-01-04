@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -13,7 +13,8 @@ import createStyleSheet, { getColors } from "../../constants/Colors";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
-const SwipeActionRight = ({ progress, dragX, themedStyles }) => {
+const SwipeActionRight = ({ progress, dragX }) => {
+  const themedStyles = createStyleSheet(styles);
   const slideInterpolation = dragX.interpolate({
     inputRange: [-10, 0],
     outputRange: [Layout.window.width - 10, Layout.window.width]
@@ -36,7 +37,8 @@ const SwipeActionRight = ({ progress, dragX, themedStyles }) => {
   );
 };
 
-const SwipeActionLeft = ({ progress, dragX, themedStyles }) => {
+const SwipeActionLeft = ({ progress, dragX }) => {
+  const themedStyles = createStyleSheet(styles);
   const slideInterpolation = dragX.interpolate({
     inputRange: [0, 10],
     outputRange: [-Layout.window.width, -Layout.window.width + 10]
@@ -74,7 +76,7 @@ const SwipeActionLeft = ({ progress, dragX, themedStyles }) => {
  * @constructor
  */
 const PresetCard = ({ title, onPress, onDelete, ...ingredients }) => {
-  const swipeableRef = useRef();
+  const swipeableRef = React.useRef();
   const themedStyles = createStyleSheet(styles);
   
   const focusAndClose = () => {
@@ -87,10 +89,10 @@ const PresetCard = ({ title, onPress, onDelete, ...ingredients }) => {
     <Swipeable
       ref={(ref) => swipeableRef.current = ref}
       renderRightActions={(progress, dragX) => (
-        <SwipeActionRight progress={progress} dragX={dragX} themedStyles={themedStyles} />
+        <SwipeActionRight progress={progress} dragX={dragX} />
       )}
       renderLeftActions={(progress, dragX) => (
-        <SwipeActionLeft progress={progress} dragX={dragX} themedStyles={themedStyles} />
+        <SwipeActionLeft progress={progress} dragX={dragX} />
       )}
       onSwipeableRightOpen={onDelete}
       onSwipeableLeftOpen={focusAndClose}

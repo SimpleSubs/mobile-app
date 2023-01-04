@@ -1,31 +1,37 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text
 } from "react-native";
 import InputsList from "../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../components/userFields/SubmitButton";
-import { connect } from "react-redux";
-import { editUserData, logOut } from "../../../redux/Actions";
+import { useSelector, useDispatch } from "react-redux";
+import { editUserData, logOut } from "../../../redux/Thunks";
 import createStyleSheet from "../../../constants/Colors";
 import { valueIsValid } from "../../../constants/Inputs";
 import Layout from "../../../constants/Layout";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const UpdateUserScreen = ({ user, domain, userFields, editUserData, logOut, navigation }) => {
-  const [state, setInputs] = useState(user);
+const UpdateUserScreen = ({ navigation }) => {
+  const user = useSelector(({ user }) => user);
+  const userFields = useSelector(({ stateConstants }) => (
+    stateConstants.userFields.filter((userField) => !valueIsValid(userField, user && user[userField.key]))
+  ));
+  const dispatch = useDispatch();
+
+  const [state, setInputs] = React.useState(user);
   const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
   const submitData = () => {
-    editUserData(state, user.uid, domain);
+    dispatch(editUserData(state));
     navigation.replace("Home");
   };
   const UpdateButton = (props) => <SubmitButton {...props} title={"Update"} style={themedStyles.updateButton} />
 
-  useEffect(() => navigation.addListener("beforeRemove", (e) => {
+  React.useEffect(() => navigation.addListener("beforeRemove", (e) => {
     if (e.data.action.type === "POP") {
-      logOut();
+      dispatch(logOut());
     }
   }), []);
 
@@ -50,19 +56,7 @@ const UpdateUserScreen = ({ user, domain, userFields, editUserData, logOut, navi
   )
 };
 
-const mapStateToProps = ({ user, stateConstants, domain }) => ({
-  user,
-  domain: domain.id,
-  // Only include invalid userFields
-  userFields: stateConstants.userFields.filter((userField) => !valueIsValid(userField, user ? user[userField.key] : null))
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  editUserData: (data, uid, domain) => editUserData(dispatch, data, uid, domain),
-  logOut: () => logOut(dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(UpdateUserScreen);
+export default UpdateUserScreen;
 
 const styles = (Colors) => ({
   container: {

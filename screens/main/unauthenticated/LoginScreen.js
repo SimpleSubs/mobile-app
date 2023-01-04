@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,35 +6,35 @@ import {
   BackHandler
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import inputModalProps from "../../../components/modals/InputModal";
+import { inputModalProps } from "../../../components/modals/InputModal";
 import InputsList from "../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../components/userFields/SubmitButton";
 import Layout from "../../../constants/Layout";
 import createStyleSheet from "../../../constants/Colors";
 import { EmailField, PasswordField } from "../../../constants/RequiredFields";
-import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../../redux/Actions";
-import { connect } from "react-redux";
+import { logIn, resetPassword } from "../../../redux/Thunks";
+import { openModal, closeModal } from "../../../redux/features/display/modalSlice";
+import { useDispatch, useSelector } from "react-redux";
 import Logo from "../../../assets/images/icon.svg";
+import { clearOperation, setKey } from "../../../redux/features/display/modalOperationsSlice";
+import uuid from "react-native-uuid";
 
 // Fields required for login
 const LOGIN_FIELDS = [EmailField, PasswordField];
 
-const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswordAction, navigation }) => {
-  const [inputs, setInputs] = useState({ email: "", password: "" });
+const LoginScreen = ({ navigation }) => {
+  const { key, returnValue } = useSelector(({ modalOperations }) => modalOperations);
+  const dispatch = useDispatch();
+  const [inputs, setInputs] = React.useState({ email: "", password: "" });
+  const [modalId, setModalId] = React.useState();
   const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
   // Logs in using component state.
-  const logInState = () => logIn(inputs.email, inputs.password);
-
-  // Sends password reset email and closes modal.
-  const resetPassword = ({ email }) => {
-    resetPasswordAction(email);
-    closeModal();
-  };
+  const logInState = () => dispatch(logIn(inputs.email, inputs.password));
 
   // Prevents popping back to loading screen.
-  useEffect(() => (
+  React.useEffect(() => (
     navigation.addListener("beforeRemove", (e) => {
       if (e.data.action.type === "POP") {
         e.preventDefault();
@@ -42,20 +42,29 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
     })
   ), [navigation]);
 
-  useEffect(() => {
+  const openForgotPasswordModal = () => {
+    dispatch(setKey(modalId));
+    dispatch(openModal(inputModalProps({
+      title: "Reset Password",
+      inputData: [{...EmailField, placeholder: "Your email address"}],
+      buttonTitle: "Send email"
+    })))
+  };
+
+  React.useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", () => true);
     return () => BackHandler.removeEventListener("hardwareBackPress", () => true);
-  })
+  }, []);
 
-  const openForgotPasswordModal = () => openModal(inputModalProps(
-    "Reset Password",
-    [{ ...EmailField, placeholder: "Your email address" }],
-    "Send email",
-    resetPassword,
-    setModalProps
-  ));
+  React.useEffect(() => {
+    if (key === modalId && returnValue?.email) {
+      dispatch(resetPassword(returnValue.email));
+      dispatch(closeModal());
+      dispatch(clearOperation());
+    }
+  }, [returnValue, modalId]);
 
-  const LoginButton = (props) => <SubmitButton {...props} title={"Login"} />
+  React.useEffect(() => setModalId(uuid.v4()), []);
 
   return (
     <InputsList
@@ -85,7 +94,7 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
       data={LOGIN_FIELDS}
       state={inputs}
       setInputs={setInputs}
-      SubmitButton={LoginButton}
+      SubmitButton={(props) => <SubmitButton {...props} title={"Login"} />}
       onSubmit={logInState}
       contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
       style={themedStyles.container}
@@ -93,15 +102,7 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
   )
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  logIn: (email, password) => logIn(dispatch, email, password),
-  openModal: (props) => dispatch(openModal(props)),
-  closeModal: () => dispatch(closeModal()),
-  setModalProps: (props) => dispatch(setModalProps(props)),
-  resetPasswordAction: (email) => resetPassword(dispatch, email)
-})
-
-export default connect(null, mapDispatchToProps)(LoginScreen);
+export default LoginScreen;
 
 const styles = (Colors) => ({
   container: {

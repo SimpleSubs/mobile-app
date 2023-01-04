@@ -6,78 +6,78 @@ import {
   TouchableOpacity
 } from "react-native";
 import { Picker } from "@react-native-community/picker";
-import ModalTypes from "../constants/ModalTypes";
+import ModalTypes, { ModalAnimationTypes } from "../constants/ModalTypes";
 import Layout from "../constants/Layout";
 import createStyleSheet from "../constants/Colors";
+import { closeModal } from "../redux/features/display/modalSlice";
+import { useDispatch } from "react-redux";
+import {setReturnValue} from "../redux/features/display/modalOperationsSlice";
 
-const PickerIOS = ({ changeValue, selectedValue, options, themedStyles }) => (
-  <Picker selectedValue={selectedValue} onValueChange={changeValue} itemStyle={themedStyles.itemTextStyle}>
-    {options.map((value, i) => (
-      <Picker.Item key={value} label={value} value={value} />
-    ))}
+const PickerIOS = ({ onValueChange, selectedValue, options }) => (
+  <Picker selectedValue={selectedValue} onValueChange={onValueChange} itemStyle={createStyleSheet(styles).itemTextStyle}>
+    {options.map((value) => <Picker.Item key={value} label={value} value={value}/>)}
   </Picker>
 );
 
-const PickerAndroid = ({ changeValue, selectedValue, options, themedStyles }) => (
-  <View style={themedStyles.androidPickerContainer}>
-    <FlatList
-      alwaysBounceVertical={false}
-      data={options}
-      extraData={selectedValue}
-      contentContainerStyle={themedStyles.androidPicker}
-      showsVerticalScrollIndicator={true}
-      keyExtractor={(item) => item}
-      ListEmptyComponent={<Text style={themedStyles.noOptionsText}>There are no available options</Text>}
-      renderItem={({ item, index }) => (
-        <TouchableOpacity style={themedStyles.androidItemStyle} onPress={() => changeValue(item)}>
-          <Text style={[
-            themedStyles.itemTextStyle,
-            item === selectedValue ? themedStyles.selectedItemTextStyle : {}
-          ]}>{item}</Text>
-        </TouchableOpacity>
-      )}
-    />
-  </View>
-);
-
-const PickerCrossPlatform = ({ closeModal, selectedValue, onValueChange, options }) => {
+const PickerAndroid = ({ onValueChange, selectedValue, options }) => {
   const themedStyles = createStyleSheet(styles);
+  return (
+    <View style={themedStyles.androidPickerContainer}>
+      <FlatList
+        alwaysBounceVertical={false}
+        data={options}
+        extraData={selectedValue}
+        contentContainerStyle={themedStyles.androidPicker}
+        showsVerticalScrollIndicator={true}
+        keyExtractor={(item) => item}
+        ListEmptyComponent={<Text style={themedStyles.noOptionsText}>There are no available options</Text>}
+        renderItem={({item, index}) => (
+          <TouchableOpacity style={themedStyles.androidItemStyle} onPress={() => onValueChange(item)}>
+            <Text style={[
+              themedStyles.itemTextStyle,
+              item === selectedValue ? themedStyles.selectedItemTextStyle : {}
+            ]}>{item}</Text>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
+  )
+};
+
+const PickerCrossPlatform = ({ selectedValue, options }) => {
+  const dispatch = useDispatch();
   const changeValue = (newValue) => {
-    onValueChange(newValue);
+    dispatch(setReturnValue(newValue));
     if (newValue !== selectedValue) {
-      closeModal();
+      dispatch(closeModal());
     }
   };
   return Layout.ios ? (
     <PickerIOS
-      changeValue={changeValue}
-      closeModal={closeModal}
+      onValueChange={changeValue}
       selectedValue={selectedValue}
-      onValueChange={onValueChange}
       options={options}
-      themedStyles={themedStyles}
     />
   ) : (
     <PickerAndroid
-      changeValue={changeValue}
-      closeModal={closeModal}
+      onValueChange={changeValue}
       selectedValue={selectedValue}
-      onValueChange={onValueChange}
       options={options}
-      themedStyles={themedStyles}
     />
   );
 }
 
 export default PickerCrossPlatform;
 
-export const getPickerProps = (picker) => {
+export const getPickerProps = ({ selectedValue, options }) => {
   const themedStyles = createStyleSheet(styles);
   return ({
-    type: ModalTypes.CENTER_SPRING_MODAL,
+    type: ModalTypes.PICKER_MODAL,
+    animationType: ModalAnimationTypes.CENTER_SPRING_MODAL,
     style: themedStyles.pickerContainer,
-    children: <View style={themedStyles.picker}>{picker}</View>
-  })
+    contentContainerStyle: themedStyles.picker,
+    props: { selectedValue, options }
+  });
 };
 
 const styles = (Colors) => ({

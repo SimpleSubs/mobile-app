@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -10,13 +10,20 @@ import Card from "../../../components/orders/Card";
 import Header from "../../../components/Header";
 import Layout from "../../../constants/Layout";
 import createStyleSheet from "../../../constants/Colors";
-import { deleteOrder, focusOrder, unfocusOrder, logOut, watchOrders } from "../../../redux/Actions";
-import { connect } from "react-redux";
+import { focusOrder, unfocusOrder } from "../../../redux/features/orders/focusedOrderSlice";
+import { deleteOrder, logOut, watchOrders } from "../../../redux/Thunks";
+import { useSelector, useDispatch } from "react-redux";
 import Alert from "../../../constants/Alert";
-import { toReadable, toSimple, parseISO } from "../../../constants/Date";
-import { getUserLunchSchedule, OrderScheduleTypes } from "../../../constants/Schedule";
+import { isDynamic } from "../../../constants/Schedule";
+import { getOrdersArr } from "../../../constants/OrdersAndOptions";
 
-const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule, lunchSchedule, uid, logOut, focusOrder, unfocusOrder, deleteOrder, watchOrders, domain, navigation }) => {
+const HomeScreen = ({ navigation }) => {
+  const orders = useSelector(({ orders, stateConstants }) => (
+    getOrdersArr(orders, isDynamic(stateConstants.orderSchedule))
+  ));
+  const orderPresets = useSelector(({ orderPresets }) => orderPresets);
+  const dynamicMenu = useSelector(({ stateConstants }) => stateConstants.orderOptions.dynamic);
+  const dispatch = useDispatch();
   const themedStyles = createStyleSheet(styles);
   
   const editUser = () => {
@@ -42,7 +49,7 @@ const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule
       Alert("Cannot edit order", "It is too late to edit this order.");
       return;
     }
-    focusOrder(id);
+    dispatch(focusOrder(id));
     if (hasTitle && !dynamicMenu) {
       navigation.navigate("Order", { screen: "Preset Order" });
     } else {
@@ -51,12 +58,12 @@ const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule
   };
 
   // Creates listeners for user's orders collection, popping screen (for log out), and focusing screen (for unfocusing an order).
-  useEffect(() => {
-    const unsubscribeFromWatchOrders = watchOrders(uid, domain, orderSchedule, lunchSchedule);
+  React.useEffect(() => {
+    const unsubscribeFromWatchOrders = watchOrders();
     const unsubscribeFromListener = navigation.addListener("beforeRemove", (e) => {
       if (e.data.action.type === "POP") {
         unsubscribeFromWatchOrders();
-        logOut();
+        dispatch(logOut());
       }
     });
     return () => {
@@ -66,7 +73,7 @@ const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule
   }, [navigation]);
 
   // Unfocuses orders when page loads
-  useEffect(() => navigation.addListener("focus", () => unfocusOrder()), [navigation]);
+  React.useEffect(() => navigation.addListener("focus", () => dispatch(unfocusOrder())), [navigation]);
 
   return (
     <View style={themedStyles.container}>
@@ -90,7 +97,7 @@ const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule
             date={item.date}
             data={item.data}
             onPress={() => focusOrderNavigate(item.key, !!item.title, item.index)}
-            onDelete={() => deleteOrder(item.keys || item.key, domain)}
+            onDelete={() => dispatch(deleteOrder(item.keys || item.key))}
             {...item}
           />
         }
@@ -101,47 +108,7 @@ const HomeScreen = ({ orders = [], orderPresets = {}, dynamicMenu, orderSchedule
   )
 };
 
-/**
- * Gets array of user's future orders sorted chronologically.
- */
-const getOrdersArr = (orders, dynamicSchedule) => {
-  if (!dynamicSchedule) {
-    return Object.values(orders)
-      .sort((orderA, orderB) => parseISO(orderA.date).diff(orderB.date))
-      .map((order) => ({ ...order, date: toReadable(order.date) }));
-  }
-  return Object.values(orders)
-    .sort((orderA, orderB) => parseISO(orderA.date[0]).diff(orderB.date[0]))
-    .map(({ date, key, keys, multipleOrders, ...orderGroups }) => ({
-      date: `${toSimple(date[0])} to ${toSimple(date[date.length - 1])}`,
-      key,
-      keys,
-      multipleOrders,
-      data: Object.values(orderGroups)
-        .sort((orderA, orderB) => parseISO(orderA.date).diff(orderB.date))
-        .map((order) => ({ ...order, date: toReadable(order.date) }))
-    }));
-};
-
-const mapStateToProps = ({ orders, orderPresets, stateConstants, user, domain }) => ({
-  orders: getOrdersArr(orders, stateConstants.orderSchedule?.scheduleType === OrderScheduleTypes.CUSTOM),
-  orderPresets,
-  dynamicMenu: stateConstants.orderOptions.dynamic,
-  orderSchedule: stateConstants.orderSchedule,
-  lunchSchedule: getUserLunchSchedule(stateConstants.lunchSchedule, user || {}),
-  uid: user?.uid,
-  domain: domain.id
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  logOut: () => logOut(dispatch),
-  focusOrder: (id) => dispatch(focusOrder(id)),
-  unfocusOrder: () => dispatch(unfocusOrder()),
-  deleteOrder: (id, domain) => deleteOrder(dispatch, id, domain),
-  watchOrders: (uid, domain, orderSchedule, lunchSchedule) => watchOrders(dispatch, uid, domain, orderSchedule, lunchSchedule)
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
+export default HomeScreen;
 
 const styles = (Colors) => ({
   container: {

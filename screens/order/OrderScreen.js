@@ -1,36 +1,26 @@
 import React from "react";
 import OrderInputsList from "../../components/orders/OrderInputsList";
-import { createOrder, deleteOrder, editOrder } from "../../redux/Actions";
-import { connect } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { createOrder, deleteOrder, editOrder } from "../../redux/Thunks";
+import { isDynamic } from "../../constants/Schedule";
 
-const OrderScreen = ({ focusedOrder, orderOptions, createOrder, editOrder, deleteOrder, navigation }) => {
-  const cancelOrder = () => navigation.navigate("Home");
+const OrderScreen = ({ navigation }) => {
+  const focusedOrder = useSelector(({ orders, focusedOrder }) => focusedOrder && orders[focusedOrder]);
+  const orderOptions = useSelector(({ stateConstants }) => stateConstants.orderOptions);
+  const dispatch = useDispatch();
+  const dynamic = isDynamic(orderOptions);
   return (
     <OrderInputsList
       title={"Custom Order"}
       focusedData={focusedOrder}
       orderOptions={orderOptions}
-      cancel={cancelOrder}
-      createNew={createOrder}
-      editExisting={editOrder}
-      deleteExisting={deleteOrder}
+      cancel={() => navigation.navigate("Home")}
+      createNew={(data) => dispatch(createOrder(data, dynamic))}
+      editExisting={(data, ids) => dispatch(editOrder(data, ids, dynamic))}
+      deleteExisting={(id) => dispatch(deleteOrder(id))}
       deleteMessage={"Delete Order"}
     />
   )
 };
 
-const mapStateToProps = ({ focusedOrder, orders, stateConstants }) => ({
-  focusedOrder: focusedOrder ? orders[focusedOrder] : null,
-  orderOptions: {
-    requireDate: true,
-    ...stateConstants.orderOptions
-  }
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  createOrder: (data, uid, domain, dynamicSchedule) => createOrder(dispatch, data, uid, domain, dynamicSchedule),
-  editOrder: (data, ids, uid, domain, dynamicSchedule) => editOrder(dispatch, data, ids, uid, domain, dynamicSchedule),
-  deleteOrder: (id, domain) => deleteOrder(dispatch, id, domain),
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(OrderScreen);
+export default OrderScreen;

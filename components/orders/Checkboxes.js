@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -27,8 +27,9 @@ const getColumnArr = (items, numColumns) => {
 /**
  * Renders a checkbox that instantaneously updates (rather than re-processing state each time) for faster UI reaction.
  */
-const CheckBoxWithState = ({ selectedItems, item, setItems, themedStyles }) => {
-  const [checked, setChecked] = useState(selectedItems.includes(item));
+const CheckBoxWithState = ({ selectedItems, item, setItems }) => {
+  const [checked, setChecked] = React.useState(selectedItems.includes(item));
+  const themedStyles = createStyleSheet(styles);
   const colors = getColors();
 
   // Toggles checkbox within component and in higher state
@@ -54,29 +55,26 @@ const CheckBoxWithState = ({ selectedItems, item, setItems, themedStyles }) => {
   );
 };
 
-const ColumnLayout = ({ numColumns, items, themedStyles, ...props }) => {
+const ColumnLayout = ({ numColumns, items, ...props }) => {
+  const themedStyles = createStyleSheet(styles);
   const columnArr = getColumnArr(items, numColumns);
   return columnArr.map((column, colIndex ) => (
     <View style={themedStyles.column} key={colIndex}>
-      {column.map((item, index) => <CheckBoxWithState item={item} key={index} themedStyles={themedStyles} {...props} />)}
+      {column.map((item, index) => <CheckBoxWithState item={item} key={index} {...props} />)}
     </View>
   ));
 };
 
-const Checkboxes = ({ selectedItems = [], itemsArr = [], setItems }) => {
-  const themedStyles = createStyleSheet(styles);
-  return (
-    <View style={themedStyles.container}>
-      <ColumnLayout
-        items={itemsArr}
-        numColumns={2}
-        selectedItems={selectedItems}
-        setItems={setItems}
-        themedStyles={themedStyles}
-      />
-    </View>
-  );
-}
+const Checkboxes = ({ selectedItems = [], itemsArr = [], setItems }) => (
+  <View style={createStyleSheet(styles).container}>
+    <ColumnLayout
+      items={itemsArr}
+      numColumns={2}
+      selectedItems={selectedItems}
+      setItems={setItems}
+    />
+  </View>
+);
 
 export default Checkboxes;
 

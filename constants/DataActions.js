@@ -1,7 +1,7 @@
-import {groupToSimple, toReadable, toSimple} from "./Date";
-import inputModalProps from "../components/modals/InputModal";
+import { groupToSimple, toReadable } from "./Date";
+import { inputModalProps } from "../components/modals/InputModal";
 import { InputTypes, TextTypes } from "./Inputs";
-import { getValidOrderDates, isBeforeCutoff, OrderScheduleTypes } from "./Schedule";
+import { getValidOrderDates, OrderScheduleTypes } from "./Schedule";
 
 // Options for dynamic order actions (on order screen)
 export const DynamicOrderOptions = {
@@ -52,25 +52,21 @@ export const getDateOptions = (orders, focusedOrder, lunchSchedule, orderSchedul
   return { options: values, mapping };
 }
 
-export const openChangePasswordModal = (openModal, setModalProps, changePassword) => {
-  openModal(inputModalProps(
-    "Change Password",
-    [
-      {
-        key: "oldPassword",
-        inputType: InputTypes.TEXT_INPUT,
-        textType: TextTypes.PASSWORD,
-        placeholder: "Current password"
-      },
-      {
-        key: "newPassword",
-        inputType: InputTypes.TEXT_INPUT,
-        textType: TextTypes.NEW_PASSWORD,
-        placeholder: "New password"
-      }
-    ],
-    "Confirm",
-    changePassword,
-    setModalProps
-  ));
-};
+export const changePasswordModalProps = inputModalProps({
+  title: "Change Password",
+  inputData: [
+    {
+      key: "oldPassword",
+      inputType: InputTypes.TEXT_INPUT,
+      textType: TextTypes.PASSWORD,
+      placeholder: "Current password"
+    },
+    {
+      key: "newPassword",
+      inputType: InputTypes.TEXT_INPUT,
+      textType: TextTypes.NEW_PASSWORD,
+      placeholder: "New password"
+    }
+  ],
+  buttonTitle: "Confirm"
+});

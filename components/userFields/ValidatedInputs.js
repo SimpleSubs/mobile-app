@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react"
+import React from "react"
 import {
   TextInput,
   View,
@@ -6,13 +6,15 @@ import {
   Text,
   TouchableOpacity
 } from "react-native";
-import Picker, { getPickerProps } from "../Picker";
+import uuid from 'react-native-uuid';
+import { getPickerProps } from "../Picker";
 import { Ionicons } from "@expo/vector-icons";
 import Layout from "../../constants/Layout";
 import createStyleSheet, { getColors }  from "../../constants/Colors";
 import { NO_ERROR } from "../../constants/Inputs";
-import { connect } from "react-redux";
-import { openModal, closeModal } from "../../redux/Actions";
+import { useDispatch, useSelector } from "react-redux";
+import { openModal } from "../../redux/features/display/modalSlice";
+import { setKey } from "../../redux/features/display/modalOperationsSlice";
 
 const isValidText = (validateFunc, value, setError, fixValue, otherInputs = [], required) => {
   let fixedValue = fixValue(value);
@@ -55,11 +57,13 @@ const textAnimation = (errorMessage, animated, setDisplayedError, prevError) => 
   });
 }
 
-const InputContainer = ({ error, textStyle = {}, contentContainerStyle = {}, children, themedStyles }) => {
-  const [displayedError, setDisplayedError] = useState(error);
-  const prevError = useRef();
-  const animated = useRef(new Animated.Value(0)).current;
-  useEffect(() => textAnimation(error, animated, setDisplayedError, prevError), [error]);
+const InputContainer = ({ error, textStyle = {}, contentContainerStyle = {}, children }) => {
+  const [displayedError, setDisplayedError] = React.useState(error);
+  const prevError = React.useRef();
+  const animated = React.useRef(new Animated.Value(0)).current;
+  const themedStyles = createStyleSheet(styles);
+
+  React.useEffect(() => textAnimation(error, animated, setDisplayedError, prevError), [error]);
   return (
     <View style={contentContainerStyle}>
       {children}
@@ -78,10 +82,10 @@ const InputContainer = ({ error, textStyle = {}, contentContainerStyle = {}, chi
  * Text input with validation
  */
 export const ValidatedTextInput = ({ setRef, validate, value, otherInputs = [], style = {}, errorTextStyle, fixValue, contentContainerStyle, required, ...props }) => {
-  const [errorMessage, setError] = useState(NO_ERROR);
+  const [errorMessage, setError] = React.useState(NO_ERROR);
   const themedStyles = createStyleSheet(styles);
   return (
-    <InputContainer contentContainerStyle={contentContainerStyle} error={errorMessage} textStyle={errorTextStyle} themedStyles={themedStyles}>
+    <InputContainer contentContainerStyle={contentContainerStyle} error={errorMessage} textStyle={errorTextStyle}>
       <TextInput
         {...props}
         value={value}
@@ -96,28 +100,43 @@ export const ValidatedTextInput = ({ setRef, validate, value, otherInputs = [], 
 /**
  * Picker touchable with validation
  */
-const ValidatedPickerComponent = ({ setRef, value, onValueChange, options, style = {}, contentContainerStyle, errorTextStyle, openModal, closeModal, required, ...props }) => {
-  const [errorMessage, setError] = useState(NO_ERROR);
-  const prevValueRef = useRef();
+export const ValidatedPicker = ({ setRef, value, onValueChange, options, style = {}, contentContainerStyle, errorTextStyle, required, ...props }) => {
+  const { key, returnValue } = useSelector(({ modalOperations }) => modalOperations);
+  const dispatch = useDispatch();
+
+  const [errorMessage, setError] = React.useState(NO_ERROR);
+  const [modalId, setModalId] = React.useState();
+  const prevValueRef = React.useRef();
   const themedStyles = createStyleSheet(styles);
 
-  const myPicker = (
-    <Picker closeModal={closeModal} selectedValue={value} onValueChange={onValueChange} options={options} />
-  );
+  const openPicker = () => {
+    dispatch(setKey(modalId));
+    dispatch(openModal(getPickerProps({ selectedValue: value, options })));
+  };
 
-  useEffect(() => {
+  React.useEffect(() => {
+    if (key === modalId && returnValue) {
+      onValueChange(returnValue);
+    }
+  }, [returnValue]);
+
+  React.useEffect(() => {
     if (prevValueRef.current) {
       isValidPicker(value, options, setError, required);
     }
     prevValueRef.current = value;
   }, [value]);
 
+  React.useEffect(() => {
+    setModalId(uuid.v4());
+  }, []);
+
   return (
-    <InputContainer contentContainerStyle={contentContainerStyle} error={errorMessage} textStyle={errorTextStyle} themedStyles={themedStyles}>
+    <InputContainer contentContainerStyle={contentContainerStyle} error={errorMessage} textStyle={errorTextStyle}>
       <TouchableOpacity
         {...props}
         style={[themedStyles.input, themedStyles.pickerTouchable, style]}
-        onPress={() => openModal(getPickerProps(myPicker))}
+        onPress={openPicker}
         ref={(ref) => setRef(ref, (val) => isValidPicker(val, options, setError, required))}
       >
         <Text style={themedStyles.inputText}>{value}</Text>
@@ -125,14 +144,7 @@ const ValidatedPickerComponent = ({ setRef, value, onValueChange, options, style
       </TouchableOpacity>
     </InputContainer>
   )
-}
-
-const mapDispatchToProps = (dispatch) => ({
-  openModal: (props) => dispatch(openModal(props)),
-  closeModal: () => dispatch(closeModal())
-});
-
-export const ValidatedPicker = connect(null, mapDispatchToProps)(ValidatedPickerComponent);
+};
 
 const styles = (Colors) => ({
   input: {

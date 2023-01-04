@@ -3,7 +3,6 @@ import { TextInput } from "react-native";
 import IngredientPicker from "./IngredientPicker";
 import AnimatedDropdown from "./AnimatedDropdown";
 import Checkboxes from "./Checkboxes";
-import { connect } from "react-redux";
 import createStyleSheet, { getColors } from "../../constants/Colors";
 import Layout from "../../constants/Layout";
 import { InputTypes } from "../../constants/Inputs";
@@ -44,14 +43,7 @@ const OrderField = ({ title, type, options, value, placeholder, setValue, multil
   }
 };
 
-const mapStateToProps = ({ orders, orderPresets, stateConstants }) => ({
-  orders,
-  orderPresets,
-  lunchSchedule: stateConstants.lunchSchedule,
-  orderSchedule: stateConstants.orderSchedule
-});
-
-export default connect(mapStateToProps, null)(OrderField);
+export default OrderField;
 
 const styles = (Colors) => ({
   textInput: {

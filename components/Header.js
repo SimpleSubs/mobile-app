@@ -10,14 +10,14 @@ import Colors from "../constants/Colors";
 import Layout from "../constants/Layout";
 import createStyleSheet, { getColors } from "../constants/Colors";
 
-const Spacer = ({ themedStyles }) => (
+const Spacer = () => (
   <Ionicons
-    style={themedStyles.navigateButtons}
+    style={createStyleSheet(styles).navigateButtons}
     name={"square-outline"}
     color={getColors().backgroundColor}
     size={Layout.fonts.icon}
   />
-)
+);
 
 /**
  * Standard header for pages in main stack
@@ -27,7 +27,12 @@ const Header = ({ title, style = {}, rightButton, leftButton, includeInsets = tr
   const colors = getColors();
   return (
     <View
-      style={[themedStyles.header, {paddingTop: themedStyles.header.paddingVertical + (includeInsets ? useSafeAreaInsets().top : 0)}, style]}>
+      style={[
+        themedStyles.header,
+        { paddingTop: themedStyles.header.paddingVertical + (includeInsets ? useSafeAreaInsets().top : 0) },
+        style
+      ]}
+    >
       {leftButton ? (
         <AnimatedTouchable style={themedStyles.navigateButtons} endSize={0.8} onPress={leftButton.onPress}>
           <Ionicons
@@ -37,7 +42,7 @@ const Header = ({ title, style = {}, rightButton, leftButton, includeInsets = tr
             style={leftButton.style}
           />
         </AnimatedTouchable>
-      ) : <Spacer themedStyles={themedStyles} />}
+      ) : <Spacer />}
       <Text style={themedStyles.headerText}>{title}</Text>
       {rightButton ? (
         <AnimatedTouchable style={themedStyles.navigateButtons} endSize={0.8} onPress={rightButton.onPress}>
@@ -48,7 +53,7 @@ const Header = ({ title, style = {}, rightButton, leftButton, includeInsets = tr
             style={rightButton.style}
           />
         </AnimatedTouchable>
-      ) : <Spacer themedStyles={themedStyles} />}
+      ) : <Spacer />}
       {children}
     </View>
   )
