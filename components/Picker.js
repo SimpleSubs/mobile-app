@@ -5,7 +5,7 @@ import {
   View,
   TouchableOpacity
 } from "react-native";
-import { Picker } from "@react-native-community/picker";
+import { Picker } from "@react-native-picker/picker";
 import ModalTypes, { ModalAnimationTypes } from "../constants/ModalTypes";
 import Layout from "../constants/Layout";
 import createStyleSheet from "../constants/Colors";

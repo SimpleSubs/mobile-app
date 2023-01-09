@@ -3,7 +3,7 @@ import {
   Text,
   TouchableOpacity
 } from "react-native";
-import { Picker } from '@react-native-community/picker';
+import { Picker } from "@react-native-picker/picker";
 import AnimatedDropdown from "./AnimatedDropdown";
 import { getPickerProps } from "../Picker";
 import { useDispatch, useSelector } from "react-redux";
