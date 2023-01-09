@@ -16,3 +16,4 @@ web-report/
 .idea/
 .env
 serviceAccountKey.json
+.actions-env

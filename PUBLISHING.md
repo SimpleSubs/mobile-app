@@ -34,10 +34,11 @@ Generally, the default selections should suffice.
 
 ### Step 2: Create `.env` file
 
-A `.env` file is necessary to store the Sentry auth token. It should resemble the following format:
+A `.env` file is necessary to store the Sentry auth token and Apple ID. It should resemble the following format:
 
 ```text
 SENTRY_AUTH_TOKEN=<auth token here>
+EXPO_APPLE_ID=<email here>
 ```
 
 The file should be automatically included in `.gitignore`, but **please ensure that it does not get added or committed
