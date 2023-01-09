@@ -2,14 +2,14 @@ import React from "react";
 import {
   View,
   Text,
-  FlatList
+  FlatList, ActivityIndicator
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnimatedTouchable from "../../../components/AnimatedTouchable";
 import Card from "../../../components/orders/Card";
 import Header from "../../../components/Header";
 import Layout from "../../../constants/Layout";
-import createStyleSheet from "../../../constants/Colors";
+import createStyleSheet, {getColors} from "../../../constants/Colors";
 import { focusOrder, unfocusOrder } from "../../../redux/features/orders/focusedOrderSlice";
 import { deleteOrder, logOut, watchOrders } from "../../../redux/Thunks";
 import { useSelector, useDispatch } from "react-redux";
@@ -23,6 +23,7 @@ const HomeScreen = ({ navigation }) => {
   ));
   const orderPresets = useSelector(({ orderPresets }) => orderPresets);
   const dynamicMenu = useSelector(({ stateConstants }) => stateConstants.orderOptions.dynamic);
+  const loading = useSelector(({ loading }) => loading.value);
   const dispatch = useDispatch();
   const themedStyles = createStyleSheet(styles);
   
@@ -84,7 +85,10 @@ const HomeScreen = ({ navigation }) => {
         rightButton={{ name: "settings-outline", onPress: editUser }}
       >
         <AnimatedTouchable style={themedStyles.placeOrderButton} endOpacity={1} onPress={newOrder}>
-          <Text style={themedStyles.placeOrderButtonText}>Place an order</Text>
+          {loading
+            ? <ActivityIndicator size={"small"} color={getColors().textOnBackground} />
+            : <Text style={themedStyles.placeOrderButtonText}>Place an order</Text>
+          }
         </AnimatedTouchable>
       </Header>
       <FlatList

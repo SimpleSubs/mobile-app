@@ -6,7 +6,7 @@ import reportToSentry from "./Sentry";
 import moment from "moment";
 import { ISO_FORMAT } from "./Date";
 
-const ENDPOINT = "http://127.0.0.1:5001/sandwich-orders/us-central1/";
+const ENDPOINT = "https://us-central1-sandwich-orders.cloudfunctions.net/";
 
 const app = initializeApp(firebaseConfig);
 const firestore = getFirestore(app);
@@ -144,7 +144,7 @@ export const getInitialData = async (domain, uid) => (
   ])
 );
 
-export const snapshotToSerializable = (snapshot) => snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+export const snapshotToSerializable = (snapshot) => snapshot.docs.map((doc) => ({ ...doc.data(), key: doc.id }));
 
 const customErrorMessage = (error) => {
   switch (error.code) {

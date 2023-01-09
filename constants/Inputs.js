@@ -36,7 +36,7 @@ export const valueIsValid = (userField, value) => {
 /**
  * Determines if a user's profile contains any invalid values (i.e. if userFields has changed).
  */
-export const allValid = (user, userFields) => (
+export const allValid = (user, userFields = []) => (
   userFields
     .map((userField) => valueIsValid(userField, user ? user[userField.key] : null))
     .reduce((a, b) => a && b, true)

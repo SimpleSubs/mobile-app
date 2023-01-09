@@ -6,8 +6,8 @@ export const orderPresetsSlice = createSlice({
   reducers: {
     updatePresets: (state, action) => {
       const presets = {};
-      for (const { id, ...doc } of action.payload) {
-        presets[id] = { ...doc, key: id };
+      for (const doc of action.payload) {
+        presets[doc.key] = doc;
       }
       return presets;
     }

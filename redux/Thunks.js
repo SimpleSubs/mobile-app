@@ -20,7 +20,8 @@ import {
   getUserDomain,
   getDomainByCode,
   getStateConstants,
-  getInitialData, snapshotToSerializable
+  getInitialData,
+  snapshotToSerializable
 } from "../constants/Firebase";
 import {
   getFirestore,
@@ -29,7 +30,8 @@ import {
   onSnapshot,
   setDoc,
   deleteDoc,
-  addDoc
+  addDoc,
+  getDocs
 } from "firebase/firestore";
 import {
   getAuth,
@@ -81,7 +83,7 @@ const executeAsyncAction = (dispatch, f, successMessage = null) => (
  */
 export const createOrder = (data, dynamicSchedule) => (dispatch, getState) => (
   loadWhileExecute(dispatch, async () => {
-    const { user, domain } = getState();
+    const { user, domain, stateConstants } = getState();
     const date = dynamicSchedule
       ? Object.keys(data).find((key) => key !== "date")
       : toISO(data.date);
@@ -92,10 +94,17 @@ export const createOrder = (data, dynamicSchedule) => (dispatch, getState) => (
         domain.id,
         { ...dataToPush, date, uid: user.uid }
       );
-      if (success)
+      if (success) {
+        const ordersSnapshot = await getDocs(myOrders(user.uid, domain.id));
+        dispatch(updateOrders({
+          user,
+          stateConstants,
+          snapshot: snapshotToSerializable(ordersSnapshot)
+        }));
         dispatch(setInfoMessage("Order created successfully"));
-      else
+      } else {
         dispatch(setInfoMessage("Order failed: The daily sandwich order limit has been reached"));
+      }
     } catch (e) {
       alertError(e);
     }
@@ -283,10 +292,14 @@ export const changePassword = (currentPassword, newPassword) => (dispatch) => (
 ///////////////
 
 export const watchOrders = () => {
-  const { user: { uid }, domain } = store.getState();
+  const { user, stateConstants, domain } = store.getState();
   return onSnapshot(
-    myOrders(uid, domain.id),
-    (snapshot) => store.dispatch(updateOrders(snapshotToSerializable(snapshot))),
+    myOrders(user.uid, domain.id),
+    (snapshot) => store.dispatch(updateOrders({
+      user,
+      stateConstants,
+      snapshot: snapshotToSerializable(snapshot)
+    })),
     alertError
   );
 };
@@ -342,10 +355,13 @@ export const getAuthData = () => (dispatch) => (
     dispatch(setDomain(domainData));
     const { id } = domainData;
     const [ordersSnapshot, userData, stateConstants, presetsSnapshot] = await getInitialData(id, uid);
-    const { orderSchedule, lunchSchedule } = stateConstants;
     dispatch(updateConstants(stateConstants));
     dispatch(updateUserData(userData.data()));
-    dispatch(updateOrders(snapshotToSerializable(ordersSnapshot), orderSchedule, lunchSchedule));
+    dispatch(updateOrders({
+      user: { uid, ...userData.data() },
+      stateConstants: stateConstants,
+      snapshot: snapshotToSerializable(ordersSnapshot)
+    }));
     dispatch(updatePresets(snapshotToSerializable(presetsSnapshot)));
     return { user: userData.data(), userFields: stateConstants.userFields };
   })

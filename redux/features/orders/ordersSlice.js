@@ -17,18 +17,18 @@ export const ordersSlice = createSlice({
      * Update order state from data pulled from Firestore collection
      */
     updateOrders: (state, action) => {
-      const { user, stateConstants } = state;
-      if (!stateConstants || stateConstants.orderSchedule || !stateConstants.lunchSchedule || !user) {
+      const { user, stateConstants, snapshot } = action.payload;
+      if (!stateConstants || !stateConstants.orderSchedule || !stateConstants.lunchSchedule || !user) {
         return;
       }
       const { orderSchedule } = stateConstants;
       const lunchSchedule = getUserLunchSchedule(stateConstants.lunchSchedule, user);
       const collectionData = {};
       const cutoffDate = getCutoffDate(orderSchedule);
-      const docs = action.payload;
+      const docs = Object.values(snapshot);
       for (const { uid, ...data } of docs) {
         if (parseISO(data.date).isSameOrAfter(cutoffDate)) {
-          collectionData[data.id] = data;
+          collectionData[data.key] = data;
         }
       }
       if (orderSchedule.scheduleType === OrderScheduleTypes.CUSTOM && Object.keys(collectionData).length > 0) {

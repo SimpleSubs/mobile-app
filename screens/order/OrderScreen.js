@@ -6,7 +6,10 @@ import { isDynamic } from "../../constants/Schedule";
 
 const OrderScreen = ({ navigation }) => {
   const focusedOrder = useSelector(({ orders, focusedOrder }) => focusedOrder && orders[focusedOrder]);
-  const orderOptions = useSelector(({ stateConstants }) => stateConstants.orderOptions);
+  const orderOptions = useSelector(({ stateConstants }) => ({
+    requireDate: true,
+    ...stateConstants.orderOptions
+  }));
   const dispatch = useDispatch();
   const dynamic = isDynamic(orderOptions);
   return (
