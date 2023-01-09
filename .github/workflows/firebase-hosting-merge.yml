@@ -32,7 +32,7 @@ jobs:
           SENTRY_AUTH_TOKEN: '${{ secrets.SENTRY_AUTH_TOKEN }}'
 
       - name: 🚀 Build web app
-        run: expo export:web
+        run: npx expo export:web
         env:
           SENTRY_AUTH_TOKEN: '${{ secrets.SENTRY_AUTH_TOKEN }}'
 
