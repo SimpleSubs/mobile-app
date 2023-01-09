@@ -1,18 +1,14 @@
-/**
- * @file Creates top-level info modal.
- * @author Emily Sturman <emily@sturman.org>
- */
-import React, { useRef, useEffect, useState } from "react";
+import React from "react";
 import {
-  StyleSheet,
   Animated,
   Text,
   TouchableHighlight,
 } from "react-native";
 import Layout from "../../constants/Layout";
-import Colors from "../../constants/Colors";
-import { setInfoMessage } from "../../redux/Actions";
-import { connect } from "react-redux";
+import createStyleSheet, { getColors } from "../../constants/Colors";
+import { setInfoMessage } from "../../redux/features/display/infoMessageSlice";
+import { CLOSED_INFO_MODAL } from "../../redux/features/display/infoMessageSlice";
+import { useSelector, useDispatch } from "react-redux";
 
 // Constants for horizontal/vertical margin
 const MARGIN_HORIZONTAL = 10;
@@ -20,20 +16,9 @@ const MARGIN_VERTICAL = 40;
 // Time in seconds until modal automatically closes
 const CLOSE_MODAL_TIMEOUT = 10;
 // String that represents a closed modal
-export const CLOSED_INFO_MODAL = "    ";
 
 const TouchableAnimated = Animated.createAnimatedComponent(TouchableHighlight);
 
-/**
- * Computes translate animation style for modal.
- *
- * Interpolates scale animated value (from 0 to 1) to correct values for modal
- * to slide from bottom position to offscreen.
- *
- * @param {Animated.Value} animated     Animated value for translate/slide animation.
- *
- * @returns {Object} Style object to be applied to the modal.
- */
 const getModalStyle = (animated) => {
   const scaleInterpolation = animated.interpolate({
     inputRange: [0, 1],
@@ -42,16 +27,6 @@ const getModalStyle = (animated) => {
   return { transform: [{ scale: scaleInterpolation }], opacity: animated };
 };
 
-/**
- * Triggers toggle animation for opening/closing modal.
- *
- * Starts timing animation for translate; closes modal
- * if modal is open, opens modal if modal is closed.
- *
- * @param {boolean}        open           Whether modal is currently being opened.
- * @param {Animated.Value} animated       Animated value for translate animation.
- * @param {function()}     displayMessage Function that displays the new message on the modal (ensures that message doesn't disappear until after animation).
- */
 const toggleAnimation = (open, animated, displayMessage) => {
   animated.setValue(open ? 0 : 1);
   if (open) displayMessage();
@@ -65,25 +40,21 @@ const toggleAnimation = (open, animated, displayMessage) => {
 };
 
 /**
- * Renders a modal that displays important info messages at
- * various places in the app.
- *
- * Uses Animated API to animate slide animation; modal also closes when tapped
- * or when it times out.
- *
- * @param {string}   infoMessage Message to be displayed in modal; CLOSED_INFO_MODAL message will hide the modal.
- * @param {Function} closeModal  Function to close the modal.
- *
- * @returns {React.ReactElement} Component representing modal.
- * @constructor
+ * Overlaid popup to display important info
  */
-const InfoModal = ({ infoMessage, closeModal }) => {
-  const [displayedMessage, displayMessage] = useState(infoMessage);
-  const animated = useRef(new Animated.Value(0)).current;
-  const timeoutRef = useRef();
+const InfoModal = () => {
+  const infoMessage = useSelector(({ infoMessage }) => infoMessage.value);
+  const dispatch = useDispatch();
+
+  const [displayedMessage, displayMessage] = React.useState(infoMessage);
+  const animated = React.useRef(new Animated.Value(0)).current;
+  const timeoutRef = React.useRef(null);
+  const themedStyles = createStyleSheet(styles);
+
+  const closeModal = () => dispatch(setInfoMessage(CLOSED_INFO_MODAL));
 
   // Closes info modal after 10 seconds if new message does not appear
-  useEffect(() => {
+  React.useEffect(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -98,28 +69,20 @@ const InfoModal = ({ infoMessage, closeModal }) => {
     return (
       <TouchableAnimated
         onPress={closeModal}
-        style={[styles.container, getModalStyle(animated)]}
-        underlayColor={Colors.infoModal}
+        style={[themedStyles.container, getModalStyle(animated)]}
+        underlayColor={getColors().infoModal}
         delayPressIn={0}
         activeOpacity={0.5}
       >
-        <Text style={styles.text}>{displayedMessage}</Text>
+        <Text style={themedStyles.text}>{displayedMessage}</Text>
       </TouchableAnimated>
     );
   }
 };
 
-const mapStateToProps = ({ infoMessage }) => ({
-  infoMessage
-});
+export default InfoModal;
 
-const mapDispatchToProps = (dispatch) => ({
-  closeModal: () => dispatch(setInfoMessage(CLOSED_INFO_MODAL))
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(InfoModal);
-
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     position: "absolute",
     zIndex: 1000000,

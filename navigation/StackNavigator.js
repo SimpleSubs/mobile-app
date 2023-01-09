@@ -1,14 +1,11 @@
-/**
- * @file Manages app navigation.
- * @author Emily Sturman <emily@sturman.org>
- */
-import React, { useEffect } from "react";
+import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { connect } from "react-redux";
-import { watchAuthState } from "../redux/Actions";
+import { useSelector } from "react-redux";
+import { watchAuthState } from "../redux/Thunks";
 import LoadingScreen from "../screens/main/LoadingScreen";
 import LoginScreen from "../screens/main/unauthenticated/LoginScreen";
+import CreditsScreen from "../screens/main/unauthenticated/CreditsScreen";
 import RegisterScreen from "../screens/main/unauthenticated/register/RegisterScreen";
 import DomainScreen from "../screens/main/unauthenticated/register/DomainScreen";
 import UpdateUserScreen from "../screens/main/authenticated/UpdateUserScreen";
@@ -20,7 +17,7 @@ import PreOrderScreen from "../screens/order/PreOrderScreen";
 import OrderScreen from "../screens/order/OrderScreen";
 import PresetOrderScreen from "../screens/order/PresetOrderScreen";
 import PresetScreen from "../screens/PresetScreen";
-import Colors from "../constants/Colors";
+import { getColors } from "../constants/Colors";
 
 // Primary stack to display (home screen, login screen, etc.)
 const MainStack = createStackNavigator();
@@ -31,23 +28,13 @@ const RegisterStack = createStackNavigator();
 // Stack containing both stacks above, plus preset screen
 const RootStack = createStackNavigator();
 
-/**
- * Renders screens for main stack.
- *
- * Returns screens based on whether user is authenticated; login/register
- * if not, home/settings/etc. if so.
- *
- * @param {boolean} isSignedIn Whether user is authenticated.
- *
- * @return {React.ReactElement} Stack screens.
- * @constructor
- */
 const MainStackScreen = ({ isSignedIn }) => (
   <MainStack.Navigator screenOptions={{ headerShown: false }}>
     <MainStack.Screen name={"Loading"} component={LoadingScreen} options={{ gestureEnabled: false }} />
     {!isSignedIn ? (
       <>
         <MainStack.Screen name={"Login"} component={LoginScreen} options={{ gestureEnabled: false }} />
+        <MainStack.Screen name={"Credits"} component={CreditsScreen} />
       </>
     ) : (
       <>
@@ -61,15 +48,6 @@ const MainStackScreen = ({ isSignedIn }) => (
   </MainStack.Navigator>
 );
 
-/**
- * Renders screens for order stack.
- *
- * Renders pre-order screen (i.e. screen that comes before order screens),
- * plus options for order screens.
- *
- * @return {React.ReactElement} Stack screens.
- * @constructor
- */
 const OrderStackScreen = () => (
   <OrderStack.Navigator screenOptions={{ headerShown: false }}>
     <MainStack.Screen name={"Preorder"} component={PreOrderScreen} />
@@ -83,25 +61,13 @@ const RegisterStackScreen = () => (
     <RegisterStack.Screen name={"Domain"} component={DomainScreen} />
     <RegisterStack.Screen name={"Register User"} component={RegisterScreen} />
   </RegisterStack.Navigator>
-)
+);
 
-/**
- * Renders screens for root stack and main app navigator.
- *
- * Renders main stack, order stack, and preset screen.
- * Sub-stacks animate as standard screens, while the root
- * stack animates as fullscreen modals.
- *
- * @param {boolean} isSignedIn Whether user is authenticated.
- * @param {function()} watchAuthState Listener for changes in user authentication.
- *
- * @return {React.ReactElement} Navigation container with root stack.
- * @constructor
- */
-const StackNavigator = ({ isSignedIn, watchAuthState }) => {
-  useEffect(watchAuthState, []);
+const StackNavigator = () => {
+  const isSignedIn = useSelector(({ user }) => !!user);
+  React.useEffect(watchAuthState, []);
   return (
-    <NavigationContainer theme={{ colors: { background: Colors.backgroundColor } }}>
+    <NavigationContainer theme={{ colors: { background: getColors().backgroundColor } }}>
       <RootStack.Navigator screenOptions={{ headerShown: false, presentation: "modal" }}>
         <RootStack.Screen name={"Main"}>
           {() => <MainStackScreen isSignedIn={isSignedIn} />}
@@ -112,14 +78,6 @@ const StackNavigator = ({ isSignedIn, watchAuthState }) => {
       </RootStack.Navigator>
     </NavigationContainer>
   );
-}
+};
 
-const mapStateToProps = ({ user }) => ({
-  isSignedIn: !!user
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  watchAuthState: () => watchAuthState(dispatch)
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(StackNavigator);
+export default StackNavigator;

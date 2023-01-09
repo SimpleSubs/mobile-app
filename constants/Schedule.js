@@ -1,5 +1,5 @@
 import moment from "moment";
-import {ISO_FORMAT, parseISO, toReadable} from "./Date";
+import { ISO_FORMAT, parseISO } from "./Date";
 
 export const OrderScheduleTypes = {
   DAY_OF: "DAY_OF",
@@ -7,17 +7,6 @@ export const OrderScheduleTypes = {
   CUSTOM: "CUSTOM"
 };
 
-/**
- * Get an array containing a range of dates as specified by user.
- *
- * @param {moment.Moment} start        Start date (incl).
- * @param {number}        length       Number of dates to include (will subtract excluded weekdays from count).
- * @param {number}        [step=1]     Step between each date.
- * @param {number[]}      [exclude=[]] Weekdays to exclude.
- *
- * @return {string[]} Array of ISO dates starting at start date
- * containing `length` dates, with `step` days between them.
- */
 const getDateRange = (start, length, step = 1, exclude = []) => (
   (new Array(length))
     .fill(null)
@@ -56,17 +45,8 @@ export const getCutoffDate = (orderSchedule) => {
     default:
       return todayMoment.format(ISO_FORMAT);
   }
-}
+};
 
-/**
- * Gets the next available (non-null) date in schedule following the provided date.
- *
- * @param {Array<{hours: number, minutes: number}|string|null>} schedule                               7-element array representing custom schedule.
- * @param {{hours: number, minutes: number}}                    [defaultTime={hours: 23, minutes: 59}] Default cutoff time (defaults to end of the day).
- * @param {string}                                              [date=moment().format("YYYY-MM-DD")]   Start date in ISO format (defaults to today).
- *
- * @return {string} An ISO date representing the next available date in schedule.
- */
 const getNextScheduledDate = (schedule, defaultTime = { hours: 23, minutes: 59 }, date = moment().format(ISO_FORMAT)) => {
   const currentDate = parseISO(date);
   const day = currentDate.day();
@@ -89,15 +69,6 @@ const getNextScheduledDate = (schedule, defaultTime = { hours: 23, minutes: 59 }
 };
 
 // TODO: This is repetitive with getNextScheduledDate. Can probably condense.
-/**
- * Gets the start date of current order session (either for today or for provided date).
- *
- * @param {Array<{hours: number, minutes: number}|string|null>} schedule                               7-element array representing custom schedule.
- * @param {{hours: number, minutes: number}}                    [defaultTime={hours: 23, minutes: 59}] Default cutoff time (defaults to end of the day).
- * @param {string}                                              [date=moment().format("YYYY-MM-DD")]   Start date in ISO format (defaults to today).
- *
- * @return {string} An ISO date representing the order session start date.
- */
 const getPrevScheduledDate = (schedule, defaultTime = { hours: 23, minutes: 59 }, date = moment().format(ISO_FORMAT)) => {
   const currentDate = parseISO(date);
   const day = currentDate.day();
@@ -117,19 +88,8 @@ const getPrevScheduledDate = (schedule, defaultTime = { hours: 23, minutes: 59 }
     iterCount++;
   }
   return currentDate.format(ISO_FORMAT);
-}
+};
 
-/**
- * Get order date schedule for next two weeks based on a custom schedule and cutoff time.
- *
- * @param {{hours: number, minutes: number}}                    defaultTime            Default cutoff time.
- * @param {Array<{hours: number, minutes: number}|string|null>} schedule               7-element array containing custom schedule.
- * @param {string}                                              start                  Start of schedule range (incl).
- * @param {string}                                              end                    End of schedule range (incl).
- * @param {boolean}                                             [includeCurrent=false] Whether current order period should be included.
- *
- * @return {string[]} Array containing order dates in ISO format for the following two weeks.
- */
 const getCustomOrderSchedule = (defaultTime, schedule, start, end) => {
   let orderCutoffs = [];
   let currentDate = parseISO(getPrevScheduledDate(schedule, defaultTime, start));
@@ -141,25 +101,8 @@ const getCustomOrderSchedule = (defaultTime, schedule, start, end) => {
     currentDate = parseISO(nextDate).add(1, "days");
   }
   return orderCutoffs.sort();
-}
+};
 
-/**
- * Generates an array of starting dates for all possible lunch orders within specified range (defaults to next
- * two weeks).
- *
- * @param {Object}                                              orderSchedule                         Contains data for ordering days.
- * @param {{hours: number, minutes: number}}                    orderSchedule.defaultTime             Default cutoff time for placing orders.
- * @param {string}                                              orderSchedule.scheduleType            Type of ordering schedule.
- * @param {Array<{hours: number, minutes: number}|string|null>} orderSchedule.schedule                (For custom schedule) 7-element array containing custom order schedule.
- * @param {Object}                                              lunchSchedule                         Contains data for lunch days.
- * @param {{hours: number, minutes: number}}                    lunchSchedule.defaultTime             Default print time.
- * @param {Array<{hours: number, minutes: number}|string|null>} lunchSchedule.schedule                7-element array containing custom lunch schedule.
- * @param {string}                                              [start=moment().format("YYYY-MM-DD")] Start of schedule range (incl).
- * @param {string}                                              [end=moment().format("YYYY-MM-DD")]   End of schedule range (incl).
- * @param {boolean}                                             [includeCurrent=false]                Whether current order period should be included.
- *
- * @return {string[]} Array containing ISO dates for possible lunch order dates within the next two weeks.
- */
 export const getLunchSchedule = (orderSchedule, lunchSchedule, start, end) => {
   let lunchDays = [];
   let cutoffMoment;
@@ -197,14 +140,6 @@ export const getLunchSchedule = (orderSchedule, lunchSchedule, start, end) => {
   return lunchDays;
 };
 
-/**
- * Generates 2D array of ISO dates representing order groups (for placing orders with dynamic order scheduling).
- *
- * @param {string[]}                                            dates    Array of ISO dates at the start of each lunch group.
- * @param {Array<{hours: number, minutes: number}|string|null>} schedule Schedule containing school/lunch days.
- *
- * @return {string[][]} 2D array of ISO dates that orders can be placed on.
- */
 export const getScheduleGroups = (dates, schedule) => {
   const scheduleGroups = [];
   for (const isoDate of dates) {
@@ -280,7 +215,7 @@ export const isBeforeCutoff = (date, orderSchedule, lunchSchedule) => {
     default:
       return true;
   }
-}
+};
 
 export const getUserLunchSchedule = (lunchSchedule, userData = {}) => {
   const userSchedule = lunchSchedule.schedule.map((daySchedule) => {
@@ -299,4 +234,6 @@ export const getUserLunchSchedule = (lunchSchedule, userData = {}) => {
     ...lunchSchedule,
     schedule: userSchedule
   };
-}
+};
+
+export const isDynamic = ({ scheduleType }) => scheduleType === OrderScheduleTypes.CUSTOM;

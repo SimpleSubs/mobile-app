@@ -1,50 +1,38 @@
-/**
- * @file Manages loading screen (buffer between auth states that fetches necessary data).
- * @author Emily Sturman <emily@sturman.org>
- */
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import {
   View,
-  StyleSheet,
   ActivityIndicator
 } from "react-native";
-import { getAuthData, logOut } from "../../redux/Actions";
-import { connect } from "react-redux";
-import Colors from "../../constants/Colors";
+import { getAuthData, logOut } from "../../redux/Thunks";
+import { useSelector, useDispatch } from "react-redux";
+import createStyleSheet, { getColors } from "../../constants/Colors";
 import { allValid } from "../../constants/Inputs";
 
-/**
- * Renders app loading screen.
- *
- * Renders an activity indicator (loading symbol) and fetches app data based
- * on whether user is authorized (signed in).
- *
- * @param {bool}       isLoggedIn       Whether user is logged in.
- * @param {bool}       hasAuthenticated Whether app has gotten initial auth state.
- * @param {function()} getAuthData      Gets data for when user is signed in.
- * @param {function()} logOut           Signs user out.
- * @param {Object}     navigation       Navigation object (passed from React Navigation).
- *
- * @return {React.ReactElement} Element to render loading screen.
- * @constructor
- */
-const LoadingScreen = ({ isLoggedIn, hasAuthenticated, getAuthData, logOut, navigation }) => {
-  const prevAuthRef = useRef();
+const LoadingScreen = ({ navigation }) => {
+  const isLoggedIn = useSelector(({ user }) => !!user);
+  const hasAuthenticated = useSelector(({ hasAuthenticated }) => hasAuthenticated.value);
+  const dispatch = useDispatch();
+
+  const prevAuthRef = React.useRef();
+  const themedStyles = createStyleSheet(styles);
 
   // Gets different state constants depending on whether user is logged in.
-  useEffect(() => {
+  React.useEffect(() => {
     if (!hasAuthenticated) return;
     const prevAuthState = prevAuthRef.current;
     if (isLoggedIn && !prevAuthState) {
-      getAuthData().then(({ user, userFields }) => {
-        if (!allValid(user, userFields)) {
-          navigation.navigate("Main", { screen: "Update User" });
-        } else {
-          navigation.navigate("Main", { screen: "Home" });
+      dispatch(async (dispatch) => {
+        try {
+          const { user, userFields } = await getAuthData()(dispatch);
+          if (!allValid(user, userFields)) {
+            navigation.navigate("Main", { screen: "Update User" });
+          } else {
+            navigation.navigate("Main", { screen: "Home" });
+          }
+        } catch (e) {
+          console.error(e);
+          dispatch(logOut());
         }
-      }).catch((e) => {
-        console.log(e);
-        logOut();
       });
     } else if (prevAuthState || prevAuthState === undefined) {
       navigation.navigate("Main", { screen: "Login" });
@@ -53,27 +41,15 @@ const LoadingScreen = ({ isLoggedIn, hasAuthenticated, getAuthData, logOut, navi
   }, [isLoggedIn, hasAuthenticated]);
 
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size={"large"} color={Colors.loadingIndicator} />
+    <View style={themedStyles.container}>
+      <ActivityIndicator size={"large"} color={getColors().loadingIndicator} />
     </View>
   );
 };
 
-const mapStateToProps = ({ user, hasAuthenticated, stateConstants, domain }) => ({
-  isLoggedIn: !!user,
-  hasAuthenticated,
-  userFields: stateConstants.userFields,
-  domain
-});
+export default LoadingScreen;
 
-const mapDispatchToProps = (dispatch) => ({
-  getAuthData: async () => await getAuthData(dispatch),
-  logOut: () => logOut(dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(LoadingScreen);
-
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     alignItems: "center",

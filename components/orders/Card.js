@@ -1,40 +1,19 @@
-/**
- * @file Creates card to display an order on home screen.
- * @author Emily Sturman <emily@sturman.org>
- */
-import React, { useRef } from "react";
+import React from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Animated
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { Ionicons } from "@expo/vector-icons";
 import AnimatedTouchable from "../AnimatedTouchable";
 import Layout from "../../constants/Layout";
-import Colors from "../../constants/Colors";
+import createStyleSheet, { getColors } from "../../constants/Colors";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
-/**
- * Determines if provided input is a string.
- *
- * @param {*} val Input to be checked.
- * @return {boolean} Whether input is a string.
- */
 const isString = (val) => typeof val === "string";
 
-/**
- * Combines all ingredients into one string.
- *
- * Combines string and array ingredient values into one comma-separated
- * string with a capital first character.
- *
- * @param {Object<string, string|string[]>} ingredients Ingredient category mapped to selected value(s).
- *
- * @return {string} Comma-separated string containing all ingredients in order.
- */
 export const getIngredientStr = (ingredients) => {
   let allIngredients = []
   for (let category in ingredients) {
@@ -53,55 +32,28 @@ export const getIngredientStr = (ingredients) => {
   return ingredientStr.charAt(0).toUpperCase() + ingredientStr.slice(1).toLowerCase();
 }
 
-/**
- * Returns icon rendered on card swipe.
- *
- * Renders icon that scales based on drag position; may either be trash icon (swipe right)
- * or create icon (swipe left).
- *
- * @param {Animated.AnimatedInterpolation} progress   How far the card has been dragged.
- * @param {string}                         icon       Name of icon to be rendered.
- * @param {boolean}                        alignRight Whether icon should be rendered on right (true for swipe right).
- *
- * @return {React.ReactElement} Icon to be rendered on card swipe.
- * @constructor
- */
 const SwipeAction = ({ progress, icon, alignRight }) => {
+  const themedStyles = createStyleSheet(styles);
   const scaleInterpolation = progress.interpolate({
     inputRange: [0, 0.15],
     outputRange: [0.5, 1],
     extrapolate: "clamp"
   })
   return (
-    <View style={[styles.swipeAction, alignRight && styles.swipeActionRight]}>
+    <View style={[themedStyles.swipeAction, alignRight && themedStyles.swipeActionRight]}>
       <AnimatedIonicons
         name={`${icon}`}
         size={Layout.fonts.icon}
-        color={Colors.primaryText}
+        color={getColors().primaryText}
         style={{ transform: [{ scale: scaleInterpolation }]}}
       />
     </View>
   );
 }
 
-/**
- * Renders card to display orders.
- *
- * Renders a card displaying the title (for named orders), date, and ingredients of an
- * order. Card may be swiped right to delete or swiped left/clicked to edit.
- *
- * @param {string}                          [title]     Title of order (for preset orders only).
- * @param {string}                          date        Date of order (formatted as "dddd, MMMM Do" or "M/DD to M/DD").
- * @param {Object[]}                        [data]      Data for order group (for dynamic ordering only).
- * @param {Function}                        onPress     Function to execute when card is pressed (usually focuses order).
- * @param {Function}                        onDelete    Function to delete order.
- * @param {Object<string, string|string[]>} ingredients All order ingredients.
- *
- * @return {React.ReactElement} Card displaying sandwich order.
- * @constructor
- */
 const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
-  const swipeableRef = useRef();
+  const swipeableRef = React.useRef();
+  const themedStyles = createStyleSheet(styles);
 
   const focusAndClose = () => {
     if (swipeableRef.current) {
@@ -112,9 +64,9 @@ const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
 
   const CardSection = ({ title, date, ingredients }) => (
     <>
-      {date && <Text style={styles.smallerDate}>{date}</Text>}
-      {title && <Text style={styles.title}>{title}</Text>}
-      <Text style={styles.ingredients} numberOfLines={title ? 1 : 2}>{getIngredientStr(ingredients)}</Text>
+      {date && <Text style={themedStyles.smallerDate}>{date}</Text>}
+      {title && <Text style={themedStyles.title}>{title}</Text>}
+      <Text style={themedStyles.ingredients} numberOfLines={title ? 1 : 2}>{getIngredientStr(ingredients)}</Text>
     </>
   );
 
@@ -123,14 +75,18 @@ const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
       ref={(ref) => swipeableRef.current = ref}
       leftThreshold={50}
       rightThreshold={50}
-      renderLeftActions={(progress) => <SwipeAction progress={progress} icon={"create-outline"}/>}
-      renderRightActions={(progress) => <SwipeAction progress={progress} icon={"trash-outline"} alignRight />}
+      renderLeftActions={(progress) => (
+        <SwipeAction progress={progress} icon={"create-outline"} />
+      )}
+      renderRightActions={(progress) => (
+        <SwipeAction progress={progress} icon={"trash-outline"} alignRight />
+      )}
       onSwipeableLeftOpen={focusAndClose}
       onSwipeableRightOpen={onDelete}
     >
       <AnimatedTouchable onPress={onPress}>
-        <View style={styles.cardContainer}>
-          <Text style={styles.date}>{date}</Text>
+        <View style={themedStyles.cardContainer}>
+          <Text style={themedStyles.date}>{date}</Text>
           {data ?
             data.map(({ date, title, key, ...ingredients }) => (
               <CardSection key={key} date={date} title={title} ingredients={ingredients} />
@@ -144,7 +100,7 @@ const Card = ({ title, date, data, onPress, onDelete, ...ingredients }) => {
 
 export default Card;
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   cardContainer: {
     borderRadius: 5,
     backgroundColor: Colors.backgroundColor,

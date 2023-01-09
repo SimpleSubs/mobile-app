@@ -1,46 +1,37 @@
-/**
- * @file Creates a list of navigation options (for screens like order, settings).
- * @author Emily Sturman <emily@sturman.org>
- */
 import React from "react";
 import {
-  StyleSheet,
   Text,
   FlatList,
   TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Colors from "../constants/Colors";
+import createStyleSheet, { getColors } from "../constants/Colors";
 import Layout from "../constants/Layout";
 
-/**
- * Renders a list of navigation options.
- *
- * Returns a list containing buttons that navigation to provided screens.
- *
- * @param {{ key: string, title: string, page: string }[]} pages Data on options for pages to navigate to.
- * @param {Object} navigation Navigation prop (from React navigation).
- *
- * @return {React.ReactElement} List of buttons that navigate to provided screens.
- * @constructor
- */
-const MultipleOptionsList = ({ pages, navigation }) => (
-  <FlatList
-    alwaysBounceVertical={false}
-    style={styles.container}
-    data={pages}
-    renderItem={({ item }) => (
-      <TouchableOpacity activeOpacity={0.5} style={styles.navigateTouchable} onPress={() => navigation.navigate(item.page)}>
-        <Text style={styles.navigateTouchableText}>{item.title}</Text>
-        <Ionicons name={"chevron-forward"} color={Colors.primaryText} size={Layout.fonts.icon} />
-      </TouchableOpacity>
-    )}
-  />
-);
+const MultipleOptionsList = ({ pages, navigation }) => {
+  const themedStyles = createStyleSheet(styles);
+  return (
+    <FlatList
+      alwaysBounceVertical={false}
+      style={themedStyles.container}
+      data={pages}
+      renderItem={({item}) => (
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={themedStyles.navigateTouchable}
+          onPress={() => navigation.navigate(item.page)}
+        >
+          <Text style={themedStyles.navigateTouchableText}>{item.title}</Text>
+          <Ionicons name={"chevron-forward"} color={getColors().primaryText} size={Layout.fonts.icon}/>
+        </TouchableOpacity>
+      )}
+    />
+  )
+};
 
 export default MultipleOptionsList;
 
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.scrollViewBackground,
     flex: 1

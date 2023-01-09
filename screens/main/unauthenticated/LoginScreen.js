@@ -1,57 +1,41 @@
-/**
- * @file Manages login screen (main screen for unauthenticated users).
- * @author Emily Sturman <emily@sturman.org>
- */
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   BackHandler
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import inputModalProps from "../../../components/modals/InputModal";
+import { inputModalProps } from "../../../components/modals/InputModal";
 import InputsList from "../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../components/userFields/SubmitButton";
 import Layout from "../../../constants/Layout";
-import Colors from "../../../constants/Colors";
+import createStyleSheet from "../../../constants/Colors";
 import { EmailField, PasswordField } from "../../../constants/RequiredFields";
-import { logIn, openModal, closeModal, setModalProps, resetPassword } from "../../../redux/Actions";
-import { connect } from "react-redux";
+import { logIn, resetPassword } from "../../../redux/Thunks";
+import { openModal, closeModal } from "../../../redux/features/display/modalSlice";
+import { useDispatch, useSelector } from "react-redux";
 import Logo from "../../../assets/images/icon.svg";
+import { clearOperation, setKey } from "../../../redux/features/display/modalOperationsSlice";
+import uuid from "react-native-uuid";
+import TopIconButton from "../../../components/TopIconButton";
 
 // Fields required for login
 const LOGIN_FIELDS = [EmailField, PasswordField];
 
-/**
- * Renders login screen.
- *
- * @param {function(string, string)} logIn               Function that signs user into their account.
- * @param {function(Object)}         openModal           Function that opens top-level model with provided props.
- * @param {function()}               closeModal          Function that closes top-level modal.
- * @param {function(Object)}         setModalProps       Sets props for top-level modal.
- * @param {function(string)}         resetPasswordAction Sends password reset email to user.
- * @param {Object}                   navigation          Navigation object (passed from React Navigation).
- *
- * @return {React.ReactElement} Element to render login screen.
- * @constructor
- */
-const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswordAction, navigation }) => {
+const LoginScreen = ({ navigation }) => {
+  const { key, returnValue } = useSelector(({ modalOperations }) => modalOperations);
+  const dispatch = useDispatch();
+  const [inputs, setInputs] = React.useState({ email: "", password: "" });
+  const [modalId, setModalId] = React.useState();
+  const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
-  const [inputs, setInputs] = useState({ email: "", password: "" });
 
   // Logs in using component state.
-  const logInState = () => logIn(inputs.email, inputs.password);
-
-  // Sends password reset email and closes modal.
-  const resetPassword = ({ email }) => {
-    resetPasswordAction(email);
-    closeModal();
-  };
+  const logInState = () => dispatch(logIn(inputs.email, inputs.password));
 
   // Prevents popping back to loading screen.
-  useEffect(() => (
+  React.useEffect(() => (
     navigation.addListener("beforeRemove", (e) => {
       if (e.data.action.type === "POP") {
         e.preventDefault();
@@ -59,71 +43,78 @@ const LoginScreen = ({ logIn, openModal, closeModal, setModalProps, resetPasswor
     })
   ), [navigation]);
 
-  useEffect(() => {
+  const openForgotPasswordModal = () => {
+    dispatch(setKey(modalId));
+    dispatch(openModal(inputModalProps({
+      title: "Reset Password",
+      inputData: [{...EmailField, placeholder: "Your email address"}],
+      buttonTitle: "Send email"
+    })))
+  };
+
+  React.useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", () => true);
     return () => BackHandler.removeEventListener("hardwareBackPress", () => true);
-  })
+  }, []);
 
-  const openForgotPasswordModal = () => openModal(inputModalProps(
-    "Reset Password",
-    [{ ...EmailField, placeholder: "Your email address" }],
-    "Send email",
-    resetPassword,
-    setModalProps
-  ));
+  React.useEffect(() => {
+    if (key === modalId && returnValue?.email) {
+      dispatch(resetPassword(returnValue.email));
+      dispatch(closeModal());
+      dispatch(clearOperation());
+    }
+  }, [returnValue, modalId]);
 
-  const LoginButton = (props) => <SubmitButton {...props} title={"Login"} />
+  React.useEffect(() => setModalId(uuid.v4()), []);
 
   return (
     <InputsList
       ListHeaderComponent={() => (
-        <View style={styles.header}>
+        <View style={themedStyles.header}>
+          <TopIconButton iconName={"at-outline"} style={themedStyles.creditsButton} onPress={() => navigation.navigate("Credits")} />
           <Logo width={150} height={150} />
-          <Text style={styles.title}>SimpleSubs</Text>
-          <Text style={styles.text}>School lunches made easy</Text>
-          <Text style={styles.text}>Built by Emily Sturman</Text>
-          <Text style={styles.text}>Logo designed by Ronan Furuta</Text>
+          <Text style={themedStyles.title}>SimpleSubs</Text>
+          <Text style={themedStyles.text}>School lunches made easy</Text>
         </View>
       )}
       ListFooterComponent={() => (
-        <View style={styles.otherTouchables}>
-          <TouchableOpacity style={styles.linkTouchable} onPress={openForgotPasswordModal} activeOpacity={0.5}>
-            <Text style={styles.linkTouchableText}>I forgot my password!</Text>
+        <View style={themedStyles.otherTouchables}>
+          <TouchableOpacity style={themedStyles.linkTouchable} onPress={openForgotPasswordModal} activeOpacity={0.5}>
+            <Text style={themedStyles.linkTouchableText}>I forgot my password!</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.linkTouchable}
+            style={themedStyles.linkTouchable}
             onPress={() => navigation.navigate("Register", { screen: "Domain" })}
             activeOpacity={0.5}
           >
-            <Text style={styles.linkTouchableText}>Don't have an account? Click here to create one.</Text>
+            <Text style={themedStyles.linkTouchableText}>Don't have an account? Click here to create one.</Text>
           </TouchableOpacity>
         </View>
       )}
       data={LOGIN_FIELDS}
       state={inputs}
       setInputs={setInputs}
-      SubmitButton={LoginButton}
+      SubmitButton={(props) => <SubmitButton {...props} title={"Login"} />}
       onSubmit={logInState}
       contentContainerStyle={{ paddingTop: inset.top, paddingBottom: inset.bottom }}
-      style={styles.container}
+      style={themedStyles.container}
     />
   )
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  logIn: (email, password) => logIn(dispatch, email, password),
-  openModal: (props) => dispatch(openModal(props)),
-  closeModal: () => dispatch(closeModal()),
-  setModalProps: (props) => dispatch(setModalProps(props)),
-  resetPasswordAction: (email) => resetPassword(dispatch, email)
-})
+export default LoginScreen;
 
-export default connect(null, mapDispatchToProps)(LoginScreen);
-
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     flex: 1
+  },
+  logo: {
+    height: 150,
+    width: 150
+  },
+  creditsButton: {
+    right: -20
   },
   header: {
     alignItems: "center",

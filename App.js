@@ -1,11 +1,6 @@
-/**
- * @file Manages entire RN Expo app.
- * @author Emily Sturman <emily@sturman.org>
- */
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   StatusBar,
-  StyleSheet,
   View,
   TouchableOpacity
 } from "react-native";
@@ -16,12 +11,10 @@ import * as Sentry from "sentry-expo";
 import { Ionicons } from "@expo/vector-icons";
 import Modal from "./components/modals/Modal";
 import InfoModal from "./components/modals/InfoModal";
-import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
-import thunk from "redux-thunk";
-import sandwichApp from "./redux/Reducers";
+import store from "./redux/Store";
 import StackNavigator from "./navigation/StackNavigator";
-import Colors from "./constants/Colors";
+import createStyleSheet, { getColors } from "./constants/Colors";
 import Layout from "./constants/Layout";
 
 // Only import if not in web (LogBox doesn't exist in web)
@@ -45,20 +38,12 @@ LogBox?.ignoreLogs(
 // Overrides slight delay when pressing TouchableOpacity
 TouchableOpacity.defaultProps = { delayPressIn: 0 };
 
-// Creates store for Redux state management
-const store = createStore(sandwichApp, applyMiddleware(thunk));
-
-/**
- * Renders entire RN app.
- * @param {boolean} skipLoadingScreen Whether app should ignore loading screen.
- * @return {React.ReactElement|null} Element to render.
- * @constructor
- */
 const App = ({ skipLoadingScreen }) => {
-  const [isLoadingComplete, setLoadingComplete] = useState(false);
+  const [isLoadingComplete, setLoadingComplete] = React.useState(false);
+  const themedStyles = createStyleSheet(styles);
 
   // Load any resources or data that we need prior to rendering the app
-  useEffect(() => {
+  React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
         await SplashScreen.preventAutoHideAsync();
@@ -95,8 +80,8 @@ const App = ({ skipLoadingScreen }) => {
     return (
       <SafeAreaProvider>
         <Provider store={store}>
-          <View style={styles.container}>
-            {Layout.ios && <StatusBar barStyle={Colors.statusBar} />}
+          <View style={themedStyles.container}>
+            {Layout.ios && <StatusBar barStyle={getColors().statusBar} />}
             <StackNavigator />
             <InfoModal />
             <Modal />
@@ -109,7 +94,7 @@ const App = ({ skipLoadingScreen }) => {
 
 export default App;
 
-const styles = StyleSheet.create({
+const styles = () => ({
   container: {
     flex: 1,
     backgroundColor: "#fff"

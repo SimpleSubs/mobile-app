@@ -1,105 +1,76 @@
-/**
- * @file Creates a touchable that opens a picker for ingredient selection.
- * @author Emily Sturman <emily@sturman.org>
- */
 import React from "react";
 import {
-  StyleSheet,
   Text,
   TouchableOpacity
 } from "react-native";
-import { Picker } from '@react-native-community/picker';
+import { Picker } from "@react-native-picker/picker";
 import AnimatedDropdown from "./AnimatedDropdown";
-import AndroidPicker, { getPickerProps } from "../Picker";
-import { connect } from "react-redux";
-import { openModal, closeModal } from "../../redux/Actions";
-import Colors from "../../constants/Colors";
+import { getPickerProps } from "../Picker";
+import { useDispatch, useSelector } from "react-redux";
+import { openModal } from "../../redux/features/display/modalSlice";
 import Layout from "../../constants/Layout";
 import { InputTypes } from "../../constants/Inputs";
+import createStyleSheet from "../../constants/Colors";
+import { setKey } from "../../redux/features/display/modalOperationsSlice";
+import uuid from "react-native-uuid";
 
-/**
- * Renders a dropdown containing a picker; for iOS only.
- *
- * Returns an animated dropdown containing an iOS picker. If there are no
- * available options, it instead returns a "no options" message. The dropdown
- * touchable contains secondary text with the current value of the picker.
- *
- * @param {string}   title                 Title to be displayed in touchable.
- * @param {string[]} [options=[]]          Array containing all picker options.
- * @param {string}   selectedValue         Currently selected value in picker.
- * @param {Function} changeValue           Sets selectedValue.
- *
- * @return {React.ReactElement} Touchable and dropdown containing a picker.
- */
-const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue }) => (
-  <AnimatedDropdown
-    title={title}
-    type={InputTypes.PICKER}
-    selectedValue={selectedValue}
-    changeValue={changeValue}
-    options={options}
-  >
-    {options.length > 0 ? (
-      <Picker
-        itemStyle={styles.pickerItem}
-        selectedValue={selectedValue}
-        onValueChange={(itemValue) => changeValue(itemValue)}
-      >
-        {options.map((item, i) => (
-          <Picker.Item label={item} value={item} key={item} />
-        ))}
-      </Picker>
-    ) : <Text style={styles.noOptionsText}>There are no available options</Text>}
-  </AnimatedDropdown>
-);
-
-/**
- * Renders a touchable that opens a picker modal; for Android only.
- *
- * Returns a touchable opacity that opens a center spring modal containing
- * a custom picker (FlatList with selectable options). The dropdown touchable
- * contains secondary text with the current value of the picker.
- *
- * @param {Function} openModal             Function to open the modal.
- * @param {Function} closeModal            Function to close the modal.
- * @param {string}   title                 Title to be displayed in touchable.
- * @param {string[]} [options=[]]          Array containing all picker options.
- * @param {string}   selectedValue         Currently selected value in picker.
- * @param {Function} changeValue           Sets selectedValue.
- *
- * @return {React.ReactElement} Touchable that opens a picker modal.
- * @constructor
- */
-const AndroidPickerTouchable = ({ openModal, closeModal, title, options = [], selectedValue, changeValue }) => {
-  const myPicker = (
-    <AndroidPicker
-      closeModal={closeModal}
-      selectedValue={selectedValue}
-      onValueChange={changeValue}
-      options={options}
-    />
-  );
+const iOSPickerTouchable = ({ title, options = [], selectedValue, changeValue }) => {
+  const themedStyles = createStyleSheet(styles);
   return (
-    <TouchableOpacity
-      style={styles.touchable}
-      onPress={() => openModal(getPickerProps(myPicker))}
+    <AnimatedDropdown
+      title={title}
+      type={InputTypes.PICKER}
+      selectedValue={selectedValue}
+      changeValue={changeValue}
+      options={options}
     >
-      <Text style={styles.touchableText}>{title}</Text>
-      <Text style={styles.selectedItem} numberOfLines={1}>
+      {options.length > 0 ? (
+        <Picker
+          itemStyle={themedStyles.pickerItem}
+          selectedValue={selectedValue}
+          onValueChange={(itemValue) => changeValue(itemValue)}
+        >
+          {options.map((item, i) => (
+            <Picker.Item label={item} value={item} key={item}/>
+          ))}
+        </Picker>
+      ) : <Text style={themedStyles.noOptionsText}>There are no available options</Text>}
+    </AnimatedDropdown>
+  )
+};
+
+const AndroidPickerTouchable = ({ title, options = [], selectedValue, changeValue }) => {
+  const { key, returnValue } = useSelector(({ modalOperations }) => modalOperations);
+  const dispatch = useDispatch();
+  const [modalId, setModalId] = React.useState();
+  const themedStyles = createStyleSheet(styles);
+
+  const openPicker = () => {
+    dispatch(setKey(modalId));
+    dispatch(openModal(getPickerProps({ selectedValue, options })));
+  };
+
+  React.useEffect(() => {
+    if (key === modalId && returnValue) {
+      changeValue(returnValue);
+    }
+  }, [returnValue, modalId]);
+
+  React.useEffect(() => setModalId(uuid.v4()), []);
+
+  return (
+    <TouchableOpacity style={themedStyles.touchable} onPress={openPicker}>
+      <Text style={themedStyles.touchableText}>{title}</Text>
+      <Text style={themedStyles.selectedItem} numberOfLines={1}>
         {selectedValue}
       </Text>
     </TouchableOpacity>
   )
 }
 
-const mapDispatchToProps = (dispatch) => ({
-  openModal: (props) => dispatch(openModal(props)),
-  closeModal: () => dispatch(closeModal())
-})
+export default Layout.ios ? iOSPickerTouchable : AndroidPickerTouchable;
 
-export default Layout.ios ? iOSPickerTouchable : connect(null, mapDispatchToProps)(AndroidPickerTouchable);
-
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   pickerItem: {
     fontFamily: "josefin-sans",
     color: Colors.primaryText

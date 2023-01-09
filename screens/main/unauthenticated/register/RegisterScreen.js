@@ -1,40 +1,30 @@
-/**
- * @file Manages screen to register a new user
- * @author Emily Sturman <emily@sturman.org>
- */
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import InputsList from "../../../../components/userFields/UserInputsList";
 import SubmitButton from "../../../../components/userFields/SubmitButton";
 import Layout from "../../../../constants/Layout";
-import Colors from "../../../../constants/Colors";
+import createStyleSheet from "../../../../constants/Colors";
 import { EmailField, NewPasswordField, ConfirmPasswordField } from "../../../../constants/RequiredFields";
-import { createUser } from "../../../../redux/Actions";
-import { connect } from "react-redux";
-import AnimatedTouchable from "../../../../components/AnimatedTouchable";
-import {Ionicons} from "@expo/vector-icons";
+import { createUser } from "../../../../redux/Thunks";
+import { useDispatch, useSelector } from "react-redux";
+import TopIconButton from "../../../../components/TopIconButton";
 
 const REGISTER_FIELDS = [EmailField, NewPasswordField, ConfirmPasswordField];
 
-/**
- * Renders screen to register/sign up user.
- *
- * @param {Object[]|null}                            registerUserFields Input fields to display in register screen.
- * @param {Object}                                   domain             Object representing user's domain.
- * @param {function(string, string, Object, string)} createUser         Creates a user with the provided data.
- * @param {Object}                                   navigation         Navigation object passed by React Navigation.
- *
- * @return {React.ReactElement} Element to display.
- * @constructor
- */
-const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) => {
-  const [inputs, setInputs] = useState({});
+const RegisterScreen = ({ navigation }) => {
+  const domain = useSelector(({ domain }) => domain);
+  const registerUserFields = useSelector(({ stateConstants }) => (
+    stateConstants.userFields && [...REGISTER_FIELDS, ...stateConstants.userFields]
+  ));
+  const dispatch = useDispatch();
+
+  const [inputs, setInputs] = React.useState({});
+  const themedStyles = createStyleSheet(styles);
   const inset = useSafeAreaInsets();
 
   // Passes state to createUser action
@@ -43,13 +33,13 @@ const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) 
     for (let field of REGISTER_FIELDS) {
       delete data[field.key];
     }
-    createUser(inputs.email, inputs.password, data, domain.id);
+    dispatch(createUser(inputs.email, inputs.password, data));
   };
 
   // Button to submit form and register user
   const RegisterButton = (props) => <SubmitButton {...props} title={"Register"} />;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!registerUserFields) {
       navigation.navigate("Loading");
     }
@@ -57,19 +47,17 @@ const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) 
 
   return (
     <InputsList
-      style={styles.container}
+      style={themedStyles.container}
       contentContainerStyle={{ paddingBottom: inset.bottom }}
       ListHeaderComponent={() => (
-        <View style={styles.header}>
-          <AnimatedTouchable style={styles.closeButton} onPress={() => navigation.pop()} endSize={0.8}>
-            <Ionicons name={"arrow-back"} size={Layout.fonts.icon} color={Colors.primaryText} />
-          </AnimatedTouchable>
-          <Text style={styles.title}>Join the {domain.name} Organization</Text>
+        <View style={themedStyles.header}>
+          <TopIconButton iconName={"arrow-back"} style={themedStyles.closeButton} onPress={() => navigation.pop()} />
+          <Text style={themedStyles.title}>Join the {domain.name} Organization</Text>
         </View>
       )}
       ListFooterComponent={() => (
-        <TouchableOpacity style={styles.linkTouchable} onPress={() => navigation.navigate("Main", { screen: "Login" })} activeOpacity={0.5}>
-          <Text style={styles.linkTouchableText}>Already have an account? Click here to log in.</Text>
+        <TouchableOpacity style={themedStyles.linkTouchable} onPress={() => navigation.navigate("Main", { screen: "Login" })} activeOpacity={0.5}>
+          <Text style={themedStyles.linkTouchableText}>Already have an account? Click here to log in.</Text>
         </TouchableOpacity>
       )}
       SubmitButton={RegisterButton}
@@ -81,25 +69,14 @@ const RegisterScreen = ({ registerUserFields, domain, createUser, navigation }) 
   );
 };
 
-const mapStateToProps = ({ stateConstants, domain }) => ({
-  registerUserFields: stateConstants.userFields ? [...REGISTER_FIELDS, ...stateConstants.userFields] : null,
-  domain
-});
+export default RegisterScreen;
 
-const mapDispatchToProps = (dispatch) => ({
-  createUser: (email, password, data, domain) => createUser(dispatch, email, password, data, domain)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(RegisterScreen);
-
-const styles = StyleSheet.create({
+const styles = (Colors) => ({
   container: {
     backgroundColor: Colors.backgroundColor,
     flex: 1
   },
   closeButton: {
-    position: "absolute",
-    top: 0,
     left: -20
   },
   header: {

@@ -1,56 +1,29 @@
-/**
- * @file Manages main order screen (in between for custom/preset order screens)
- * @author Emily Sturman <emily@sturman.org>
- */
 import React from "react";
 import OrderInputsList from "../../components/orders/OrderInputsList";
-import { DateField } from "../../constants/RequiredFields";
-import { toReadable } from "../../constants/Date";
-import { createOrder, deleteOrder, editOrder } from "../../redux/Actions";
-import { connect } from "react-redux";
-import { OrderScheduleTypes } from "../../constants/Schedule";
+import { useSelector, useDispatch } from "react-redux";
+import { createOrder, deleteOrder, editOrder } from "../../redux/Thunks";
+import { isDynamic } from "../../constants/Schedule";
 
-/**
- * Renders main order screen to navigate to either sub-screen (custom or preset order).
- *
- * @param {Object|null}                            focusedOrder Currently focused order (null if new order is being created).
- * @param {Object}                                 orderOptions Fields for order ingredients.
- * @param {function(Object,string,boolean)}        createOrder  Pushes new order to Firebase.
- * @param {function(Object,string,string,boolean)} editOrder    Pushes edits for existing order to Firebase.
- * @param {function(string)}                       deleteOrder  Deletes existing order from Firebase.
- * @param {Object}                                 navigation   Navigation prop passed by React Navigation.
- *
- * @return {React.ReactElement} Element to render.
- * @constructor
- */
-const OrderScreen = ({ focusedOrder, orderOptions, createOrder, editOrder, deleteOrder, navigation }) => {
-  const cancelOrder = () => navigation.navigate("Home");
+const OrderScreen = ({ navigation }) => {
+  const focusedOrder = useSelector(({ orders, focusedOrder }) => focusedOrder && orders[focusedOrder]);
+  const orderOptions = useSelector(({ stateConstants }) => ({
+    requireDate: true,
+    ...stateConstants.orderOptions
+  }));
+  const dispatch = useDispatch();
+  const dynamic = isDynamic(orderOptions);
   return (
     <OrderInputsList
       title={"Custom Order"}
       focusedData={focusedOrder}
       orderOptions={orderOptions}
-      cancel={cancelOrder}
-      createNew={createOrder}
-      editExisting={editOrder}
-      deleteExisting={deleteOrder}
+      cancel={() => navigation.navigate("Home")}
+      createNew={(data) => dispatch(createOrder(data, dynamic))}
+      editExisting={(data, ids) => dispatch(editOrder(data, ids, dynamic))}
+      deleteExisting={(id) => dispatch(deleteOrder(id))}
       deleteMessage={"Delete Order"}
     />
   )
 };
 
-const mapStateToProps = ({ focusedOrder, orders, stateConstants }) => ({
-  focusedOrder: focusedOrder ? orders[focusedOrder] : null,
-  orderOptions: {
-    requireDate: true,
-    ...stateConstants.orderOptions
-  }
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  createOrder: (data, uid, domain, dynamicSchedule) => createOrder(dispatch, data, uid, domain, dynamicSchedule),
-  editOrder: (data, ids, uid, domain, dynamicSchedule) => editOrder(dispatch, data, ids, uid, domain, dynamicSchedule),
-  deleteOrder: (id, domain) => deleteOrder(dispatch, id, domain),
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(OrderScreen);
+export default OrderScreen;

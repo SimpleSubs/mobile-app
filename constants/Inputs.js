@@ -1,7 +1,3 @@
-/**
- * @file Manages data for user inputs.
- * @author Emily Sturman <emily@sturman.org>
- */
 // Regular expression to detect if a given string is a valid email address
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 // String to signal to validated inputs that input contents are valid
@@ -16,15 +12,6 @@ export const InputTypes = {
 
 /**
  * Determines if a value in user's profile is valid.
- *
- * Returns false if value is undefined, if it isn't valid based on
- * its defined text type (for text inputs), or if it's not in the provided
- * options (for picker and checkbox).
- *
- * @param {Object}               userField User field containing data about profile value.
- * @param {string|string[]|null} value     Value in user's profile (null if it's yet to be defined).
- *
- * @return {boolean} Whether value is valid.
  */
 export const valueIsValid = (userField, value) => {
   if (value === null || value === undefined) {
@@ -48,15 +35,8 @@ export const valueIsValid = (userField, value) => {
 
 /**
  * Determines if a user's profile contains any invalid values (i.e. if userFields has changed).
- *
- * Checks each user field with `valueIsValid` function and ensures that all are true.
- *
- * @param {Object}   user       Object containing user data.
- * @param {Object[]} userFields Array of UserField objects.
- *
- * @return {boolean} Whether all user fields of profile are valid.
  */
-export const allValid = (user, userFields) => (
+export const allValid = (user, userFields = []) => (
   userFields
     .map((userField) => valueIsValid(userField, user ? user[userField.key] : null))
     .reduce((a, b) => a && b, true)
