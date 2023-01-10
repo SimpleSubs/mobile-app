@@ -27,7 +27,7 @@ jobs:
         run: yarn install
 
       - name: 🚀 Build app
-        run: eas build --platform all --non-interactive
+        run: eas build --auto-submit --platform all --non-interactive --no-wait
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
