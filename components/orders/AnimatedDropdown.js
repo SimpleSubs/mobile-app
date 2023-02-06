@@ -83,12 +83,11 @@ const AnimatedDropdown = ({ title, type, selectedValue = "", changeValue = () =>
   };
 
   return (
-    <View style={[themedStyles.container, height ? { height } : {}]}>
+    <View style={[themedStyles.container, {height: height || minHeight || 0}]}>
       <TouchableOpacity
         style={themedStyles.touchable}
         onLayout={({ nativeEvent }) => {
           setMinHeight(nativeEvent.layout.height);
-          setHeight(nativeEvent.layout.height);
         }}
         onPress={onPressTouchable}
       >
