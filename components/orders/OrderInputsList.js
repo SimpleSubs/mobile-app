@@ -158,7 +158,7 @@ const OrderInputsList = ({ title, focusedData, orderOptions, cancel, createNew, 
     );
     setDynamicOptions(newOptions);
     setDisplayOptions(newDisplayOptions);
-  }, [orderOptions, orderSchedule, orders, focusedData, orderPresets, state.date]);
+  }, [orderSchedule, orders, focusedData, orderPresets, state.date]);
 
   // May need to reinsert insets for Android (depends on how modal renders)
   return (
