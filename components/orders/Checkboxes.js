@@ -31,14 +31,24 @@ const CheckBoxWithState = ({ selectedItems, item, setItems }) => {
   const [checked, setChecked] = React.useState(selectedItems.includes(item));
   const themedStyles = createStyleSheet(styles);
   const colors = getColors();
+  const currentlyChecked = 0;
+  const checkLimit = 2;
 
   // Toggles checkbox within component and in higher state
+  // TODO: Toggle on if the amount currently checked is below the limit
   const toggleCheckbox = () => {
-    setChecked(!checked);
-    if (checked) {
+    if(checked == "unchecked" && currentlyChecked < checkLimit) {
+      setChecked(!checked);
       setItems(selectedItems.filter((ingredient) => ingredient !== item));
-    } else {
+      currentlyChecked++;
+    }
+    else if(checked == "checked") {
+      setChecked(!checked);
       setItems([...selectedItems, item]);
+      currentlyChecked--;
+    }
+    else {
+      return throwError({ code: "unavailable", message: "The limit has been reached." });
     }
   };
 
