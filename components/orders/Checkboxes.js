@@ -37,6 +37,7 @@ const CheckBoxWithState = ({ selectedItems, item, setItems }) => {
   // Toggles checkbox within component and in higher state
   // TODO: Toggle on if the amount currently checked is below the limit
   const toggleCheckbox = () => {
+    /*
     if(checked == "unchecked" && currentlyChecked < checkLimit) {
       setChecked(!checked);
       setItems(selectedItems.filter((ingredient) => ingredient !== item));
@@ -49,6 +50,13 @@ const CheckBoxWithState = ({ selectedItems, item, setItems }) => {
     }
     else {
       return throwError({ code: "unavailable", message: "The limit has been reached." });
+    }
+    */
+    setChecked(!checked);
+    if (checked) {
+      setItems(selectedItems.filter((ingredient) => ingredient !== item));
+    } else {
+      setItems([...selectedItems, item]);
     }
   };
 
