@@ -31,11 +31,8 @@ const CheckBoxWithState = ({ selectedItems, item, setItems }) => {
   const [checked, setChecked] = React.useState(selectedItems.includes(item));
   const themedStyles = createStyleSheet(styles);
   const colors = getColors();
-  const currentlyChecked = 0;
-  const checkLimit = 2;
 
   // Toggles checkbox within component and in higher state
-  // TODO: Toggle on if the amount currently checked is below the limit
   const toggleCheckbox = () => {
     setChecked(!checked);
     if (checked) {
