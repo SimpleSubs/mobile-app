@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "SimpleSubs",
+    "owner" : "simplesubs",
     "description": "Order sandwiches easily up to two weeks in advance using this app",
     "slug": "simple-subs",
     "version": "5.0.1",
