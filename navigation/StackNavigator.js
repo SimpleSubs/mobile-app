@@ -39,7 +39,7 @@ const MainStackScreen = ({ isSignedIn }) => (
     ) : (
       <>
         <MainStack.Screen name={"Update User"} component={UpdateUserScreen} />
-        <MainStack.Screen name={"Home"} component={HomeScreen} />
+        <MainStack.Screen name={"Home"} component={HomeScreen} options={{ gestureEnabled: false }} />
         <MainStack.Screen name={"Settings"} component={SettingsScreen} />
         <MainStack.Screen name={"User Settings"} component={UserSettingsScreen} />
         <MainStack.Screen name={"Order Settings"} component={OrderSettingsScreen} />
