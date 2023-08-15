@@ -3,7 +3,6 @@
     "name": "SimpleSubs",
     "owner" : "lwhs",
     "description": "Order sandwiches easily up to two weeks in advance using this app",
-    "owner" : "lwhs",
     "slug": "simple-subs",
     "version": "5.0.1",
     "platforms": [
