@@ -53,7 +53,7 @@ export const getUserDomain = async (uid) => {
   }
   const domainData = doc.data();
   // TODO: Allow user to select which domain they want to use
-  let domainId = domainData.domains ? domainData.domains[0] : domainData.domain;
+  let domainId = domainData?.domains ? domainData?.domains[0] : domainData?.domain;
   let domainDoc = await getDoc(myDomain(domainId));
   if (!domainDoc.exists()) {
     throw { code: "auth/user-not-found" };

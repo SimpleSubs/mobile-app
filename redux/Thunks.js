@@ -246,7 +246,7 @@ export const createUser = (email, password, data) => (dispatch, getState) => (
           if (!newUser) {
             const doc = await t.get(docRef);
             if (doc.exists) {
-              domains = doc.data().domains || [doc.data().domain] || [];
+              domains = doc.data()?.domains || [doc.data()?.domain] || [];
               if (domains.includes(domain.id)) {
                 throw { code: "auth/email-already-in-use" };
               }
