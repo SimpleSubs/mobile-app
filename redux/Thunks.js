@@ -252,11 +252,15 @@ export const createUser = (email, password, data) => (dispatch, getState) => (
               }
             }
           }
-          domains.push(domain.id);
-          t.set(docRef, { domains });
+          t.set(docRef, { "domain": domain.id });
+          let newData = { ...data };
+          delete newData.uid;
+          delete newData.password;
+          delete newData.email;
+          delete newData.domain;
+      
+          t.set(myUserData(uid, domain.id), newData)
         }),
-        // Separate catch because failing to update user data should still allow user to log in
-        editUserData(data).catch(alertError)
       ]);
     } catch (e) {
       // Log out if there is a failure to create user or update domains
@@ -324,8 +328,11 @@ export const watchPresets = () => {
 
 export const watchAuthState = () => (
   getAuth().onAuthStateChanged((user) => {
+    setTimeout(()=> {
     store.dispatch(user ? logInAction() : logOutAction());
-    store.dispatch(authenticate());
+    store.dispatch(authenticate());  
+    }, 500)
+    
   })
 );
 
