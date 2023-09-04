@@ -25,7 +25,7 @@ const UpdateUserScreen = ({ navigation }) => {
 
   const submitData = () => {
     dispatch(editUserData(state));
-    navigation.replace("Home");
+    navigation.navigate("Loading");
   };
   const UpdateButton = (props) => <SubmitButton {...props} title={"Update"} style={themedStyles.updateButton} />
 

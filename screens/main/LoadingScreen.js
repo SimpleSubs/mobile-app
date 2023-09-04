@@ -11,16 +11,19 @@ import { allValid } from "../../constants/Inputs";
 const LoadingScreen = ({ navigation }) => {
   const isLoggedIn = useSelector(({ user }) => !!user);
   const hasAuthenticated = useSelector(({ hasAuthenticated }) => hasAuthenticated.value);
+  const isUpdatingUser = useSelector(({ isUpdatingUser }) => isUpdatingUser.value);
   const dispatch = useDispatch();
 
   const prevAuthRef = React.useRef();
   const themedStyles = createStyleSheet(styles);
 
   // Gets different state constants depending on whether user is logged in.
+  //   hasAuthenticated checks if firebase-auth has gotten auth state
+  //   isUpdatingUser checks if the app is *currently* updating user data
+  //   isLoggedIn checks if firebase-auth is logged in to a user
   React.useEffect(() => {
-    if (!hasAuthenticated) return;
-    const prevAuthState = prevAuthRef.current;
-    if (isLoggedIn && !prevAuthState) {
+    if (!hasAuthenticated || isUpdatingUser) return;
+    if (isLoggedIn) {
       dispatch(async (dispatch) => {
         try {
           const { user, userFields } = await getAuthData()(dispatch);
@@ -34,11 +37,10 @@ const LoadingScreen = ({ navigation }) => {
           dispatch(logOut());
         }
       });
-    } else if (prevAuthState || prevAuthState === undefined) {
+    } else {
       navigation.navigate("Main", { screen: "Login" });
     }
-    prevAuthRef.current = isLoggedIn;
-  }, [isLoggedIn, hasAuthenticated]);
+  }, [isLoggedIn, hasAuthenticated, isUpdatingUser]);
 
   return (
     <View style={themedStyles.container}>

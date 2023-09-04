@@ -46,6 +46,7 @@ import {
 import store from "./Store";
 import { toISO } from "../constants/Date";
 import Alert from "../constants/Alert";
+import { setUpdatingUser } from "./features/auth/isUpdatingUser";
 
 const loadWhileExecute = async (dispatch, f) => {
   dispatch(startLoading());
@@ -202,7 +203,10 @@ export const logIn = (email, password) => (dispatch) => (
  * Logs user out
  */
 export const logOut = () => (dispatch) => (
-  executeAsyncAction(dispatch, () => signOut(getAuth()))
+  executeAsyncAction(dispatch, () => {
+    signOut(getAuth());
+    dispatch(setUpdatingUser(false));
+  })
 );
 
 /**
@@ -210,13 +214,20 @@ export const logOut = () => (dispatch) => (
  */
 export const editUserData = (data) => (dispatch, getState) => (
   executeAsyncAction(dispatch, async () => {
+    dispatch(setUpdatingUser(true));
+    // Sometimes, the app can get into a state where the user is authorized in firebase, but the user doesn't exist in the database
+    // In this case, update the user id from the current auth
     const { user, domain } = getState();
+    const { uid } = getAuth().currentUser;
+    const userId = user?.id || uid;
+
     let newData = { ...data };
     delete newData.uid;
     delete newData.password;
     delete newData.email;
     delete newData.domain;
-    await setDoc(myUserData(user.uid, domain.id), newData);
+    await setDoc(myUserData(userId, domain.id), newData);
+    dispatch(setUpdatingUser(false));
   }, "User data updated successfully")
 );
 
@@ -230,6 +241,9 @@ export const createUser = (email, password, data) => (dispatch, getState) => (
       //   - Creating a new user, adding a domain entry, adding a user data entry
       //   - Add domain to list of domains for existing user, adding a user data entry
       //       - This will fail if there is already an existing user in the provided domain
+      
+      dispatch(setUpdatingUser(true));
+
       const { domain } = getState();
       let uid = await getUser(email);
       let newUser = false;
@@ -239,25 +253,32 @@ export const createUser = (email, password, data) => (dispatch, getState) => (
         uid = userCredential.user.uid;
         newUser = true;
       }
-      await Promise.all([
-        await runTransaction(getFirestore(), async (t) => {
-          const docRef = userDomain(uid);
-          let domains = [];
-          if (!newUser) {
-            const doc = await t.get(docRef);
-            if (doc.exists) {
-              domains = doc.data().domains || [doc.data().domain] || [];
-              if (domains.includes(domain.id)) {
-                throw { code: "auth/email-already-in-use" };
-              }
+
+      await runTransaction(getFirestore(), async (t) => {
+        const docRef = userDomain(uid);
+        let domains = [];
+        if (!newUser) {
+          const doc = await t.get(docRef);
+          if (doc.exists) {
+            domains = doc.data().domains || [doc.data().domain] || [];
+            if (domains.includes(domain.id)) {
+              throw { code: "auth/email-already-in-use" };
             }
           }
-          domains.push(domain.id);
-          t.set(docRef, { domains });
-        }),
-        // Separate catch because failing to update user data should still allow user to log in
-        editUserData(data).catch(alertError)
-      ]);
+        }
+        t.set(docRef, { "domain": domain.id });
+        
+        // Set the user's data
+        let newData = { ...data };
+        delete newData.uid;
+        delete newData.password;
+        delete newData.email;
+        delete newData.domain;
+
+        t.set(myUserData(uid, domain.id), newData);
+      });
+
+      dispatch(setUpdatingUser(false));
     } catch (e) {
       // Log out if there is a failure to create user or update domains
       alertError(e);
@@ -324,7 +345,9 @@ export const watchPresets = () => {
 
 export const watchAuthState = () => (
   getAuth().onAuthStateChanged((user) => {
+    // If firebase-auth is logged into a user, set an empty array before data is fetched
     store.dispatch(user ? logInAction() : logOutAction());
+    // Regardless if logged in, store that authentication has been checked
     store.dispatch(authenticate());
   })
 );

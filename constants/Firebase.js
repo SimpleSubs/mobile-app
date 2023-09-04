@@ -48,7 +48,7 @@ export const myAppData = (domain) => collection(myDomain(domain), "appData");
 
 export const getUserDomain = async (uid) => {
   const doc = await getDoc(userDomain(uid));
-  if (!doc.exists || !(doc.data().domains || doc.data().domain)) {
+  if (!doc.exists || !(doc.data()?.domains || doc.data()?.domain)) {
     throw { code: "auth/user-not-found" };
   }
   const domainData = doc.data();

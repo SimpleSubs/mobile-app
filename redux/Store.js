@@ -11,6 +11,7 @@ import orderPresetsReducer from "./features/orders/orderPresetsSlice";
 import ordersReducer from "./features/orders/ordersSlice";
 import stateConstantsReducer from "./features/auth/stateConstantsSlice";
 import userReducer from "./features/auth/userSlice";
+import isUpdatingUserReducer from "./features/auth/isUpdatingUser";
 
 const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
     focusedOrder: focusedOrderReducer,
     focusedPreset: focusedPresetReducer,
     hasAuthenticated: hasAuthenticatedReducer,
+    isUpdatingUser: isUpdatingUserReducer,
     infoMessage: infoMessageReducer,
     loading: loadingReducer,
     modal: modalReducer,
