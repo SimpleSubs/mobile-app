@@ -328,11 +328,8 @@ export const watchPresets = () => {
 
 export const watchAuthState = () => (
   getAuth().onAuthStateChanged((user) => {
-    setTimeout(()=> {
     store.dispatch(user ? logInAction() : logOutAction());
-    store.dispatch(authenticate());  
-    }, 500)
-    
+    store.dispatch(authenticate());
   })
 );
 
