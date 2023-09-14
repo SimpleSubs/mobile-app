@@ -18,7 +18,7 @@
     "@sentry/react-native": "4.9.0",
     "@svgr/webpack": "^5.5.0",
     "done-bar": "^1.0.6",
-    "expo": "^47.0.0",
+    "expo": "^49.0.10",
     "expo-application": "~5.0.1",
     "expo-constants": "~14.0.2",
     "expo-device": "~5.0.0",
