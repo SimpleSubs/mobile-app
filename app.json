@@ -41,7 +41,7 @@
     },
     "android": {
       "package": "org.lwhs.simplesubs",
-      "versionCode": 22,
+      "versionCode": 23,
       "userInterfaceStyle": "automatic",
       "playStoreUrl": "https://play.google.com/store/apps/details?id=org.lwhs.simplesubs",
       "permissions": []
