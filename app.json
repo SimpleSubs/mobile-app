@@ -29,7 +29,7 @@
     },
     "ios": {
       "bundleIdentifier": "org.lwhs.simplesubs",
-      "buildNumber": "3",
+      "buildNumber": "2",
       "appStoreUrl": "https://apps.apple.com/us/app/id1464274843",
       "supportsTablet": true,
       "isTabletOnly": false,
@@ -41,7 +41,7 @@
     },
     "android": {
       "package": "org.lwhs.simplesubs",
-      "versionCode": 22,
+      "versionCode": 21,
       "userInterfaceStyle": "automatic",
       "playStoreUrl": "https://play.google.com/store/apps/details?id=org.lwhs.simplesubs",
       "permissions": []
