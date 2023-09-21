@@ -56,5 +56,6 @@
   "resolutions": {
     "logkitty": "^0.7.1"
   },
-  "private": true
+  "private": true,
+  "version": "0.0.0"
 }
